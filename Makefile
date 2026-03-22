@@ -1,16 +1,53 @@
 PROJECT_NAME := app
 CC := g++
-FLAGS := -lglfw -lGL
-SRCS := srcs/context.cppm srcs/window.cppm srcs/draw.cppm srcs/glad.c srcs/main.cpp
+
+SRC_DIR := srcs
 BUILD_DIR := build
 
-.PHONY: $(BUILD_DIR)
+# Modules (ordre IMPORTANT)
+MODULES := \
+	$(SRC_DIR)/context.cppm \
+	$(SRC_DIR)/window.cppm \
+	$(SRC_DIR)/uniform.cppm \
+	$(SRC_DIR)/shader.cppm \
+	$(SRC_DIR)/draw.cppm
+
+CPPS := $(shell find $(SRC_DIR) -name "*.cpp")
+CS := $(shell find $(SRC_DIR) -name "*.c")
+
+# Objets
+MODULE_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(MODULES:.cppm=.o))
+CPP_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CPPS:.cpp=.o))
+C_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CS:.c=.o))
+
+OBJS := $(MODULE_OBJS) $(CPP_OBJS) $(C_OBJS)
+
+FLAGS := -std=c++20 -fmodules -Wall -Wextra -Werror -Wpedantic
+LINK_FLAGS := -lglfw -lGL
+INCLUDES := -I$(SRC_DIR) -Iglad -IKHR
+
+.PHONY: all clean
+
+all: $(BUILD_DIR) $(OBJS)
+	$(CC) $(OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME) $(LINK_FLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-debug:
-	$(CC) $(SRCS) -Isrcs -Iglad -IKHR -o $(BUILD_DIR)/$(PROJECT_NAME) $(FLAGS) -DNDEBUG -Og -fmodules -Wall -Wextra -Werror -Wpedantic
+# 🔥 Compilation des modules (dans le bon ordre)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cppm
+	@mkdir -p $(dir $@)
+	$(CC) $< $(INCLUDES) $(FLAGS) -c -o $@
+
+# 🔧 .cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CC) $< $(INCLUDES) $(FLAGS) -c -o $@
+
+# 🔧 .c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	gcc $< -Iglad -c -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) gcm.cache
