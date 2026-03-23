@@ -3,6 +3,7 @@
 #include <print>
 #include <memory>
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
@@ -14,8 +15,8 @@ class MyApp : public mka::graphic::Window {
 			mka::graphic::Window(800, 200, "Hello Window", std::move(ctx)) {
 		
 		renderer.add({
-			.geometry = {0, 200, 200, 200},
-			.radius = {0.0f, 0.0f, 0.0f, 0.0f},
+			.geometry = {50, 20, 200, 200},
+			.radius = {10.0f, 50.0f, 100.0f, 200.0f},
 			.fillColor = {0.0f, 1.0f, 0.0f, 1.0f},
 			.borderColor = {0.0f, 0.0f, 0.0f, 0.0f},
 			.borderThickness = {0.0f, 0.0f, 0.0f, 0.0f},
@@ -23,11 +24,11 @@ class MyApp : public mka::graphic::Window {
 	}
 
 	void render() {
-		glClearColor(1.0f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.0f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);	
-		
+	
 		glm::mat4 projection = getOrthographicProjection();
-		renderer.draw(projection);
+		renderer.draw(projection);	
 	}
 
 	private:

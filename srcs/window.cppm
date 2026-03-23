@@ -9,6 +9,11 @@ module;
 export module mka.graphic.window;
 export import mka.graphic.context;
 
+
+void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
 export namespace mka::graphic {
 	
 
@@ -57,6 +62,12 @@ export namespace mka::graphic {
 				}
 				
 				glfwSetWindowUserPointer(window, this);
+				glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+				glfwSetWindowSizeCallback(window, 
+					[](GLFWwindow* win, int w, int h) {
+						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
+						self->orthographicProjection = glm::ortho(0.0f, float(w), float(h), 0.0f, -1.0f, 1.0f);
+				});
 				
 				if(!this->ctx || !this->ctx->init(window)) {
 					state = State::Terminated;
@@ -66,10 +77,7 @@ export namespace mka::graphic {
 			
 			virtual void render() = 0;
 
-			const glm::mat4& getOrthographicProjection() {
-				int w, h;
-				glfwGetFramebufferSize(window, &w, &h);
-				orthographicProjection = glm::ortho(0.0f, float(w), float(h), 0.0f, -1.0f, 1.0f);
+			const glm::mat4& getOrthographicProjection() const {
 				return orthographicProjection;
 			}
 

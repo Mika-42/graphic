@@ -23,7 +23,9 @@ const auto vs = R"(
 
 				out vec2 uv;
 				out vec4 fillColor;
-
+				out vec4 radius;
+				out vec2 rectSize;
+				
 				uniform mat4 uProjection;
 				
 				void main() {
@@ -43,6 +45,8 @@ const auto vs = R"(
 
 					uv = aPos;
 					fillColor = r.fillColor;
+					radius = r.radius;
+					rectSize = r.geometry.zw;
 
 					vec2 pos = r.geometry.xy + aPos * r.geometry.zw;
 
@@ -55,18 +59,32 @@ const auto fs = R"(
 
 				in vec2 uv;
 				in vec4 fillColor;
-
+				in vec4 radius;          // xy = top-left, zw = bottom-right
+				in vec2 rectSize;
+				
 				out vec4 FragColor;
 
+				float sdRoundedBox( in vec2 p, in vec2 b, in vec4 r ) {
+					r.xy = (p.x>0.0)?r.xy : r.zw;
+					r.x  = (p.y>0.0)?r.x  : r.y;
+					vec2 q = abs(p)-b+r.x;
+					return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
+				}
+
 				void main() {
+					vec2 p = uv * rectSize - 0.5 * rectSize;
+					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
+					
+					if (dist > 0.0) discard;
+					
 					FragColor = fillColor;
 				}
 			)";
 
 //OpenGL
-export namespace mka::graphic::gl {
+namespace mka::graphic::gl {
 	
-	struct Rectangle {		
+	export struct Rectangle {		
 		glm::vec4 geometry {}; //x, y, w, h
 		glm::vec4 radius {};
 		glm::vec4 fillColor {};
@@ -74,7 +92,14 @@ export namespace mka::graphic::gl {
 		glm::vec4 borderThickness {};
 	};
 
-	class Renderer {
+	void sanitizeRadius(glm::vec4& radius, const glm::vec2& size) {
+		radius.x = glm::min(radius.x, glm::min(size.x, size.y) * 0.5f); // top-left
+		radius.y = glm::min(radius.y, glm::min(size.x, size.y) * 0.5f); // top-right
+		radius.z = glm::min(radius.z, glm::min(size.x, size.y) * 0.5f); // bottom-right
+		radius.w = glm::min(radius.w, glm::min(size.x, size.y) * 0.5f); // bottom-left
+	}
+
+	export class Renderer {
 		
 		public:
 
@@ -97,12 +122,17 @@ export namespace mka::graphic::gl {
 				);
 			}
 
-			void add(Rectangle r) {
+			[[maybe_unused]] Rectangle& add(Rectangle r) {
 				rectangles.emplace_back(std::move(r));
+				return rectangles.back();
 			}
 
 			void draw(const glm::mat4 projection) {
 				if (rectangles.empty()) return;
+				
+				for (auto& r : rectangles) {
+					sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
+				}
 
 				glNamedBufferSubData(
 					ssbo,
