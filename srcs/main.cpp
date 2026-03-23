@@ -19,7 +19,7 @@ class MyApp : public mka::graphic::Window {
 			.radius = {10.0f, 50.0f, 100.0f, 200.0f},
 			.fillColor = {0.0f, 1.0f, 0.0f, 1.0f},
 			.borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
-			.borderThickness = {15.0f, 0.0f, 0.0f, 0.0f},
+			.borderThickness = 15.0f,
 		});	
 	}
 

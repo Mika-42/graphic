@@ -14,7 +14,7 @@ const auto vs = R"(
 					vec4 radius;
 					vec4 fillColor;
 					vec4 borderColor;
-					vec4 borderThickness;
+					float borderThickness;
 				};
 
 				layout(std430, binding = 0) buffer Rects {
@@ -26,7 +26,7 @@ const auto vs = R"(
 				out vec4 radius;
 				out vec2 rectSize;
 				out vec4 borderColor;
-				out vec4 borderThickness;
+				out float borderThickness;
 
 				uniform mat4 uProjection;
 				
@@ -67,7 +67,7 @@ const auto fs = R"(
 				in vec2 rectSize;
 				
 				flat in vec4 borderColor;
-				flat in vec4 borderThickness;		
+				flat in float borderThickness;		
 
 				out vec4 FragColor;
 
@@ -81,13 +81,11 @@ const auto fs = R"(
 				void main() {
 					vec2 p = uv * rectSize - 0.5 * rectSize;
 					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
-					
-					float thickness = borderThickness.x;					
-					
+						
 					float aa = 0.5;
 					float shapeAlpha = smoothstep(aa, -aa, dist); 
 
-					float borderInner = smoothstep(aa, -aa, dist + thickness);
+					float borderInner = smoothstep(aa, -aa, dist + borderThickness);
 				    float borderOuter = shapeAlpha;
 					float borderMask = borderOuter - borderInner;
 
@@ -106,7 +104,7 @@ namespace mka::graphic::gl {
 		glm::vec4 radius {};
 		glm::vec4 fillColor {};
 		glm::vec4 borderColor {};
-		glm::vec4 borderThickness {};
+		float borderThickness {};
 	};
 
 	void sanitizeRadius(glm::vec4& radius, const glm::vec2& size) {
@@ -117,9 +115,8 @@ namespace mka::graphic::gl {
 		radius.w = glm::min(radius.w, maxRadius);
 	}
 
-	void sanitizeBorderThickness(glm::vec4& thickness) {
-		thickness.x = glm::max(thickness.x, 0.0f);
-		thickness.y = thickness.z = thickness.w = thickness.x;
+	void sanitizeBorderThickness(float& thickness) {
+		thickness = glm::max(thickness, 0.0f);
 	}
 
 	export class Renderer {
