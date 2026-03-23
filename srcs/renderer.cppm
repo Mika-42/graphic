@@ -25,7 +25,9 @@ const auto vs = R"(
 				out vec4 fillColor;
 				out vec4 radius;
 				out vec2 rectSize;
-				
+				out vec4 borderColor;
+				out vec4 borderThickness;
+
 				uniform mat4 uProjection;
 				
 				void main() {
@@ -51,8 +53,10 @@ const auto vs = R"(
 					vec2 pos = r.geometry.xy + aPos * r.geometry.zw;
 
 					gl_Position = uProjection * vec4(pos, 0.0, 1.0);
+					borderColor = r.borderColor;
+					borderThickness = r.borderThickness;
 				}
-			)";
+				)";
 
 const auto fs = R"(
 				#version 460 core
@@ -62,6 +66,9 @@ const auto fs = R"(
 				in vec4 radius;          // xy = top-left, zw = bottom-right
 				in vec2 rectSize;
 				
+				flat in vec4 borderColor;
+				flat in vec4 borderThickness;		
+
 				out vec4 FragColor;
 
 				float sdRoundedBox( in vec2 p, in vec2 b, in vec4 r ) {
@@ -75,9 +82,19 @@ const auto fs = R"(
 					vec2 p = uv * rectSize - 0.5 * rectSize;
 					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
 					
+					float thickness = borderThickness.x;					
+					
 					float aa = 0.5;
-					float alpha = smoothstep(aa, -aa, dist); 
-					FragColor = vec4(fillColor.rgb, fillColor.a * alpha);				
+					float shapeAlpha = smoothstep(aa, -aa, dist); 
+
+					float borderInner = smoothstep(aa, -aa, dist + thickness);
+				    float borderOuter = shapeAlpha;
+					float borderMask = borderOuter - borderInner;
+
+					vec4 color = mix(fillColor, borderColor, borderMask);
+					float alpha = max(shapeAlpha, borderMask);
+
+					FragColor = vec4(color.rgb, color.a * alpha);				
 				}
 			)";
 
@@ -98,6 +115,11 @@ namespace mka::graphic::gl {
 		radius.y = glm::min(radius.y, maxRadius);
 		radius.z = glm::min(radius.z, maxRadius);
 		radius.w = glm::min(radius.w, maxRadius);
+	}
+
+	void sanitizeBorderThickness(glm::vec4& thickness) {
+		thickness.x = glm::max(thickness.x, 0.0f);
+		thickness.y = thickness.z = thickness.w = thickness.x;
 	}
 
 	export class Renderer {
@@ -122,6 +144,15 @@ namespace mka::graphic::gl {
 						GL_DYNAMIC_DRAW
 				);
 			}
+			
+			~Renderer() {
+				if (ssbo != 0) {
+					glDeleteBuffers(1, &ssbo);
+				}
+				if (vao != 0) {
+					glDeleteVertexArrays(1, &vao);
+				}
+			}
 
 			[[maybe_unused]] Rectangle& add(Rectangle r) {
 				rectangles.emplace_back(std::move(r));
@@ -133,6 +164,7 @@ namespace mka::graphic::gl {
 				
 				for (auto& r : rectangles) {
 					sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
+					sanitizeBorderThickness(r.borderThickness);
 				}
 
 				glNamedBufferSubData(
