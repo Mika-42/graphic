@@ -2,6 +2,8 @@
 #include "glad.h"
 #include <print>
 #include <memory>
+#include <glm/glm.hpp>
+
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 
@@ -12,18 +14,20 @@ class MyApp : public mka::graphic::Window {
 			mka::graphic::Window(800, 200, "Hello Window", std::move(ctx)) {
 		
 		renderer.add({
-			{0.5f, 0.5f, 1.0f, 1.0f},
-			{0.0f, 0.0f, 0.0f, 0.0f},
-			{0.0f, 1.0f, 0.0f, 1.0f},
-			{0.0f, 0.0f, 0.0f, 0.0f},
-			{0.0f, 0.0f, 0.0f, 0.0f},
+			.geometry = {0, 200, 200, 200},
+			.radius = {0.0f, 0.0f, 0.0f, 0.0f},
+			.fillColor = {0.0f, 1.0f, 0.0f, 1.0f},
+			.borderColor = {0.0f, 0.0f, 0.0f, 0.0f},
+			.borderThickness = {0.0f, 0.0f, 0.0f, 0.0f},
 		});	
 	}
 
 	void render() {
 		glClearColor(1.0f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);	
-		renderer.draw();
+		
+		glm::mat4 projection = getOrthographicProjection();
+		renderer.draw(projection);
 	}
 
 	private:

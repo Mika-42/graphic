@@ -1,6 +1,8 @@
 module;
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <string>
 
@@ -64,6 +66,13 @@ export namespace mka::graphic {
 			
 			virtual void render() = 0;
 
+			const glm::mat4& getOrthographicProjection() {
+				int w, h;
+				glfwGetFramebufferSize(window, &w, &h);
+				orthographicProjection = glm::ortho(0.0f, float(w), float(h), 0.0f, -1.0f, 1.0f);
+				return orthographicProjection;
+			}
+
 			int run() {
 				if(state != State::Inited) return -1;
 
@@ -103,5 +112,6 @@ export namespace mka::graphic {
 		std::unique_ptr<Context> ctx;
 		State state = State::Terminated;
 		GLFWwindow* window = nullptr;
+		glm::mat4 orthographicProjection;
 	};
 }

@@ -24,6 +24,8 @@ const auto vs = R"(
 				out vec2 uv;
 				out vec4 fillColor;
 
+				uniform mat4 uProjection;
+				
 				void main() {
 
 					vec2 quad[6] = vec2[](
@@ -44,7 +46,7 @@ const auto vs = R"(
 
 					vec2 pos = r.geometry.xy + aPos * r.geometry.zw;
 
-					gl_Position = vec4(pos, 0.0, 1.0);
+					gl_Position = uProjection * vec4(pos, 0.0, 1.0);
 				}
 			)";
 
@@ -99,7 +101,7 @@ export namespace mka::graphic::gl {
 				rectangles.emplace_back(std::move(r));
 			}
 
-			void draw() {
+			void draw(const glm::mat4 projection) {
 				if (rectangles.empty()) return;
 
 				glNamedBufferSubData(
@@ -114,11 +116,11 @@ export namespace mka::graphic::gl {
 
 				// Draw
 				shader.use();
+				shader.set("uProjection", projection);
+				
 				glBindVertexArray(vao);
 
 				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
-
-			rectangles.clear();
 			}
 
 		private:
