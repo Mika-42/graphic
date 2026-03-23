@@ -93,10 +93,11 @@ namespace mka::graphic::gl {
 	};
 
 	void sanitizeRadius(glm::vec4& radius, const glm::vec2& size) {
-		radius.x = glm::min(radius.x, glm::min(size.x, size.y) * 0.5f); // top-left
-		radius.y = glm::min(radius.y, glm::min(size.x, size.y) * 0.5f); // top-right
-		radius.z = glm::min(radius.z, glm::min(size.x, size.y) * 0.5f); // bottom-right
-		radius.w = glm::min(radius.w, glm::min(size.x, size.y) * 0.5f); // bottom-left
+		const float maxRadius = glm::min(size.x, size.y) * 0.5f;
+		radius.x = glm::min(radius.x, maxRadius);
+		radius.y = glm::min(radius.y, maxRadius);
+		radius.z = glm::min(radius.z, maxRadius);
+		radius.w = glm::min(radius.w, maxRadius);
 	}
 
 	export class Renderer {

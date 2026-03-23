@@ -100,7 +100,7 @@ namespace mka::graphic {
 
 export namespace mka::graphic {
 
-	std::unique_ptr<Context> createContext(API api, Loader loader = Loader::None) {
+		[[nodiscard]] std::unique_ptr<Context> createContext(API api, Loader loader = Loader::None) {
 		switch(api) {
 			case API::Vulkan: return std::make_unique<VulkanContext>();
 			case API::DirectX: return std::make_unique<DirectXContext>();
