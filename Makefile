@@ -10,7 +10,7 @@ MODULES := \
 	$(SRC_DIR)/window.cppm \
 	$(SRC_DIR)/uniform.cppm \
 	$(SRC_DIR)/shader.cppm \
-	$(SRC_DIR)/draw.cppm
+	$(SRC_DIR)/renderer.cppm
 
 CPPS := $(shell find $(SRC_DIR) -name "*.cpp")
 CS := $(shell find $(SRC_DIR) -name "*.c")
