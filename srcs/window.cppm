@@ -73,6 +73,8 @@ export namespace mka::graphic {
 					state = State::Terminated;
 					return;
 				}
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 			
 			virtual void render() = 0;

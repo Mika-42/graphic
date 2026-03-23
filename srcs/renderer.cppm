@@ -75,9 +75,9 @@ const auto fs = R"(
 					vec2 p = uv * rectSize - 0.5 * rectSize;
 					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
 					
-					if (dist > 0.0) discard;
-					
-					FragColor = fillColor;
+					float aa = 0.5;
+					float alpha = smoothstep(aa, -aa, dist); 
+					FragColor = vec4(fillColor.rgb, fillColor.a * alpha);				
 				}
 			)";
 
