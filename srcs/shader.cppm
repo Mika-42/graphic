@@ -20,8 +20,19 @@ export namespace mka::graphic::gl {
         Shader() {
 			program = glCreateProgram();
 		}
+		
+		~Shader() {
+            if (program != 0) {
+                glDeleteProgram(program);
+            }
+        }
 
-        void use() const {
+        Shader(const Shader&) = delete;
+        Shader& operator=(const Shader&) = delete;
+        Shader(Shader&&) = delete;
+        Shader& operator=(Shader&&) = delete;
+        
+		void use() const {
 			glUseProgram(program);
 		}
 
@@ -59,8 +70,29 @@ export namespace mka::graphic::gl {
 			
 			return log;
 		}
+		
+		std::string link() const {
+            glLinkProgram(program);
 
+            GLint success = 0;
+            glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+            std::string log = "";
+            if (!success) {
+                GLint logLength = 0;
+                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+
+                if (logLength > 0) {
+                    log.resize(logLength);
+                    GLsizei written = 0;
+                    glGetProgramInfoLog(program, logLength, &written, log.data());
+                    log.resize(written);
+                }
+            }
+
+            return log;
+        }
     private:
-        GLuint program;
+        GLuint program = 0;
     };
 } // mka::graphic

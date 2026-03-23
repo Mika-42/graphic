@@ -4,6 +4,7 @@ module;
 #include <vector>
 
 export module mka.graphic.draw;
+import mka.graphic.opengl.shader;
 
 //OpenGL
 export namespace mka::graphic {
