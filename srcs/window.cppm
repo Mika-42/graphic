@@ -67,6 +67,8 @@ export namespace mka::graphic {
 					[](GLFWwindow* win, int w, int h) {
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
 						self->orthographicProjection = glm::ortho(0.0f, float(w), float(h), 0.0f, -1.0f, 1.0f);
+						self->width = w;
+						self->height = h;
 				});
 				
 				if(!this->ctx || !this->ctx->init(window)) {
@@ -112,6 +114,10 @@ export namespace mka::graphic {
 
 			const State& getState() {
 				return state;
+			}
+
+			const glm::vec2 getSize() {
+				return glm::vec2(width, height);
 			}
 
 		private:
