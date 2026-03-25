@@ -156,6 +156,7 @@ namespace mka::graphic::gl {
 		float shadowSoftness {24.0f};
 		float shadowSpread {0.0f};
 		float borderThickness {};
+		GLuint64 texture {};
 		float _padding0 {};
 		float _padding1 {};
 		float _padding2 {};
