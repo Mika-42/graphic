@@ -1,7 +1,7 @@
 module;
 #include "glad.h"
 #include <glm/glm.hpp>
-#include <vector>
+#include <array>
 
 export module mka.graphic.opengl.renderer;
 import mka.graphic.opengl.shader;
@@ -220,12 +220,11 @@ namespace mka::graphic::gl {
 		sanitizeBorderThickness(r.borderThickness);
 	}
 
-	export class Renderer {
+	export template<size_t MAX_RECTANGLE_COUNT> class Renderer {
 		
 		public:
 
 			Renderer() {
-				rectangles.reserve(capacity);
 				shader.addScript(vs, ShaderType::Vertex);
 				shader.addScript(fs, ShaderType::Fragment);
 				shader.link();
@@ -237,7 +236,7 @@ namespace mka::graphic::gl {
 				glCreateBuffers(1, &ssbo);
 				glNamedBufferData(
 						ssbo, 
-						capacity * sizeof(Rectangle), 
+						MAX_RECTANGLE_COUNT * sizeof(Rectangle), 
 						nullptr,
 						GL_DYNAMIC_DRAW
 				);
@@ -252,22 +251,29 @@ namespace mka::graphic::gl {
 				}
 			}
 
-			[[maybe_unused]] Rectangle& add(Rectangle r) {
-				rectangles.emplace_back(std::move(r));
-				return rectangles.back();
+			[[maybe_unused]] Rectangle* add(Rectangle&& r) {
+				if (rectangleCount >= MAX_RECTANGLE_COUNT) {
+					return nullptr; // ou assert
+				}
+				rectangles[rectangleCount] = r;
+				return &rectangles[rectangleCount++];
 			}
 
 			void draw(const glm::mat4 projection) {
-				if (rectangles.empty()) return;
+			
+				glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+				glClear(GL_COLOR_BUFFER_BIT);
+
+				if (rectangleCount == 0) return;
 				
-				for (auto& r : rectangles) {
-					sanitizeRectangle(r);
+				for (size_t i = 0; i < rectangleCount; ++i) {
+					sanitizeRectangle(rectangles[i]);
 				}
 
 				glNamedBufferSubData(
 					ssbo,
 					0,
-					rectangles.size() * sizeof(Rectangle),
+					rectangleCount * sizeof(Rectangle),
 					rectangles.data()
 				);
 				
@@ -280,15 +286,24 @@ namespace mka::graphic::gl {
 				
 				glBindVertexArray(vao);
 
-				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
+				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangleCount);
+
+				rectangleCount = 0;
+			}
+
+			void setBackgroundColor(const glm::vec4& color) {
+				bgColor = color;	
+				sanitizeColor(bgColor);
 			}
 
 		private:
-			std::vector<Rectangle> rectangles;
+			std::array<Rectangle, MAX_RECTANGLE_COUNT> rectangles;
+			size_t rectangleCount = 0;
+
+			glm::vec4 bgColor = glm::vec4{1.0f};
 			Shader shader;
 
 			GLuint vao = 0;
 			GLuint ssbo = 0;
-			size_t capacity = 1024;
 	};
 }
