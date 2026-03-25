@@ -14,7 +14,14 @@ const auto vs = R"(
 					vec4 radius;
 					vec4 fillColor;
 					vec4 borderColor;
+					vec4 shadowColor;
+					vec2 shadowOffset;
+					float shadowSoftness;
+					float shadowSpread;
 					float borderThickness;
+					float _padding0;
+					float _padding1;
+					float _padding2;
 				};
 
 				layout(std430, binding = 0) buffer Rects {
@@ -27,6 +34,10 @@ const auto vs = R"(
 				out vec2 rectSize;
 				out vec4 borderColor;
 				out float borderThickness;
+				out vec4 shadowColor;
+				out vec2 shadowOffset;
+				out float shadowSoftness;
+				out float shadowSpread;
 
 				uniform mat4 uProjection;
 				
@@ -55,6 +66,10 @@ const auto vs = R"(
 					gl_Position = uProjection * vec4(pos, 0.0, 1.0);
 					borderColor = r.borderColor;
 					borderThickness = r.borderThickness;
+					shadowColor = r.shadowColor;
+					shadowOffset = r.shadowOffset;
+					shadowSoftness = r.shadowSoftness;
+					shadowSpread = r.shadowSpread;
 				}
 				)";
 
@@ -67,7 +82,11 @@ const auto fs = R"(
 				in vec2 rectSize;
 				
 				flat in vec4 borderColor;
-				flat in float borderThickness;		
+				flat in float borderThickness;
+				flat in vec4 shadowColor;
+				flat in vec2 shadowOffset;
+				flat in float shadowSoftness;
+				flat in float shadowSpread;
 
 				out vec4 FragColor;
 
@@ -81,7 +100,7 @@ const auto fs = R"(
 				void main() {
 					vec2 p = uv * rectSize - 0.5 * rectSize;
 					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
-						
+
 					float aa = 0.5;
 					float shapeAlpha = smoothstep(aa, -aa, dist); 
 
@@ -89,22 +108,47 @@ const auto fs = R"(
 				    float borderOuter = shapeAlpha;
 					float borderMask = borderOuter - borderInner;
 
-					vec4 color = mix(fillColor, borderColor, borderMask);
-					float alpha = max(shapeAlpha, borderMask);
+					// Signed distance of the shadow comes from the same rounded box SDF,
+					// but translated and expanded to produce a soft halo behind the shape.
+					vec2 shadowPoint = p - shadowOffset;
+					float shadowDist = sdRoundedBox(
+						shadowPoint,
+						(rectSize * 0.5) + vec2(shadowSpread),
+						radius
+					);
 
-					FragColor = vec4(color.rgb, color.a * alpha);				
+					// Softness controls the falloff width around the shadow edge.
+					float safeShadowSoftness = max(shadowSoftness, 0.001);
+					float shadowAlpha = 1.0 - smoothstep(-safeShadowSoftness, safeShadowSoftness, shadowDist);
+
+					vec4 shapeColor = mix(fillColor, borderColor, borderMask);
+					float shapeAlphaCombined = max(shapeAlpha, borderMask);
+					vec4 composedShape = vec4(shapeColor.rgb, shapeColor.a * shapeAlphaCombined);
+
+					// Draw shadow only where the shape is not fully opaque to keep it behind.
+					float visibleShadow = shadowAlpha * (1.0 - shapeAlphaCombined);
+					vec4 composedShadow = vec4(shadowColor.rgb, shadowColor.a * visibleShadow);
+
+					FragColor = composedShadow + composedShape;
 				}
 			)";
 
 //OpenGL
 namespace mka::graphic::gl {
 	
-	export struct Rectangle {		
+	export struct alignas(16) Rectangle {
 		glm::vec4 geometry {}; //x, y, w, h
 		glm::vec4 radius {};
 		glm::vec4 fillColor {};
 		glm::vec4 borderColor {};
+		glm::vec4 shadowColor {0.0f, 0.0f, 0.0f, 0.35f};
+		glm::vec2 shadowOffset {0.0f, 10.0f};
+		float shadowSoftness {24.0f};
+		float shadowSpread {0.0f};
 		float borderThickness {};
+		float _padding0 {};
+		float _padding1 {};
+		float _padding2 {};
 	};
 
 	void sanitizeRadius(glm::vec4& radius, const glm::vec2& size) {
@@ -117,6 +161,12 @@ namespace mka::graphic::gl {
 
 	void sanitizeBorderThickness(float& thickness) {
 		thickness = glm::max(thickness, 0.0f);
+	}
+
+	void sanitizeShadow(glm::vec4& shadowColor, float& shadowSoftness) {
+		shadowColor.a = glm::clamp(shadowColor.a, 0.0f, 1.0f);
+		// Keep the transition stable and avoid division by zero equivalent cases in smoothstep.
+		shadowSoftness = glm::max(shadowSoftness, 0.001f);
 	}
 
 	export class Renderer {
@@ -162,6 +212,7 @@ namespace mka::graphic::gl {
 				for (auto& r : rectangles) {
 					sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
 					sanitizeBorderThickness(r.borderThickness);
+					sanitizeShadow(r.shadowColor, r.shadowSoftness);
 				}
 
 				glNamedBufferSubData(
