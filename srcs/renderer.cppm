@@ -129,7 +129,7 @@ const auto fs = R"(
 					float visibleShadow = shadowAlpha * (1.0 - shapeAlphaCombined);
 					vec4 composedShadow = vec4(shadowColor.rgb, shadowColor.a * visibleShadow);
 
-					FragColor = composedShadow + composedShape;
+					FragColor = composedShape + composedShadow;
 				}
 			)";
 
