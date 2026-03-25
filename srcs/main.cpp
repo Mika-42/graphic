@@ -32,6 +32,7 @@ class MyApp : public mka::graphic::Window {
 			.borderColor = red,
 			.shadowColor = blue,
 			.borderThickness = 5.0f,
+			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
         });
 		
 		renderer.draw(projection);	

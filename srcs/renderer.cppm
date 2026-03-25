@@ -1,4 +1,7 @@
 module;
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "glad.h"
 #include <glm/glm.hpp>
 #include <array>
@@ -154,14 +157,50 @@ namespace mka::graphic::gl {
 		glm::vec4 shadowColor {};
 		glm::vec2 shadowOffset {0.0f, 10.0f};
 		float shadowSoftness {24.0f};
-		float shadowSpread {0.0f};
+		float shadowSpread {};
 		float borderThickness {};
-		GLuint64 texture {};
+		uint64_t texture {};
 		float _padding0 {};
 		float _padding1 {};
-		float _padding2 {};
 	};
 	
+	export uint64_t loadTexture(const char* path) {
+		int width, height, channels;
+		stbi_set_flip_vertically_on_load(true);
+
+		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
+		if (!data) {
+			return 0;
+		}
+
+		GLuint tex = 0;
+		glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+
+		glTextureStorage2D(tex, 1, GL_RGBA8, width, height);
+
+		glTextureSubImage2D(
+			tex,
+			0,
+			0, 0,
+			width, height,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			data
+		);
+
+		glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		stbi_image_free(data);
+
+		uint64_t handle = glGetTextureHandleARB(tex);
+		glMakeTextureHandleResidentARB(handle);
+
+		return handle;
+	}
+
 	void sanitizeGeometry(glm::vec4& g) {
 		for (int i = 0; i < 4; i++) {
 			if (!std::isfinite(g[i])) {
