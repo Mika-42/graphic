@@ -5,12 +5,14 @@ module;
 #include "glad.h"
 #include <glm/glm.hpp>
 #include <array>
+#include <iostream>
 
 export module mka.graphic.opengl.renderer;
 import mka.graphic.opengl.shader;
 
 const auto vs = R"(
 				#version 460 core
+				#extension GL_ARB_bindless_texture : require
 
 				struct Rect {
 					vec4 geometry; // xy = pos, zw = size
@@ -22,9 +24,9 @@ const auto vs = R"(
 					float shadowSoftness;
 					float shadowSpread;
 					float borderThickness;
+					uvec2 texture;
 					float _padding0;
 					float _padding1;
-					float _padding2;
 				};
 
 				layout(std430, binding = 0) buffer Rects {
@@ -41,6 +43,8 @@ const auto vs = R"(
 				out vec2 shadowOffset;
 				out float shadowSoftness;
 				out float shadowSpread;
+				out vec2 texCoord;
+				flat out uvec2 textureHandle;
 
 				uniform mat4 uProjection;
 				
@@ -58,6 +62,8 @@ const auto vs = R"(
 
 					vec2 aPos = quad[gl_VertexID];
 					Rect r = rects[gl_InstanceID];
+					texCoord = aPos;
+					textureHandle = r.texture;
 
 					fillColor = r.fillColor;
 					radius = r.radius;
@@ -84,18 +90,21 @@ const auto vs = R"(
 
 const auto fs = R"(
 				#version 460 core
+				#extension GL_ARB_bindless_texture : require
 
 				in vec2 localPoint;
 				in vec4 fillColor;
 				in vec4 radius;          // xy = top-left, zw = bottom-right
 				in vec2 rectSize;
+				in vec2 texCoord;
 				
-				flat in vec4 borderColor;
-				flat in float borderThickness;
-				flat in vec4 shadowColor;
-				flat in vec2 shadowOffset;
-				flat in float shadowSoftness;
-				flat in float shadowSpread;
+				in vec4 borderColor;
+				in float borderThickness;
+				in vec4 shadowColor;
+				in vec2 shadowOffset;
+				in float shadowSoftness;
+				in float shadowSpread;
+				flat in uvec2 textureHandle;
 
 				out vec4 FragColor;
 
@@ -131,7 +140,15 @@ const auto fs = R"(
 					float shadowAlpha = 1.0 - smoothstep(-safeShadowSoftness, safeShadowSoftness, shadowDist);
 					shadowAlpha = clamp(shadowAlpha, 0.0, 1.0);
 
-					vec4 shapeColor = mix(fillColor, borderColor, borderMask);
+					// Use bindless texture only when a non-null GPU handle is available.
+					// This keeps untextured rectangles on the fast path.
+					vec4 baseFill = fillColor;
+					if (any(notEqual(textureHandle, uvec2(0u)))) {
+						sampler2D rectTexture = sampler2D(textureHandle);
+						baseFill *= texture(rectTexture, texCoord);
+					}
+
+					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
 					float shapeCoverage = max(shapeAlpha, borderMask);
 					float shapeAlphaCombined = clamp(shapeColor.a * shapeCoverage, 0.0, 1.0);
 
@@ -166,7 +183,7 @@ namespace mka::graphic::gl {
 	
 	export uint64_t loadTexture(const char* path) {
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(true);
+		stbi_set_flip_vertically_on_load(false);
 
 		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
 		if (!data) {
@@ -264,8 +281,8 @@ namespace mka::graphic::gl {
 		public:
 
 			Renderer() {
-				shader.addScript(vs, ShaderType::Vertex);
-				shader.addScript(fs, ShaderType::Fragment);
+				std::cerr << shader.addScript(vs, ShaderType::Vertex) << '\n'; 
+				std::cerr << shader.addScript(fs, ShaderType::Fragment) << '\n'; 
 				shader.link();
 				
 				// empty vao (without it doesn't work...)
