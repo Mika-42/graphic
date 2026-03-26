@@ -145,7 +145,7 @@ const auto fs = R"(
 					vec4 baseFill = fillColor;
 					if (any(notEqual(textureHandle, uvec2(0u)))) {
 						sampler2D rectTexture = sampler2D(textureHandle);
-						baseFill *= texture(rectTexture, texCoord);
+						baseFill = mix(texture(rectTexture, texCoord), fillColor, fillColor.a);
 					}
 
 					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
