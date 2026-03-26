@@ -24,7 +24,7 @@ OBJS := $(MODULE_OBJS) $(CPP_OBJS) $(C_OBJS)
 
 FLAGS := -std=c++20 -fmodules -Wall -Wextra -Werror -Wpedantic
 LINK_FLAGS := -lglfw -lGL
-INCLUDES := -I$(SRC_DIR) -Iglad -IKHR
+INCLUDES := -I$(SRC_DIR) -Iglad
 
 .PHONY: all clean
 
