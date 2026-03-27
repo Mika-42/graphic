@@ -195,10 +195,11 @@ namespace mka::graphic::gl {
 		glm::vec4 color {};
 		glm::vec4 shadowColor {};
 		glm::vec2 shadowOffset {};
-		glm::vec2 position {};
+		glm::vec2 position {}; /*todo: sanitize*/
 		float fontSize {};
-		float letterSpacing {};
+		float letterSpacing {}; /*todo: sanitize*/
 		float shadowSoftness {};
+		float shadowSpread {};
 	};
 
 	export uint64_t loadTexture(const char* path) {
@@ -246,6 +247,13 @@ namespace mka::graphic::gl {
 		sanitizeColor(r.shadowColor);
 		sanitizeShadow(r.shadowOffset, r.shadowSoftness, r.shadowSpread);
 		sanitizeBorderThickness(r.borderThickness);
+	}
+
+	void sanitizeText(Text &t) {
+		sanitizeColor(t.color);	
+		sanitizeColor(t.shadowColor);	
+		sanitizeShadow(t.shadowOffset, t.shadowSoftness, t.shadowSpread);
+		t.fontSize = sanitizeFloat(t.fontSize, 0.0f);
 	}
 
 	export template<size_t MAX_RECTANGLE_COUNT> class Renderer {
