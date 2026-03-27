@@ -28,7 +28,7 @@ class MyApp : public mka::graphic::Window {
 		renderer.add({
             .geometry = {70, 40, 400, 200},
             .radius = {40, 100, 20, 50},
-			.fillColor = green,
+			.backgroundColor = green,
 			.borderColor = red,
 			.shadowColor = blue,
 			.borderThickness = 5.0f,

@@ -5,6 +5,7 @@ module;
 #include "glad.h"
 #include <glm/glm.hpp>
 #include <array>
+#include <string>
 
 #ifdef DEBUG
 	#include <iostream>
@@ -15,6 +16,7 @@ module;
 
 export module mka.graphic.opengl.renderer;
 import mka.graphic.opengl.shader;
+import mka.graphic.sanitize;
 
 const auto vs = R"(
 				#version 460 core
@@ -175,18 +177,30 @@ namespace mka::graphic::gl {
 	export struct alignas(16) Rectangle {
 		glm::vec4 geometry {}; //x, y, w, h
 		glm::vec4 radius {};
-		glm::vec4 fillColor {};
+		glm::vec4 backgroundColor {};
 		glm::vec4 borderColor {};
 		glm::vec4 shadowColor {};
-		glm::vec2 shadowOffset {0.0f, 10.0f};
-		float shadowSoftness {24.0f};
+		glm::vec2 shadowOffset {};
+		float shadowSoftness {};
 		float shadowSpread {};
 		float borderThickness {};
 		uint64_t texture {};
 		float _padding0 {};
 		float _padding1 {};
 	};
-	
+
+	export struct Text {
+		std::string content {};
+		std::string font {};
+		glm::vec4 color {};
+		glm::vec4 shadowColor {};
+		glm::vec2 shadowOffset {};
+		glm::vec2 position {};
+		float fontSize {};
+		float letterSpacing {};
+		float shadowSoftness {};
+	};
+
 	export uint64_t loadTexture(const char* path) {
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
@@ -224,58 +238,10 @@ namespace mka::graphic::gl {
 		return handle;
 	}
 
-	void sanitizeGeometry(glm::vec4& g) {
-		for (int i = 0; i < 4; i++) {
-			if (!std::isfinite(g[i])) {
-				g[i] = 0.0f;
-			}
-		}
-
-		// width / height >= 0
-		g.z = glm::max(g.z, 0.0f);
-		g.w = glm::max(g.w, 0.0f);
-	}
-
-	void sanitizeRadius(glm::vec4& radius, const glm::vec2& size) {
-		const float maxRadius = glm::min(size.x, size.y) * 0.5f;
-
-		radius = glm::clamp(radius, glm::vec4(0.0f), glm::vec4(maxRadius));
-	}
-	
-	void sanitizeColor(glm::vec4& color) {
-		for (int i = 0; i < 4; i++) {
-			if (!std::isfinite(color[i])) {
-				color[i] = 0.0f;
-			}
-		}
-
-		color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f));
-	}
-	
-	float sanitizeFloat(float v, float minValue = 0.0f) {
-		if (!std::isfinite(v)) return minValue;
-		return glm::max(v, minValue);
-	}
-
-	void sanitizeBorderThickness(float& thickness) {
-		thickness = sanitizeFloat(thickness, 0.0f);
-	}
-
-	void sanitizeShadow(glm::vec2& shadowOffset, float& shadowSoftness, float& shadowSpread) {
-		shadowSoftness = sanitizeFloat(shadowSoftness, 0.001f);
-		shadowSpread   = sanitizeFloat(shadowSpread, 0.0f);
-
-		for (int i = 0; i < 2; i++) {
-			if (!std::isfinite(shadowOffset[i])) {
-				shadowOffset[i] = 0.0f;
-			}
-		}
-	}
-
 	void sanitizeRectangle(Rectangle &r) {
 		sanitizeGeometry(r.geometry);
 		sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
-		sanitizeColor(r.fillColor);
+		sanitizeColor(r.backgroundColor);
 		sanitizeColor(r.borderColor);
 		sanitizeColor(r.shadowColor);
 		sanitizeShadow(r.shadowOffset, r.shadowSoftness, r.shadowSpread);
