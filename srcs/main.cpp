@@ -17,7 +17,7 @@ class MyApp : public mka::graphic::Window {
 		}
 
 	void render() {
-	
+		static double t = 0.0;	
 		const glm::mat4 projection = getOrthographicProjection();
 	
 		// x axis
@@ -27,6 +27,7 @@ class MyApp : public mka::graphic::Window {
 			.backgroundColor = green,
 			.borderColor = red,
 			.shadowColor = blue,
+			.shadowSoftness = glm::abs(glm::cos(float(t * 10.0))) * 100.0f, 
 			.borderThickness = 5.0f,
 			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
         });
@@ -61,6 +62,7 @@ class MyApp : public mka::graphic::Window {
 				.fontSize = 50,
 		});
 		renderer.draw(projection);	
+		t += 0.01;
 	}
 
 	private:

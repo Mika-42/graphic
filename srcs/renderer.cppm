@@ -77,7 +77,6 @@ const auto vs = R"(
 
 					vec2 aPos = quad[gl_VertexID];
 					Rect r = rects[gl_InstanceID];
-					texCoord = aPos;
 					textureHandle = r.texture;
 
 					fillColor = r.fillColor;
@@ -92,6 +91,12 @@ const auto vs = R"(
 
 					vec2 pos = expandedPos + aPos * expandedSize;
 					localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
+
+					// Build UVs from the *original* rectangle space so shadow padding
+					// never changes the apparent texture scale when softness varies.
+					vec2 rectSpacePoint = localPoint + (0.5 * r.geometry.zw);
+					vec2 safeRectSize = max(r.geometry.zw, vec2(0.0001));
+					texCoord = rectSpacePoint / safeRectSize;
 
 					gl_Position = uProjection * vec4(pos, 0.0, 1.0);
 					borderColor = r.borderColor;
