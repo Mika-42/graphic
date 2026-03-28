@@ -33,34 +33,19 @@ class MyApp : public mka::graphic::Window {
         });
 
 		renderer.add({
-				.content = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+				.content = "Hello World",
 				.font = "/home/mika/Downloads/Winter Draw.ttf",
 				.color = black,
-//				.shadowColor = red,
-//				.shadowOffset = {0, 0},
+				.shadowColor = red,
+				.shadowOffset = {0, 0},
 				.position = {10, 50},
 				.fontSize = 50,
 				.letterSpacing = 0,
-//				.shadowSoftness = 0,
-//				.shadowSpread = 10
+				.shadowSoftness = glm::abs(glm::cos(float(t * 10.0))) * 100.0f, 
+				.shadowSpread = 10
 		});
 
 
-		renderer.add({
-				.content = "abcdefghijklmnopqrstuvwxyz",
-				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.color = black,
-				.position = {10, 150},
-				.fontSize = 50,
-		});
-
-		renderer.add({
-				.content = "0123456789.,;:@#'!\"/?<>%&*()$ ",
-				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.color = black,
-				.position = {10, 250},
-				.fontSize = 50,
-		});
 		renderer.draw(projection);	
 		t += 0.01;
 	}
@@ -70,7 +55,7 @@ class MyApp : public mka::graphic::Window {
 		const glm::vec4 black	{0.0f, 0.0f, 0.0f, 1.0f};
 		const glm::vec4 red		{1.0f, 0.0f, 0.0f, 1.0f};
 		const glm::vec4 blue	{0.0f, 0.0f, 1.0f, 1.0f};
-		const glm::vec4 green	{0.0f, 1.0f, 0.0f, 0.5f};
+		const glm::vec4 green	{0.0f, 1.0f, 0.0f, 0.0f};
 };
 
 int main() {
