@@ -21,7 +21,7 @@ class MyApp : public mka::graphic::Window {
 		const glm::mat4 projection = getOrthographicProjection();
 	
 		// x axis
-/*		renderer.add({
+		renderer.add({
             .geometry = {70, 40, 400, 200},
             .radius = {40, 100, 20, 50},
 			.backgroundColor = green,
@@ -30,13 +30,18 @@ class MyApp : public mka::graphic::Window {
 			.borderThickness = 5.0f,
 			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
         });
-*/
+
 		renderer.add({
 				.content = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 				.font = "/home/mika/Downloads/Winter Draw.ttf",
 				.color = black,
+//				.shadowColor = red,
+//				.shadowOffset = {0, 0},
 				.position = {10, 50},
 				.fontSize = 50,
+				.letterSpacing = 0,
+//				.shadowSoftness = 0,
+//				.shadowSpread = 10
 		});
 
 

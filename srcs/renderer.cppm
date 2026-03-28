@@ -133,13 +133,19 @@ const auto fs = R"(
 				void main() {
 					vec2 p = localPoint;
 					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
-
+					bool hasTexture = any(notEqual(textureHandle, uvec2(0u)));
+					bool hasRoundedCorners = any(greaterThan(radius, vec4(0.0)));
+					bool hasBorder = borderThickness > 0.0;
+					// Text glyph rectangles are textured quads with zero radius and zero border.
+					// In that case we bypass SDF clipping to avoid trimming edge pixels.
+					bool useShapeMask = hasRoundedCorners || hasBorder || !hasTexture;
+					
 					float aa = 0.5;
 					float shapeAlpha = smoothstep(aa, -aa, dist); 
 
 					float borderInner = smoothstep(aa, -aa, dist + borderThickness);
 				    float borderOuter = shapeAlpha;
-					float borderMask = clamp(borderOuter - borderInner, 0.0, 1.0);
+					float borderMask = useShapeMask ? clamp(borderOuter - borderInner, 0.0, 1.0) : 0.0;
 
 					// Signed distance of the shadow comes from the same rounded box SDF,
 					// but translated and expanded to produce a soft halo behind the shape.
@@ -158,13 +164,13 @@ const auto fs = R"(
 					// Use bindless texture only when a non-null GPU handle is available.
 					// This keeps untextured rectangles on the fast path.
 					vec4 baseFill = fillColor;
-					if (any(notEqual(textureHandle, uvec2(0u)))) {
+					if (hasTexture) {
 						sampler2D rectTexture = sampler2D(textureHandle);
 						baseFill = mix(texture(rectTexture, texCoord), fillColor, fillColor.a);
 					}
 
 					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
-					float shapeCoverage = max(shapeAlpha, borderMask);
+					float shapeCoverage = useShapeMask ? max(shapeAlpha, borderMask) : 1.0;
 					float shapeAlphaCombined = clamp(shapeColor.a * shapeCoverage, 0.0, 1.0);
 
 					// Keep the shadow behind the visible shape and composite in straight alpha.
