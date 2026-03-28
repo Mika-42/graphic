@@ -3,9 +3,16 @@ module;
 #include "stb_image.h"
 
 #include "glad.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <glm/glm.hpp>
 #include <array>
+#include <cmath>
+#include <cstdint>
 #include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #ifdef DEBUG
 	#include <iostream>
@@ -195,9 +202,9 @@ namespace mka::graphic::gl {
 		glm::vec4 color {};
 		glm::vec4 shadowColor {};
 		glm::vec2 shadowOffset {};
-		glm::vec2 position {}; /*todo: sanitize*/
+		glm::vec2 position {};
 		float fontSize {};
-		float letterSpacing {}; /*todo: sanitize*/
+		float letterSpacing {};
 		float shadowSoftness {};
 		float shadowSpread {};
 	};
@@ -254,6 +261,10 @@ namespace mka::graphic::gl {
 		sanitizeColor(t.shadowColor);	
 		sanitizeShadow(t.shadowOffset, t.shadowSoftness, t.shadowSpread);
 		t.fontSize = sanitizeFloat(t.fontSize, 0.0f);
+		t.letterSpacing = sanitizeFloat(t.letterSpacing, 0.0f);
+
+		if (!std::isfinite(t.position.x)) t.position.x = 0.0f;
+		if (!std::isfinite(t.position.y)) t.position.y = 0.0f;
 	}
 
 	export template<size_t MAX_RECTANGLE_COUNT> class Renderer {
@@ -276,9 +287,25 @@ namespace mka::graphic::gl {
 						nullptr,
 						GL_DYNAMIC_DRAW
 				);
+
+				if (FT_Init_FreeType(&ftLibrary) != 0) {
+					DEBUG_LOG("FreeType init failed");
+					ftLibrary = nullptr;
+				}
 			}
 			
 			~Renderer() {
+				for (auto& [_, cache] : fontCaches) {
+					if (cache.face != nullptr) {
+						FT_Done_Face(cache.face);
+						cache.face = nullptr;
+					}
+				}
+				if (ftLibrary != nullptr) {
+					FT_Done_FreeType(ftLibrary);
+					ftLibrary = nullptr;
+				}
+
 				if (ssbo != 0) {
 					glDeleteBuffers(1, &ssbo);
 				}
@@ -293,6 +320,79 @@ namespace mka::graphic::gl {
 				}
 				rectangles[rectangleCount] = r;
 				return &rectangles[rectangleCount++];
+			}
+
+			// Build text using the same rectangle pipeline: one character = one rectangle instance.
+			// Returns the number of generated rectangles so the caller can detect truncation.
+			size_t add(const Text& text) {
+				Text sanitizedText = text;
+				sanitizeText(sanitizedText);
+
+				if (sanitizedText.content.empty()) {
+					DEBUG_LOG("Empty text content.");
+					return 0;
+				}
+
+				Rectangle glyphTemplate {};
+				glyphTemplate.geometry = {
+					sanitizedText.position.x,
+					sanitizedText.position.y,
+					sanitizedText.fontSize,
+					sanitizedText.fontSize
+				};
+				glyphTemplate.radius = glm::vec4(0.0f);
+				glyphTemplate.backgroundColor = glm::vec4(0.0f);
+				glyphTemplate.borderColor = glm::vec4(0.0f);
+				glyphTemplate.shadowColor = sanitizedText.shadowColor;
+				glyphTemplate.shadowOffset = sanitizedText.shadowOffset;
+				glyphTemplate.shadowSoftness = sanitizedText.shadowSoftness;
+				glyphTemplate.shadowSpread = sanitizedText.shadowSpread;
+				glyphTemplate.borderThickness = 0.0f;
+
+				size_t addedCount = 0;
+				float cursorX = sanitizedText.position.x;
+				const float baseY = sanitizedText.position.y;
+				const unsigned int pixelSize = static_cast<unsigned int>(sanitizedText.fontSize);
+
+				FontCache* fontCache = getOrCreateFontCache(sanitizedText.font);
+				if (fontCache == nullptr) {
+					return 0;
+				}
+
+				for (char c : sanitizedText.content) {
+					if (rectangleCount >= MAX_RECTANGLE_COUNT) {
+						break;
+					}
+
+					const CachedGlyph* glyph = getOrCreateGlyph(
+						*fontCache,
+						static_cast<unsigned char>(c),
+						pixelSize,
+						sanitizedText.color
+					);
+					if (glyph == nullptr) {
+						break;
+					}
+
+					Rectangle glyphRect = glyphTemplate;
+					glyphRect.geometry.x = cursorX + glyph->bearing.x;
+					// Convert baseline metrics to top-left rectangle placement.
+					glyphRect.geometry.y = baseY + (static_cast<float>(pixelSize) - glyph->bearing.y);
+					glyphRect.geometry.z = glyph->size.x;
+					glyphRect.geometry.w = glyph->size.y;
+					
+					glyphRect.texture = glyph->texture;
+
+					if (add(std::move(glyphRect)) == nullptr) {
+						break;
+					}
+
+					++addedCount;
+					// Advance comes from font metrics to preserve spacing/kerning quality.
+					cursorX += glyph->advance + sanitizedText.letterSpacing;
+				}
+
+				return addedCount;
 			}
 
 			void draw(const glm::mat4 projection) {
@@ -333,8 +433,119 @@ namespace mka::graphic::gl {
 			}
 
 		private:
+			struct CachedGlyph {
+				uint64_t texture {};
+				glm::vec2 size {};
+				glm::vec2 bearing {};
+				float advance {};
+			};
+
+			struct FontCache {
+				FT_Face face {};
+				std::unordered_map<uint64_t, CachedGlyph> glyphs;
+			};
+
+			[[nodiscard]] uint64_t createGlyphTextureRGBA(
+				const unsigned char* rgbaPixels,
+				int width,
+				int height
+			) const {
+				if (rgbaPixels == nullptr || width <= 0 || height <= 0) {
+					return 0;
+				}
+
+				GLuint tex = 0;
+				glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+				glTextureStorage2D(tex, 1, GL_RGBA8, width, height);
+				glTextureSubImage2D(tex, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
+				glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+				uint64_t handle = glGetTextureHandleARB(tex);
+				glMakeTextureHandleResidentARB(handle);
+				return handle;
+			}
+
+			FontCache* getOrCreateFontCache(const std::string& fontPath) {
+				if (ftLibrary == nullptr || fontPath.empty()) {
+					return nullptr;
+				}
+
+				if (const auto it = fontCaches.find(fontPath); it != fontCaches.end()) {
+					return &it->second;
+				}
+
+				FT_Face face = nullptr;
+				if (FT_New_Face(ftLibrary, fontPath.c_str(), 0, &face) != 0) {
+					DEBUG_LOG("Failed to load TTF font: " + fontPath);
+					return nullptr;
+				}
+
+				FontCache cache {};
+				cache.face = face;
+				return &fontCaches.emplace(fontPath, std::move(cache)).first->second;
+			}
+
+			const CachedGlyph* getOrCreateGlyph(
+				FontCache& fontCache,
+				unsigned int codepoint,
+				unsigned int pixelSize,
+				const glm::vec4& color
+			) {
+				const uint64_t glyphKey = (static_cast<uint64_t>(pixelSize) << 32u) | codepoint;
+				if (const auto it = fontCache.glyphs.find(glyphKey); it != fontCache.glyphs.end()) {
+					return &it->second;
+				}
+
+				if (FT_Set_Pixel_Sizes(fontCache.face, 0, pixelSize) != 0) {
+					return nullptr;
+				}
+				if (FT_Load_Char(fontCache.face, codepoint, FT_LOAD_RENDER) != 0) {
+					return nullptr;
+				}
+
+				const FT_GlyphSlot glyph = fontCache.face->glyph;
+				const FT_Bitmap& bitmap = glyph->bitmap;
+
+				std::vector<unsigned char> rgba(static_cast<size_t>(bitmap.width) * bitmap.rows * 4u, 0u);
+				const unsigned char r = static_cast<unsigned char>(color.r * 255.0f);
+				const unsigned char g = static_cast<unsigned char>(color.g * 255.0f);
+				const unsigned char b = static_cast<unsigned char>(color.b * 255.0f);
+				const unsigned char aScale = static_cast<unsigned char>(color.a * 255.0f);
+
+				for (int y = 0; y < static_cast<int>(bitmap.rows); ++y) {
+					for (int x = 0; x < static_cast<int>(bitmap.width); ++x) {
+						const size_t srcIndex = static_cast<size_t>(y) * bitmap.pitch + static_cast<size_t>(x);
+						const size_t dstIndex = (static_cast<size_t>(y) * bitmap.width + static_cast<size_t>(x)) * 4u;
+						rgba[dstIndex + 0u] = r;
+						rgba[dstIndex + 1u] = g;
+						rgba[dstIndex + 2u] = b;
+						// Alpha from glyph coverage keeps antialiasing from FreeType rasterization.
+						rgba[dstIndex + 3u] = static_cast<unsigned char>(
+							(static_cast<unsigned int>(bitmap.buffer[srcIndex]) * aScale) / 255u
+						);
+					}
+				}
+
+				CachedGlyph cached {};
+				cached.texture = createGlyphTextureRGBA(
+					rgba.empty() ? nullptr : rgba.data(),
+					static_cast<int>(bitmap.width),
+					static_cast<int>(bitmap.rows)
+				);
+				cached.size = glm::vec2(static_cast<float>(bitmap.width), static_cast<float>(bitmap.rows));
+				cached.bearing = glm::vec2(static_cast<float>(glyph->bitmap_left), static_cast<float>(glyph->bitmap_top));
+				cached.advance = static_cast<float>(glyph->advance.x >> 6);
+
+				return &fontCache.glyphs.emplace(glyphKey, std::move(cached)).first->second;
+			}
+
 			std::array<Rectangle, MAX_RECTANGLE_COUNT> rectangles;
 			size_t rectangleCount = 0;
+			FT_Library ftLibrary {};
+			std::unordered_map<std::string, FontCache> fontCaches;
 
 			glm::vec4 bgColor = glm::vec4{1.0f};
 			Shader shader;

@@ -8,10 +8,6 @@
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 
-float map(float x, float a, float b, float c, float d) {
-    return c + (x - a) * (d - c) / (b - a);
-}
-
 class MyApp : public mka::graphic::Window {
 	public:	
 
@@ -34,7 +30,14 @@ class MyApp : public mka::graphic::Window {
 			.borderThickness = 5.0f,
 			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
         });
-		
+
+		renderer.add({
+				.content = "Hello world !",
+				.font = "/home/mika/Downloads/Winter Draw.ttf",
+				.color = black,
+				.position = {50, 50},
+				.fontSize = 50,
+		});		
 		renderer.draw(projection);	
 	}
 
