@@ -8,10 +8,6 @@
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 
-float map(float x, float a, float b, float c, float d) {
-    return c + (x - a) * (d - c) / (b - a);
-}
-
 class MyApp : public mka::graphic::Window {
 	public:	
 
@@ -21,7 +17,7 @@ class MyApp : public mka::graphic::Window {
 		}
 
 	void render() {
-	
+		static double t = 0.0;	
 		const glm::mat4 projection = getOrthographicProjection();
 	
 		// x axis
@@ -31,11 +27,13 @@ class MyApp : public mka::graphic::Window {
 			.fillColor = green,
 			.borderColor = red,
 			.shadowColor = blue,
+			.shadowSoftness = glm::abs(glm::cos(float(t * 10.0))) * 100.0f, 
 			.borderThickness = 5.0f,
 			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
         });
 		
-		renderer.draw(projection);	
+		renderer.draw(projection);
+		t += 0.01;
 	}
 
 	private:
