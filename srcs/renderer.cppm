@@ -351,13 +351,22 @@ namespace mka::graphic::gl {
 
 				size_t addedCount = 0;
 				float cursorX = sanitizedText.position.x;
-				const float baseY = sanitizedText.position.y;
 				const unsigned int pixelSize = static_cast<unsigned int>(sanitizedText.fontSize);
 
 				FontCache* fontCache = getOrCreateFontCache(sanitizedText.font);
 				if (fontCache == nullptr) {
 					return 0;
 				}
+				if (FT_Set_Pixel_Sizes(fontCache->face, 0, pixelSize) != 0) {
+					return 0;
+				}
+
+				// `position` remains the top-left anchor of the text block.
+				// We derive a single bottom line from font metrics so every glyph ends on the same Y.
+				const float ascender = static_cast<float>(fontCache->face->size->metrics.ascender >> 6);
+				const float descender = static_cast<float>(fontCache->face->size->metrics.descender >> 6);
+				const float lineHeight = ascender - descender;
+				const float lineBottomY = sanitizedText.position.y + lineHeight;
 
 				for (char c : sanitizedText.content) {
 					if (rectangleCount >= MAX_RECTANGLE_COUNT) {
@@ -376,8 +385,9 @@ namespace mka::graphic::gl {
 
 					Rectangle glyphRect = glyphTemplate;
 					glyphRect.geometry.x = cursorX + glyph->bearing.x;
-					// Convert baseline metrics to top-left rectangle placement.
-					glyphRect.geometry.y = baseY + (static_cast<float>(pixelSize) - glyph->bearing.y);
+					// Keep top-left rectangle placement but align all glyph bottoms on the same line.
+					// This avoids per-glyph vertical drift with symbols/accented characters.
+					glyphRect.geometry.y = lineBottomY - glyph->size.y;
 					glyphRect.geometry.z = glyph->size.x;
 					glyphRect.geometry.w = glyph->size.y;
 					
