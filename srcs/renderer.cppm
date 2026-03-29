@@ -51,7 +51,9 @@ const auto vs = R"(
 				};
 
 				out vec2 localPoint;
-				out vec4 fillColor;
+				out vec4 backgroundColorA;
+				out vec4 backgroundColorB;
+				out float gradientAngle;
 				out vec4 radius;
 				out vec2 rectSize;
 				out vec4 borderColor;
@@ -81,7 +83,9 @@ const auto vs = R"(
 					Rect r = rects[gl_InstanceID];
 					textureHandle = r.texture;
 
-					fillColor = r.fillColor;
+					backgroundColorA = r.backgroundColorA;
+					backgroundColorB = r.backgroundColorB;
+					gradientAngle = r.gradientAngle;
 					radius = r.radius;
 					rectSize = r.geometry.zw;
 
@@ -117,7 +121,9 @@ const auto fs = R"(
 				#extension GL_ARB_bindless_texture : require
 
 				in vec2 localPoint;
-				in vec4 fillColor;
+				in vec4 backgroundColorA;
+				in vec4 backgroundColorB;
+				in float gradientAngle;
 				in vec4 radius;          // xy = top-left, zw = bottom-right
 				in vec2 rectSize;
 				in vec2 texCoord;
@@ -141,6 +147,14 @@ const auto fs = R"(
 
 				void main() {
 					vec2 p = localPoint;
+					float angleRad = radians(gradientAngle);
+					vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
+					// Project fragment position onto the gradient direction.
+					// The denominator is the max projection at rectangle edges so `t` stays stable
+					// regardless of the rectangle aspect ratio.
+					float gradientExtent = max(dot(abs(gradientDir), rectSize * 0.5), 0.0001);
+					float t = clamp((dot(p, gradientDir) / gradientExtent) * 0.5 + 0.5, 0.0, 1.0);
+					vec4 gradientFill = mix(backgroundColorA, backgroundColorB, t);
 					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
 					bool hasTexture = any(notEqual(textureHandle, uvec2(0u)));
 					bool hasRoundedCorners = any(greaterThan(radius, vec4(0.0)));
@@ -172,7 +186,7 @@ const auto fs = R"(
 
 					// Use bindless texture only when a non-null GPU handle is available.
 					// This keeps untextured rectangles on the fast path.
-					vec4 baseFill = fillColor;
+					vec4 baseFill = gradientFill;
 					if (hasTexture) {
 						sampler2D rectTexture = sampler2D(textureHandle);
 						vec4 sampled = texture(rectTexture, texCoord);
@@ -181,7 +195,7 @@ const auto fs = R"(
 						if (sampled.a > 0.0) {
 							sampled.rgb /= sampled.a;
 						}
-						baseFill = mix(sampled, fillColor, fillColor.a);
+						baseFill = mix(sampled, gradientFill, gradientFill.a);
 					}
 
 					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
@@ -212,7 +226,7 @@ namespace mka::graphic::gl {
 		glm::vec4 borderColor {};
 		glm::vec4 shadowColor {};
 		glm::vec2 shadowOffset {};
-		float gradientAngle {}
+		float gradientAngle {};
 		float shadowSoftness {};
 		float shadowSpread {};
 		float borderThickness {};
@@ -277,6 +291,9 @@ namespace mka::graphic::gl {
 		sanitizeShadow(r.shadowOffset, r.shadowSoftness, r.shadowSpread);
 		sanitizeBorderThickness(r.borderThickness);
 		r.gradientAngle = std::fmod(r.gradientAngle, 360.0f);
+		if (r.gradientAngle < 0.0f) {
+			r.gradientAngle += 360.0f;
+		}
 	}
 
 	void sanitizeText(Text &t) {

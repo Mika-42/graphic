@@ -24,10 +24,12 @@ class MyApp : public mka::graphic::Window {
 		renderer.add({
             .geometry = {70, 40, 400, 200},
             .radius = {40, 100, 20, 50},
-			.backgroundColor = green,
+			.backgroundColorA = green,
+			.backgroundColorB = blue,
 			.borderColor = red,
-			.shadowColor = blue,
-			.shadowSoftness = glm::abs(glm::cos(float(t * 10.0))) * 100.0f, 
+			.shadowColor = black,
+			.gradientAngle = glm::cos(float(t * 10.0)) * 360.0f,
+			.shadowSoftness = glm::abs(glm::cos(float(t * 10.0))) * 50.0f, 
 			.borderThickness = 5.0f,
 			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
         });
@@ -48,7 +50,7 @@ class MyApp : public mka::graphic::Window {
 		const glm::vec4 black	{0.0f, 0.0f, 0.0f, 1.0f};
 		const glm::vec4 red		{1.0f, 0.0f, 0.0f, 1.0f};
 		const glm::vec4 blue	{0.0f, 0.0f, 1.0f, 1.0f};
-		const glm::vec4 green	{0.0f, 1.0f, 0.0f, 0.5f};
+		const glm::vec4 green	{0.0f, 1.0f, 0.0f, 1.0f};
 };
 
 int main() {
