@@ -18,6 +18,16 @@ public:
             .backgroundColorB = {0.1f, 0.8f, 0.7f, 1.0f},
             .gradientAngle = 20.0f
         });
+
+		renderer.add({
+			.content = "Minimal",
+			.font = "/home/mika/Downloads/Winter Draw.ttf",
+			.color = {1.0, 0.0, 0.0, 1.0},
+			.position = { 100, 100 },
+			.fontSize = 40,
+			.letterSpacing = 3		
+		});
+
         renderer.draw(projection);
     }
 
