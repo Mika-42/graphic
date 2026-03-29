@@ -8,6 +8,7 @@
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 
+/// @brief Example application wiring the window abstraction with rectangle/text rendering.
 class MyApp : public mka::graphic::Window {
 	public:	
 
@@ -16,6 +17,7 @@ class MyApp : public mka::graphic::Window {
 			renderer.setBackgroundColor(glm::vec4{1.0f});
 		}
 
+	/// @brief Called once per frame by `Window::run`.
 	void render() {
 		static double t = 0.0;	
 		const glm::mat4 projection = getOrthographicProjection();

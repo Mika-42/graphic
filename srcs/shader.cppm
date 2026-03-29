@@ -8,12 +8,22 @@ export import mka.graphic.opengl.uniform;
 
 export namespace mka::graphic::gl {
 
+	/// @brief Shader stage identifiers mapped to OpenGL enums.
 	enum class ShaderType : GLenum {
 		Vertex = GL_VERTEX_SHADER,
 		Fragment = GL_FRAGMENT_SHADER,
 		Geometry = GL_GEOMETRY_SHADER
 	};
 
+	/**
+	 * @brief Minimal OpenGL shader program helper.
+	 *
+	 * Responsibilities:
+	 * - create/delete a program object
+	 * - compile and attach shader scripts
+	 * - link and bind program
+	 * - dispatch typed uniform writes
+	 */
     class Shader {
     public:
 
@@ -32,15 +42,18 @@ export namespace mka::graphic::gl {
         Shader(Shader&&) = delete;
         Shader& operator=(Shader&&) = delete;
         
+		/// @brief Bind this program for subsequent draw calls.
 		void use() const {
 			glUseProgram(program);
 		}
 
+		/// @brief Set a uniform by name using typed specializations from `uniform` module.
         void set(const std::string &uniform_variable, const auto value) const {
             const GLint location = glGetUniformLocation(program, uniform_variable.c_str());
             mka::graphic::gl::glUniform(program, location, value);
         }
 
+		/// @brief Compile and attach one shader stage, returning compile log if any.
         std::string addScript(const std::string &shaderCode, ShaderType type) const {
 			const GLuint shaderID = glCreateShader(static_cast<GLenum>(type));
 			const char* source = shaderCode.c_str();
@@ -71,6 +84,7 @@ export namespace mka::graphic::gl {
 			return log;
 		}
 		
+		/// @brief Link attached shader stages and return linker log on failure.
 		std::string link() const {
             glLinkProgram(program);
 

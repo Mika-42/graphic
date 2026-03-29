@@ -218,6 +218,11 @@ namespace mka::graphic::gl {
 	
 	constexpr uint32_t TEXT = 1u << 0;
 
+	/**
+	 * @brief GPU instance payload for rectangle/text rendering.
+	 *
+	 * Memory layout is mirrored in GLSL `Rect` struct inside the SSBO.
+	 */
 	export struct alignas(16) Rectangle {
 		glm::vec4 geometry {}; //x, y, w, h
 		glm::vec4 radius {};
@@ -235,6 +240,7 @@ namespace mka::graphic::gl {
 		uint32_t _pad {};
 	};
 
+	/// @brief High-level text draw command converted into rectangle instances.
 	export struct Text {
 		std::string content {};
 		std::string font {};
@@ -244,6 +250,7 @@ namespace mka::graphic::gl {
 		float letterSpacing {};
 	};
 
+	/// @brief Load an RGBA texture and return its bindless texture handle.
 	export uint64_t loadTexture(const char* path) {
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
@@ -281,6 +288,7 @@ namespace mka::graphic::gl {
 		return handle;
 	}
 
+	/// @brief Clamp/normalize rectangle attributes before uploading to the GPU.
 	void sanitizeRectangle(Rectangle &r) {
 		sanitizeGeometry(r.geometry);
 		sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
@@ -296,6 +304,7 @@ namespace mka::graphic::gl {
 		}
 	}
 
+	/// @brief Sanitize text command values prior to glyph generation.
 	void sanitizeText(Text &t) {
 		sanitizeColor(t.color);	
 		t.fontSize = sanitizeFloat(t.fontSize, 0.0f);
@@ -305,6 +314,11 @@ namespace mka::graphic::gl {
 		if (!std::isfinite(t.position.y)) t.position.y = 0.0f;
 	}
 
+	/**
+	 * @brief Instanced rectangle renderer with optional text support.
+	 *
+	 * `MAX_RECTANGLE_COUNT` defines fixed CPU-side buffering capacity.
+	 */
 	export template<size_t MAX_RECTANGLE_COUNT> class Renderer {
 		
 		public:
@@ -360,8 +374,10 @@ namespace mka::graphic::gl {
 				return &rectangles[rectangleCount++];
 			}
 
-			// Build text using the same rectangle pipeline: one character = one rectangle instance.
-			// Returns the number of generated rectangles so the caller can detect truncation.
+			/**
+			 * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
+			 * @return Number of generated rectangle instances.
+			 */
 			size_t add(const Text& text) {
 				Text sanitizedText = text;
 				sanitizeText(sanitizedText);
@@ -436,6 +452,7 @@ namespace mka::graphic::gl {
 				return addedCount;
 			}
 
+			/// @brief Flush batched rectangles to GPU and issue one instanced draw.
 			void draw(const glm::mat4 projection) {
 			
 				glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
@@ -468,6 +485,7 @@ namespace mka::graphic::gl {
 				rectangleCount = 0;
 			}
 
+			/// @brief Set clear color used by `draw`.
 			void setBackgroundColor(const glm::vec4& color) {
 				bgColor = color;	
 				sanitizeColor(bgColor);
@@ -509,6 +527,7 @@ namespace mka::graphic::gl {
 				return handle;
 			}
 
+			/// @brief Get cached font face or load it on first use.
 			FontCache* getOrCreateFontCache(const std::string& fontPath) {
 				if (ftLibrary == nullptr || fontPath.empty()) {
 					return nullptr;
@@ -529,6 +548,7 @@ namespace mka::graphic::gl {
 				return &fontCaches.emplace(fontPath, std::move(cache)).first->second;
 			}
 
+			/// @brief Get cached glyph texture/metrics or rasterize and cache them.
 			const CachedGlyph* getOrCreateGlyph(
 				FontCache& fontCache,
 				unsigned int codepoint,

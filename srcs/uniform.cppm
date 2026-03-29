@@ -10,6 +10,7 @@ export module mka.graphic.opengl.uniform;
 
 namespace mka::graphic::gl {
 
+    /// @brief Primary trait specialized for each supported uniform type.
     // =========================
     // Base trait
     // =========================
@@ -173,6 +174,12 @@ namespace mka::graphic::gl {
     // =========================
     // Generic entry point
     // =========================
+    /**
+     * @brief Generic entry point used by `Shader::set`.
+     *
+     * Compilation fails if no `Uniform<T>` specialization exists, making
+     * unsupported uniform types explicit at compile-time.
+     */
     export template<typename T>
     void glUniform(GLuint program, GLint location, const T& value) {
         Uniform<T>::set(program, location, value);

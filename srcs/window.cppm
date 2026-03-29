@@ -9,18 +9,27 @@ module;
 export module mka.graphic.window;
 export import mka.graphic.context;
 
-
+/// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
 export namespace mka::graphic {
 	
-
+	/// @brief High-level runtime state of a window instance.
 	enum class State {
 		Inited, Running, Stopped, Terminated
 	};
 
+	/**
+	 * @brief Base window abstraction hosting the render loop.
+	 *
+	 * Derived classes only implement `render()` while this class manages:
+	 * - GLFW init/teardown
+	 * - API-specific window hints
+	 * - Context setup and buffer presentation
+	 * - Projection updates on resize
+	 */
 	class Window {
 	
 		public:
@@ -81,10 +90,12 @@ export namespace mka::graphic {
 			
 			virtual void render() = 0;
 
+			/// @brief Projection updated whenever the window size changes.
 			const glm::mat4& getOrthographicProjection() const {
 				return orthographicProjection;
 			}
 
+			/// @brief Run the blocking frame loop until close.
 			int run() {
 				if(state != State::Inited) return -1;
 
@@ -116,6 +127,7 @@ export namespace mka::graphic {
 				return state;
 			}
 
+			/// @brief Return current window dimensions in pixels.
 			const glm::vec2 getSize() {
 				return glm::vec2(width, height);
 			}
