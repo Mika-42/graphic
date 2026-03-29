@@ -9,6 +9,7 @@ module;
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -195,7 +196,8 @@ const auto fs = R"(
 						if (sampled.a > 0.0) {
 							sampled.rgb /= sampled.a;
 						}
-						baseFill = mix(sampled, gradientFill, gradientFill.a);
+						// Preserve glyph coverage from the texture alpha and only blend color channels.
+						baseFill = vec4(mix(sampled.rgb, gradientFill.rgb, gradientFill.a), sampled.a);
 					}
 
 					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
@@ -245,6 +247,9 @@ namespace mka::graphic::gl {
 		std::string content {};
 		std::string font {};
 		glm::vec4 color {};
+		glm::vec4 gradientColorA {};
+		glm::vec4 gradientColorB {};
+		float gradientAngle {};
 		glm::vec2 position {};
 		float fontSize {};
 		float letterSpacing {};
@@ -307,6 +312,12 @@ namespace mka::graphic::gl {
 	/// @brief Sanitize text command values prior to glyph generation.
 	void sanitizeText(Text &t) {
 		sanitizeColor(t.color);	
+		sanitizeColor(t.gradientColorA);
+		sanitizeColor(t.gradientColorB);
+		t.gradientAngle = std::fmod(t.gradientAngle, 360.0f);
+		if (t.gradientAngle < 0.0f) {
+			t.gradientAngle += 360.0f;
+		}
 		t.fontSize = sanitizeFloat(t.fontSize, 0.0f);
 		t.letterSpacing = sanitizeFloat(t.letterSpacing, 0.0f);
 
@@ -381,6 +392,11 @@ namespace mka::graphic::gl {
 			size_t add(const Text& text) {
 				Text sanitizedText = text;
 				sanitizeText(sanitizedText);
+				const bool useExplicitGradient = glm::length(
+					sanitizedText.gradientColorA - sanitizedText.gradientColorB
+				) > 0.0001f;
+				const glm::vec4 textGradientA = useExplicitGradient ? sanitizedText.gradientColorA : sanitizedText.color;
+				const glm::vec4 textGradientB = useExplicitGradient ? sanitizedText.gradientColorB : sanitizedText.color;
 
 				if (sanitizedText.content.empty()) {
 					DEBUG_LOG("Empty text content.");
@@ -394,11 +410,16 @@ namespace mka::graphic::gl {
 					sanitizedText.fontSize,
 					sanitizedText.fontSize
 				};
+				glyphTemplate.backgroundColorA = textGradientA;
+				glyphTemplate.backgroundColorB = textGradientB;
+				glyphTemplate.gradientAngle = sanitizedText.gradientAngle;
 				glyphTemplate.flags |= TEXT;
 
 				size_t addedCount = 0;
 				float cursorX = sanitizedText.position.x;
 				const unsigned int pixelSize = static_cast<unsigned int>(sanitizedText.fontSize);
+				std::vector<Rectangle> glyphRects;
+				glyphRects.reserve(sanitizedText.content.size());
 
 				FontCache* fontCache = getOrCreateFontCache(sanitizedText.font);
 				if (fontCache == nullptr) {
@@ -423,8 +444,7 @@ namespace mka::graphic::gl {
 					const CachedGlyph* glyph = getOrCreateGlyph(
 						*fontCache,
 						static_cast<unsigned char>(c),
-						pixelSize,
-						sanitizedText.color
+						pixelSize
 					);
 					if (glyph == nullptr) {
 						break;
@@ -440,13 +460,68 @@ namespace mka::graphic::gl {
 					
 					glyphRect.texture = glyph->texture;
 					glyphRect.flags |= TEXT;
+					glyphRects.push_back(std::move(glyphRect));
+					// Advance comes from font metrics to preserve spacing/kerning quality.
+					cursorX += glyph->advance + sanitizedText.letterSpacing;
+				}
+
+				if (glyphRects.empty()) {
+					return 0;
+				}
+
+				const float gradientAngleRad = glm::radians(sanitizedText.gradientAngle);
+				const glm::vec2 gradientDir = { std::cos(gradientAngleRad), std::sin(gradientAngleRad) };
+
+				float globalMinProjection = std::numeric_limits<float>::max();
+				float globalMaxProjection = std::numeric_limits<float>::lowest();
+
+				for (const Rectangle& glyphRect : glyphRects) {
+					const glm::vec2 center = {
+						glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
+						glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)
+					};
+					const glm::vec2 halfSize = {
+						glyphRect.geometry.z * 0.5f,
+						glyphRect.geometry.w * 0.5f
+					};
+					// Keep CPU-side gradient projection identical to the fragment shader:
+					// projection range must account for both axis contributions when angle is diagonal.
+					const float projectionExtent = std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
+					const float centerProjection = glm::dot(center, gradientDir);
+					globalMinProjection = std::min(globalMinProjection, centerProjection - projectionExtent);
+					globalMaxProjection = std::max(globalMaxProjection, centerProjection + projectionExtent);
+				}
+
+				const float projectionRange = std::max(globalMaxProjection - globalMinProjection, 0.0001f);
+				for (Rectangle& glyphRect : glyphRects) {
+					const glm::vec2 center = {
+						glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
+						glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)
+					};
+					const glm::vec2 halfSize = {
+						glyphRect.geometry.z * 0.5f,
+						glyphRect.geometry.w * 0.5f
+					};
+					const float projectionExtent = std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
+					const float centerProjection = glm::dot(center, gradientDir);
+					const float localMinProjection = centerProjection - projectionExtent;
+					const float localMaxProjection = centerProjection + projectionExtent;
+					const float tA = glm::clamp(
+						(localMinProjection - globalMinProjection) / projectionRange,
+						0.0f,
+						1.0f
+					);
+					const float tB = glm::clamp(
+						(localMaxProjection - globalMinProjection) / projectionRange,
+						0.0f,
+						1.0f
+					);
+					glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
+					glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
 					if (add(std::move(glyphRect)) == nullptr) {
 						break;
 					}
-
 					++addedCount;
-					// Advance comes from font metrics to preserve spacing/kerning quality.
-					cursorX += glyph->advance + sanitizedText.letterSpacing;
 				}
 
 				return addedCount;
@@ -552,8 +627,7 @@ namespace mka::graphic::gl {
 			const CachedGlyph* getOrCreateGlyph(
 				FontCache& fontCache,
 				unsigned int codepoint,
-				unsigned int pixelSize,
-				const glm::vec4& color
+				unsigned int pixelSize
 			) {
 				const uint64_t glyphKey = (static_cast<uint64_t>(pixelSize) << 32u) | codepoint;
 				if (const auto it = fontCache.glyphs.find(glyphKey); it != fontCache.glyphs.end()) {
@@ -571,24 +645,18 @@ namespace mka::graphic::gl {
 				const FT_Bitmap& bitmap = glyph->bitmap;
 
 				std::vector<unsigned char> rgba(static_cast<size_t>(bitmap.width) * bitmap.rows * 4u, 0u);
-				const unsigned char r = static_cast<unsigned char>(color.r * 255.0f);
-				const unsigned char g = static_cast<unsigned char>(color.g * 255.0f);
-				const unsigned char b = static_cast<unsigned char>(color.b * 255.0f);
-				const unsigned char aScale = static_cast<unsigned char>(color.a * 255.0f);
-
 				for (int y = 0; y < static_cast<int>(bitmap.rows); ++y) {
 					for (int x = 0; x < static_cast<int>(bitmap.width); ++x) {
 						const size_t srcIndex = static_cast<size_t>(y) * bitmap.pitch + static_cast<size_t>(x);
 						const size_t dstIndex = (static_cast<size_t>(y) * bitmap.width + static_cast<size_t>(x)) * 4u;
 						const unsigned int coverage = static_cast<unsigned int>(bitmap.buffer[srcIndex]);
-						const unsigned int alpha = (coverage * aScale) / 255u;
-						// Store glyphs in premultiplied alpha so bilinear filtering does not
-						// blend colored text edges with transparent black texels.
-						rgba[dstIndex + 0u] = static_cast<unsigned char>((static_cast<unsigned int>(r) * alpha) / 255u);
-						rgba[dstIndex + 1u] = static_cast<unsigned char>((static_cast<unsigned int>(g) * alpha) / 255u);
-						rgba[dstIndex + 2u] = static_cast<unsigned char>((static_cast<unsigned int>(b) * alpha) / 255u);
+						// Keep white premultiplied RGB so the fragment shader can tint
+						// glyph coverage with per-glyph gradient colors without re-rasterizing.
+						rgba[dstIndex + 0u] = static_cast<unsigned char>(coverage);
+						rgba[dstIndex + 1u] = static_cast<unsigned char>(coverage);
+						rgba[dstIndex + 2u] = static_cast<unsigned char>(coverage);
 						// Alpha from glyph coverage keeps antialiasing from FreeType rasterization.
-						rgba[dstIndex + 3u] = static_cast<unsigned char>(alpha);
+						rgba[dstIndex + 3u] = static_cast<unsigned char>(coverage);
 					}
 				}
 

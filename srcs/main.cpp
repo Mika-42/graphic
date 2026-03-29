@@ -23,6 +23,9 @@ public:
 			.content = "Minimal",
 			.font = "/home/mika/Downloads/Winter Draw.ttf",
 			.color = {1.0, 0.0, 0.0, 1.0},
+			.gradientColorA = {1.0, 0.0, 0.0, 1.0},
+			.gradientColorB = {0.0, 0.0, 1.0, 1.0},
+			.gradientAngle = 0.0f,
 			.position = { 100, 100 },
 			.fontSize = 40,
 			.letterSpacing = 3		
