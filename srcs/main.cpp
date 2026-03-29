@@ -1,69 +1,35 @@
-
-#include "glad.h"
-#include <print>
 #include <memory>
 #include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 
-/// @brief Example application wiring the window abstraction with rectangle/text rendering.
-class MyApp : public mka::graphic::Window {
-	public:	
+class MinimalApp : public mka::graphic::Window {
+public:
+    MinimalApp(std::unique_ptr<mka::graphic::Context> ctx)
+        : Window(800, 600, "Minimal", std::move(ctx)) {}
 
-		MyApp(std::unique_ptr<mka::graphic::Context> ctx) :
-			mka::graphic::Window(800, 200, "Hello Window", std::move(ctx)) {
-			renderer.setBackgroundColor(glm::vec4{1.0f});
-		}
-
-	/// @brief Called once per frame by `Window::run`.
-	void render() {
-		static double t = 0.0;	
-		const glm::mat4 projection = getOrthographicProjection();
-	
-		// x axis
-		renderer.add({
-            .geometry = {70, 40, 400, 200},
-            .radius = {40, 100, 20, 50},
-			.backgroundColorA = green,
-			.backgroundColorB = blue,
-			.borderColor = red,
-			.shadowColor = black,
-			.gradientAngle = glm::cos(float(t * 10.0)) * 360.0f,
-			.shadowSoftness = glm::abs(glm::cos(float(t * 10.0))) * 50.0f, 
-			.borderThickness = 5.0f,
-			.texture = mka::graphic::gl::loadTexture("/home/mika/Downloads/welcome-totoro.jpg")
+    void render() override {
+        const glm::mat4 projection = getOrthographicProjection();
+        renderer.setBackgroundColor({1, 1, 1, 1});
+        renderer.add({
+            .geometry = {80, 80, 240, 120},
+            .backgroundColorA = {0.2f, 0.4f, 0.8f, 1.0f},
+            .backgroundColorB = {0.1f, 0.8f, 0.7f, 1.0f},
+            .gradientAngle = 20.0f
         });
+        renderer.draw(projection);
+    }
 
-		renderer.add({
-				.content = "Hello World!",
-				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.color = black,
-				.position = {10, 250},
-				.fontSize = 100,
-		});
-		renderer.draw(projection);	
-		t += 0.01;
-	}
-
-	private:
-		mka::graphic::gl::Renderer<4096> renderer;
-		const glm::vec4 black	{0.0f, 0.0f, 0.0f, 1.0f};
-		const glm::vec4 red		{1.0f, 0.0f, 0.0f, 1.0f};
-		const glm::vec4 blue	{0.0f, 0.0f, 1.0f, 1.0f};
-		const glm::vec4 green	{0.0f, 1.0f, 0.0f, 1.0f};
+private:
+    mka::graphic::gl::Renderer<1024> renderer;
 };
 
 int main() {
-
-	auto ctx = mka::graphic::createContext(
-			mka::graphic::API::OpenGL, 
-			mka::graphic::Loader::Glad
-	);
-	MyApp w(std::move(ctx));
-			
-	w.run();
-
-	return 0;
+    auto ctx = mka::graphic::createContext(
+        mka::graphic::API::OpenGL,
+        mka::graphic::Loader::Glad
+    );
+    MinimalApp app(std::move(ctx));
+    return app.run();
 }
