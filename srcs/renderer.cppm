@@ -171,7 +171,13 @@ const auto fs = R"(
 					vec4 baseFill = fillColor;
 					if (hasTexture) {
 						sampler2D rectTexture = sampler2D(textureHandle);
-						baseFill = mix(texture(rectTexture, texCoord), fillColor, fillColor.a);
+						vec4 sampled = texture(rectTexture, texCoord);
+						// Glyph textures are uploaded in premultiplied alpha to avoid edge fringes
+						// during linear filtering; convert back to straight alpha for this shader path.
+						if (sampled.a > 0.0) {
+							sampled.rgb /= sampled.a;
+						}
+						baseFill = mix(sampled, fillColor, fillColor.a);
 					}
 
 					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
@@ -211,13 +217,9 @@ namespace mka::graphic::gl {
 		std::string content {};
 		std::string font {};
 		glm::vec4 color {};
-		glm::vec4 shadowColor {};
-		glm::vec2 shadowOffset {};
 		glm::vec2 position {};
 		float fontSize {};
 		float letterSpacing {};
-		float shadowSoftness {};
-		float shadowSpread {};
 	};
 
 	export uint64_t loadTexture(const char* path) {
@@ -269,8 +271,6 @@ namespace mka::graphic::gl {
 
 	void sanitizeText(Text &t) {
 		sanitizeColor(t.color);	
-		sanitizeColor(t.shadowColor);	
-		sanitizeShadow(t.shadowOffset, t.shadowSoftness, t.shadowSpread);
 		t.fontSize = sanitizeFloat(t.fontSize, 0.0f);
 		t.letterSpacing = sanitizeFloat(t.letterSpacing, 0.0f);
 
@@ -351,14 +351,6 @@ namespace mka::graphic::gl {
 					sanitizedText.fontSize,
 					sanitizedText.fontSize
 				};
-				glyphTemplate.radius = glm::vec4(0.0f);
-				glyphTemplate.backgroundColor = glm::vec4(0.0f);
-				glyphTemplate.borderColor = glm::vec4(0.0f);
-				glyphTemplate.shadowColor = sanitizedText.shadowColor;
-				glyphTemplate.shadowOffset = sanitizedText.shadowOffset;
-				glyphTemplate.shadowSoftness = sanitizedText.shadowSoftness;
-				glyphTemplate.shadowSpread = sanitizedText.shadowSpread;
-				glyphTemplate.borderThickness = 0.0f;
 
 				size_t addedCount = 0;
 				float cursorX = sanitizedText.position.x;
@@ -540,13 +532,15 @@ namespace mka::graphic::gl {
 					for (int x = 0; x < static_cast<int>(bitmap.width); ++x) {
 						const size_t srcIndex = static_cast<size_t>(y) * bitmap.pitch + static_cast<size_t>(x);
 						const size_t dstIndex = (static_cast<size_t>(y) * bitmap.width + static_cast<size_t>(x)) * 4u;
-						rgba[dstIndex + 0u] = r;
-						rgba[dstIndex + 1u] = g;
-						rgba[dstIndex + 2u] = b;
+						const unsigned int coverage = static_cast<unsigned int>(bitmap.buffer[srcIndex]);
+						const unsigned int alpha = (coverage * aScale) / 255u;
+						// Store glyphs in premultiplied alpha so bilinear filtering does not
+						// blend colored text edges with transparent black texels.
+						rgba[dstIndex + 0u] = static_cast<unsigned char>((static_cast<unsigned int>(r) * alpha) / 255u);
+						rgba[dstIndex + 1u] = static_cast<unsigned char>((static_cast<unsigned int>(g) * alpha) / 255u);
+						rgba[dstIndex + 2u] = static_cast<unsigned char>((static_cast<unsigned int>(b) * alpha) / 255u);
 						// Alpha from glyph coverage keeps antialiasing from FreeType rasterization.
-						rgba[dstIndex + 3u] = static_cast<unsigned char>(
-							(static_cast<unsigned int>(bitmap.buffer[srcIndex]) * aScale) / 255u
-						);
+						rgba[dstIndex + 3u] = static_cast<unsigned char>(alpha);
 					}
 				}
 
