@@ -242,6 +242,25 @@ namespace mka::graphic::gl {
 		uint32_t _pad {};
 	};
 
+	export float distance(const Rectangle& rect, glm::vec2 point) {
+		glm::vec2 pos(rect.geometry.x, rect.geometry.y);
+		glm::vec2 size(rect.geometry.z, rect.geometry.w);
+
+		glm::vec2 center = pos + size * 0.5f;
+		glm::vec2 p = point - center;
+		glm::vec2 b = size * 0.5f;
+
+		glm::vec4 r = rect.radius;
+
+		r.x = (p.x > 0.0f) ? r.x : r.z;
+		r.y = (p.x > 0.0f) ? r.y : r.w;
+		r.x = (p.y > 0.0f) ? r.x : r.y;
+
+		glm::vec2 q = glm::abs(p) - b + r.x;
+
+		return std::min(std::max(q.x, q.y), 0.0f) + glm::length(glm::max(q, glm::vec2(0.0f))) - r.x;
+	}
+
 	/// @brief High-level text draw command converted into rectangle instances.
 	export struct Text {
 		std::string content {};

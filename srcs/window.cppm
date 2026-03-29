@@ -79,7 +79,13 @@ export namespace mka::graphic {
 						self->width = w;
 						self->height = h;
 				});
-				
+				glfwSetCursorPosCallback(window,
+					[](GLFWwindow* win, double x, double y) {	
+						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
+						self->mousePos.x = x;
+						self->mousePos.y = y;
+				});
+
 				if(!this->ctx || !this->ctx->init(window)) {
 					state = State::Terminated;
 					return;
@@ -132,6 +138,10 @@ export namespace mka::graphic {
 				return glm::vec2(width, height);
 			}
 
+			const glm::vec2& getMousePos() {
+				return mousePos;
+			}
+
 		private:
 
 		size_t width = 0;
@@ -141,5 +151,6 @@ export namespace mka::graphic {
 		State state = State::Terminated;
 		GLFWwindow* window = nullptr;
 		glm::mat4 orthographicProjection;
+		glm::vec2 mousePos;
 	};
 }
