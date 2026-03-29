@@ -40,8 +40,8 @@ const auto vs = R"(
 					float shadowSpread;
 					float borderThickness;
 					uvec2 texture;
-					float _padding0;
-					float _padding1;
+					uint flags;
+					uint _pad;
 				};
 
 				layout(std430, binding = 0) buffer Rects {
@@ -91,13 +91,15 @@ const auto vs = R"(
 
 					vec2 pos = expandedPos + aPos * expandedSize;
 					localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
-
-					// Build UVs from the *original* rectangle space so shadow padding
-					// never changes the apparent texture scale when softness varies.
-					vec2 rectSpacePoint = localPoint + (0.5 * r.geometry.zw);
-					vec2 safeRectSize = max(r.geometry.zw, vec2(0.0001));
-					texCoord = rectSpacePoint / safeRectSize;
-
+					if((r.flags & (1u << 0)) != 0u) {
+						texCoord = aPos;
+					} else {
+						// Build UVs from the *original* rectangle space so shadow padding
+						// never changes the apparent texture scale when softness varies.
+						vec2 rectSpacePoint = localPoint + (0.5 * r.geometry.zw);
+						vec2 safeRectSize = max(r.geometry.zw, vec2(0.0001));
+						texCoord = rectSpacePoint / safeRectSize;
+					}	
 					gl_Position = uProjection * vec4(pos, 0.0, 1.0);
 					borderColor = r.borderColor;
 					borderThickness = r.borderThickness;
@@ -198,6 +200,8 @@ const auto fs = R"(
 //OpenGL
 namespace mka::graphic::gl {
 	
+	constexpr uint32_t TEXT = 1u << 0;
+
 	export struct alignas(16) Rectangle {
 		glm::vec4 geometry {}; //x, y, w, h
 		glm::vec4 radius {};
@@ -209,8 +213,8 @@ namespace mka::graphic::gl {
 		float shadowSpread {};
 		float borderThickness {};
 		uint64_t texture {};
-		float _padding0 {};
-		float _padding1 {};
+		uint32_t flags {};
+		uint32_t _pad {};
 	};
 
 	export struct Text {
@@ -351,6 +355,7 @@ namespace mka::graphic::gl {
 					sanitizedText.fontSize,
 					sanitizedText.fontSize
 				};
+				glyphTemplate.flags |= TEXT;
 
 				size_t addedCount = 0;
 				float cursorX = sanitizedText.position.x;
@@ -395,7 +400,7 @@ namespace mka::graphic::gl {
 					glyphRect.geometry.w = glyph->size.y;
 					
 					glyphRect.texture = glyph->texture;
-
+					glyphRect.flags |= TEXT;
 					if (add(std::move(glyphRect)) == nullptr) {
 						break;
 					}

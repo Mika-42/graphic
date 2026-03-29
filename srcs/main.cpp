@@ -33,33 +33,11 @@ class MyApp : public mka::graphic::Window {
         });
 
 		renderer.add({
-				.content = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.color = black,
-//				.shadowColor = red,
-//				.shadowOffset = {0, 0},
-				.position = {10, 50},
-				.fontSize = 50,
-				.letterSpacing = 0,
-//				.shadowSoftness = 0,
-//				.shadowSpread = 10
-		});
-
-
-		renderer.add({
-				.content = "abcdefghijklmnopqrstuvwxyz",
-				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.color = black,
-				.position = {10, 150},
-				.fontSize = 50,
-		});
-
-		renderer.add({
-				.content = "0123456789.,;:@#'!\"/?<>%&*()$ ",
+				.content = "Hello World!",
 				.font = "/home/mika/Downloads/Winter Draw.ttf",
 				.color = black,
 				.position = {10, 250},
-				.fontSize = 50,
+				.fontSize = 100,
 		});
 		renderer.draw(projection);	
 		t += 0.01;
