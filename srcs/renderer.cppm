@@ -32,10 +32,12 @@ const auto vs = R"(
 				struct Rect {
 					vec4 geometry; // xy = pos, zw = size
 					vec4 radius;
-					vec4 fillColor;
+					vec4 backgroundColorA;
+					vec4 backgroundColorB;
 					vec4 borderColor;
 					vec4 shadowColor;
 					vec2 shadowOffset;
+					float gradientAngle;
 					float shadowSoftness;
 					float shadowSpread;
 					float borderThickness;
@@ -205,10 +207,12 @@ namespace mka::graphic::gl {
 	export struct alignas(16) Rectangle {
 		glm::vec4 geometry {}; //x, y, w, h
 		glm::vec4 radius {};
-		glm::vec4 backgroundColor {};
+		glm::vec4 backgroundColorA {};
+		glm::vec4 backgroundColorB {};
 		glm::vec4 borderColor {};
 		glm::vec4 shadowColor {};
 		glm::vec2 shadowOffset {};
+		float gradientAngle {}
 		float shadowSoftness {};
 		float shadowSpread {};
 		float borderThickness {};
@@ -266,11 +270,13 @@ namespace mka::graphic::gl {
 	void sanitizeRectangle(Rectangle &r) {
 		sanitizeGeometry(r.geometry);
 		sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
-		sanitizeColor(r.backgroundColor);
+		sanitizeColor(r.backgroundColorA);
+		sanitizeColor(r.backgroundColorB);
 		sanitizeColor(r.borderColor);
 		sanitizeColor(r.shadowColor);
 		sanitizeShadow(r.shadowOffset, r.shadowSoftness, r.shadowSpread);
 		sanitizeBorderThickness(r.borderThickness);
+		r.gradientAngle = std::fmod(r.gradientAngle, 360.0f);
 	}
 
 	void sanitizeText(Text &t) {
