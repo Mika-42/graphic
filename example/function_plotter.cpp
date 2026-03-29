@@ -28,13 +28,15 @@ class MyApp : public mka::graphic::Window {
 		// x axis
 		renderer.add({
             .geometry = {0, getSize().y / 2, getSize().x, 2},
-            .fillColor = black,
+            .backgroundColorA = black,
+            .backgroundColorB = black,
         });
 		
 		// y axis
 		renderer.add({
 			.geometry = {getSize().x / 2, 0, 2, getSize().y},
-			.fillColor = black,
+            .backgroundColorA = black,
+            .backgroundColorB = black,
 		});
 
 		auto drawFn = [&](float x, float y, glm::vec4 color) {	
@@ -44,7 +46,8 @@ class MyApp : public mka::graphic::Window {
 					map(0.5 * y, -1.0, 1.0, 0.0f, getSize().y),
 					5, 5},
 				.radius = glm::vec4(2.5f),
-				.fillColor = color,
+				.backgroundColorA = color,
+				.backgroundColorB = color,
 			});
 		};
 
