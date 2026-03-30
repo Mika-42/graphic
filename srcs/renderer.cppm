@@ -276,17 +276,32 @@ namespace mka::graphic::gl {
 
 	/// @brief Load an RGBA texture and return its bindless texture handle.
 	export uint64_t loadTexture(const char* path) {
+		if (path == nullptr) {
+			DEBUG_LOG("loadTexture called with null path pointer.");
+			return 0;
+		}
+
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
 
 		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
 		if (!data) {
-			DEBUG_LOG("Failed to load texture.");
+			DEBUG_LOG("Failed to load texture: " + std::string(path));
+			return 0;
+		}
+		if (width <= 0 || height <= 0) {
+			DEBUG_LOG("Invalid texture dimensions for: " + std::string(path));
+			stbi_image_free(data);
 			return 0;
 		}
 
 		GLuint tex = 0;
 		glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+		if (tex == 0) {
+			DEBUG_LOG("glCreateTextures returned 0 for: " + std::string(path));
+			stbi_image_free(data);
+			return 0;
+		}
 
 		glTextureStorage2D(tex, 1, GL_RGBA8, width, height);
 
@@ -308,8 +323,14 @@ namespace mka::graphic::gl {
 		stbi_image_free(data);
 
 		uint64_t handle = glGetTextureHandleARB(tex);
+		if (handle == 0) {
+			DEBUG_LOG("glGetTextureHandleARB returned null handle for: " + std::string(path));
+			glDeleteTextures(1, &tex);
+			return 0;
+		}
 		glMakeTextureHandleResidentARB(handle);
 
+		DEBUG_LOG("Texture loaded: " + std::string(path) + " (" + std::to_string(width) + "x" + std::to_string(height) + ")");
 		return handle;
 	}
 
@@ -355,15 +376,22 @@ namespace mka::graphic::gl {
 		public:
 
 			Renderer() {
+				DEBUG_LOG("Renderer init started.");
 				DEBUG_LOG(shader.addScript(vs, ShaderType::Vertex)); 
 				DEBUG_LOG(shader.addScript(fs, ShaderType::Fragment)); 
 				shader.link();
 				
 				// empty vao (without it doesn't work...)
 				glCreateVertexArrays(1, &vao);
+				if (vao == 0) {
+					DEBUG_LOG("glCreateVertexArrays failed: vao == 0.");
+				}
 
 				// create an ssbo
 				glCreateBuffers(1, &ssbo);
+				if (ssbo == 0) {
+					DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
+				}
 				glNamedBufferData(
 						ssbo, 
 						MAX_RECTANGLE_COUNT * sizeof(Rectangle), 
@@ -375,6 +403,7 @@ namespace mka::graphic::gl {
 					DEBUG_LOG("FreeType init failed");
 					ftLibrary = nullptr;
 				}
+				DEBUG_LOG("Renderer init completed.");
 			}
 			
 			~Renderer() {
@@ -399,7 +428,10 @@ namespace mka::graphic::gl {
 
 			[[maybe_unused]] Rectangle* add(Rectangle&& r) {
 				if (rectangleCount >= MAX_RECTANGLE_COUNT) {
-					DEBUG_LOG("rectangleCount exceed MAX_RECTANGLE_COUNT.");
+					DEBUG_LOG(
+						"rectangleCount exceeded MAX_RECTANGLE_COUNT (" +
+						std::to_string(rectangleCount) + "/" + std::to_string(MAX_RECTANGLE_COUNT) + ")."
+					);
 					return nullptr;
 				}
 				rectangles[rectangleCount] = r;
@@ -444,9 +476,14 @@ namespace mka::graphic::gl {
 
 				FontCache* fontCache = getOrCreateFontCache(sanitizedText.font);
 				if (fontCache == nullptr) {
+					DEBUG_LOG("Failed to get font cache for font: " + sanitizedText.font);
 					return 0;
 				}
 				if (FT_Set_Pixel_Sizes(fontCache->face, 0, pixelSize) != 0) {
+					DEBUG_LOG(
+						"FT_Set_Pixel_Sizes failed for font: " + sanitizedText.font +
+						", pixel size: " + std::to_string(pixelSize)
+					);
 					return 0;
 				}
 
@@ -459,6 +496,7 @@ namespace mka::graphic::gl {
 
 				for (char c : sanitizedText.content) {
 					if (rectangleCount >= MAX_RECTANGLE_COUNT) {
+						DEBUG_LOG("Stopped glyph generation: rectangle buffer full.");
 						break;
 					}
 
@@ -468,6 +506,10 @@ namespace mka::graphic::gl {
 						pixelSize
 					);
 					if (glyph == nullptr) {
+						DEBUG_LOG(
+							"Missing glyph for codepoint: " +
+							std::to_string(static_cast<unsigned int>(static_cast<unsigned char>(c)))
+						);
 						break;
 					}
 
@@ -487,6 +529,7 @@ namespace mka::graphic::gl {
 				}
 
 				if (glyphRects.empty()) {
+					DEBUG_LOG("No glyph rectangle generated for provided text.");
 					return 0;
 				}
 
@@ -540,6 +583,7 @@ namespace mka::graphic::gl {
 					glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
 					glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
 					if (add(std::move(glyphRect)) == nullptr) {
+						DEBUG_LOG("Failed to append generated glyph rectangle to renderer queue.");
 						break;
 					}
 					++addedCount;
@@ -555,15 +599,26 @@ namespace mka::graphic::gl {
 				glClear(GL_COLOR_BUFFER_BIT);
 
 				if (rectangleCount == 0) return;
+				if (ssbo == 0 || vao == 0) {
+					DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
+					rectangleCount = 0;
+					return;
+				}
 				
 				for (size_t i = 0; i < rectangleCount; ++i) {
 					sanitizeRectangle(rectangles[i]);
+				}
+				const size_t uploadBytes = rectangleCount * sizeof(Rectangle);
+				if (uploadBytes / sizeof(Rectangle) != rectangleCount) {
+					DEBUG_LOG("draw aborted: size_t overflow detected during SSBO upload size calculation.");
+					rectangleCount = 0;
+					return;
 				}
 
 				glNamedBufferSubData(
 					ssbo,
 					0,
-					rectangleCount * sizeof(Rectangle),
+					uploadBytes,
 					rectangles.data()
 				);
 				
@@ -606,11 +661,16 @@ namespace mka::graphic::gl {
 				int height
 			) const {
 				if (rgbaPixels == nullptr || width <= 0 || height <= 0) {
+					DEBUG_LOG("createGlyphTextureRGBA received invalid input (null pixels or invalid dimensions).");
 					return 0;
 				}
 
 				GLuint tex = 0;
 				glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+				if (tex == 0) {
+					DEBUG_LOG("glCreateTextures failed for glyph texture.");
+					return 0;
+				}
 				glTextureStorage2D(tex, 1, GL_RGBA8, width, height);
 				glTextureSubImage2D(tex, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
 				glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -619,6 +679,11 @@ namespace mka::graphic::gl {
 				glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 				uint64_t handle = glGetTextureHandleARB(tex);
+				if (handle == 0) {
+					DEBUG_LOG("glGetTextureHandleARB returned null glyph handle.");
+					glDeleteTextures(1, &tex);
+					return 0;
+				}
 				glMakeTextureHandleResidentARB(handle);
 				return handle;
 			}
@@ -626,6 +691,12 @@ namespace mka::graphic::gl {
 			/// @brief Get cached font face or load it on first use.
 			FontCache* getOrCreateFontCache(const std::string& fontPath) {
 				if (ftLibrary == nullptr || fontPath.empty()) {
+					if (ftLibrary == nullptr) {
+						DEBUG_LOG("Font cache request failed: FreeType library is null.");
+					}
+					if (fontPath.empty()) {
+						DEBUG_LOG("Font cache request failed: empty font path.");
+					}
 					return nullptr;
 				}
 
@@ -636,6 +707,10 @@ namespace mka::graphic::gl {
 				FT_Face face = nullptr;
 				if (FT_New_Face(ftLibrary, fontPath.c_str(), 0, &face) != 0) {
 					DEBUG_LOG("Failed to load TTF font: " + fontPath);
+					return nullptr;
+				}
+				if (face == nullptr) {
+					DEBUG_LOG("FT_New_Face returned success but face is null: " + fontPath);
 					return nullptr;
 				}
 
@@ -656,16 +731,31 @@ namespace mka::graphic::gl {
 				}
 
 				if (FT_Set_Pixel_Sizes(fontCache.face, 0, pixelSize) != 0) {
+					DEBUG_LOG("FT_Set_Pixel_Sizes failed for glyph generation.");
 					return nullptr;
 				}
 				if (FT_Load_Char(fontCache.face, codepoint, FT_LOAD_RENDER) != 0) {
+					DEBUG_LOG("FT_Load_Char failed for codepoint: " + std::to_string(codepoint));
 					return nullptr;
 				}
 
 				const FT_GlyphSlot glyph = fontCache.face->glyph;
+				if (glyph == nullptr) {
+					DEBUG_LOG("FreeType returned null glyph slot.");
+					return nullptr;
+				}
 				const FT_Bitmap& bitmap = glyph->bitmap;
+				const size_t pixelCount = static_cast<size_t>(bitmap.width) * bitmap.rows;
+				if (bitmap.width > 0 && bitmap.rows > 0 && pixelCount / bitmap.width != bitmap.rows) {
+					DEBUG_LOG("Glyph bitmap size overflow detected.");
+					return nullptr;
+				}
+				if (bitmap.buffer == nullptr && pixelCount > 0) {
+					DEBUG_LOG("Glyph bitmap buffer is null while pixel count is non-zero.");
+					return nullptr;
+				}
 
-				std::vector<unsigned char> rgba(static_cast<size_t>(bitmap.width) * bitmap.rows * 4u, 0u);
+				std::vector<unsigned char> rgba(pixelCount * 4u, 0u);
 				for (int y = 0; y < static_cast<int>(bitmap.rows); ++y) {
 					for (int x = 0; x < static_cast<int>(bitmap.width); ++x) {
 						const size_t srcIndex = static_cast<size_t>(y) * bitmap.pitch + static_cast<size_t>(x);
