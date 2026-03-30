@@ -281,6 +281,7 @@ namespace mka::graphic::gl {
 
 		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
 		if (!data) {
+			DEBUG_LOG("Failed to load texture.");
 			return 0;
 		}
 
@@ -398,7 +399,8 @@ namespace mka::graphic::gl {
 
 			[[maybe_unused]] Rectangle* add(Rectangle&& r) {
 				if (rectangleCount >= MAX_RECTANGLE_COUNT) {
-					return nullptr; // ou assert
+					DEBUG_LOG("rectangleCount exceed MAX_RECTANGLE_COUNT.");
+					return nullptr;
 				}
 				rectangles[rectangleCount] = r;
 				return &rectangles[rectangleCount++];
