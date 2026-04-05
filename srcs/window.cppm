@@ -150,7 +150,6 @@ export namespace mka::graphic {
 						self->mouseEvent.position = glm::vec2(x, y);
 					}
 				);
-				
 				glfwSetKeyCallback(window, 
 					[](GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/) {
 
@@ -158,7 +157,7 @@ export namespace mka::graphic {
 							return;
 						}
 
-						if(action != GLFW_PRESS && action != GLFW_RELEASE) {
+						if(action == GLFW_REPEAT) {
 							return;
 						}
 
@@ -204,6 +203,7 @@ export namespace mka::graphic {
 					state = State::Terminated;
 					return;
 				}
+
 				glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}

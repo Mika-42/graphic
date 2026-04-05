@@ -139,7 +139,7 @@ public:
     void render(
 			const glm::vec2& /*size*/, 
 			const MouseEvent& mouse,
-			const KeyboardEvent& /*keyboard*/) override {
+			const KeyboardEvent& keyboard) override {
 
 		static float t = 0.0f;
 		t += 0.01f;
@@ -178,12 +178,9 @@ public:
 			a->backgroundColorB = {1.0, 0.0, 0.0, 1.0};
 		}
 
-//		for(auto&& i : keyboard.pressedKeys()) {
-//			std::cout << to_string(i);
-//		}
-		//if(keyboard.isPressed(Key::W)) {
-			//std::cout << 'W';
-		//}
+		for(auto&& i : keyboard.pressedKeys()) {
+			std::cout << to_string(i);
+		}
 
         renderer.draw(projection);
     }
