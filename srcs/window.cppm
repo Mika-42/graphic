@@ -153,10 +153,24 @@ export namespace mka::graphic {
 				
 				glfwSetKeyCallback(window, 
 					[](GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/) {
-						
+
+						if(key < 0 || key >= KEY_COUNT) {
+							return;
+						}
+
+						if(action != GLFW_PRESS && action != GLFW_RELEASE) {
+							return;
+						}
+
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
+
+						const Key mappedKey = self->glfwToKey[static_cast<size_t>(key)];
 						
-						self->keyboardEvent.set(self->glfwToKey[key], (action == GLFW_RELEASE) ? KeyState::Released : KeyState::Pressed);
+						if(mappedKey == Key::Unknown) {
+							return;
+						}
+
+						self->keyboardEvent.set(mappedKey, (action == GLFW_RELEASE) ? KeyState::Released : KeyState::Pressed);
 					}
 				);
 				
