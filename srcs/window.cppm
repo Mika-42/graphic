@@ -6,7 +6,8 @@ module;
 #include <memory>
 #include <string>
 #include <array>
-#include <deque>
+#include <vector>
+#include <bitset>
 
 export module mka.graphic.window;
 export import mka.graphic.context;
@@ -25,35 +26,60 @@ export namespace mka::graphic {
 	};
 
 	//-----
-	enum KeyState {
+	enum class KeyState {
 		Pressed, Released
 	};
 
-	enum class KeyboardMod {
-		CapsLock, NumLock, Shift, Ctrl, Alt, Super
-	};
-
-	enum class KeyboardKey
-	{
-		A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+	enum class Key {
+		Space, Apostrophe, Comma, Minus, Period, Slash,
 		Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
-		F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-		Tab, Space, Enter, Backspace, Left, Right, Up, Down,
-		Escape, Delete, Insert, Home, End, PageUp, PageDown,
-		NumpadAdd, NumpadSubtract, NumpadMultiply, NumpadDivide,
+		Semicolon, Equal,
+		A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+		LBracket, Backslash, RBracket, GraveAccent, /**/ /**/
+		Escape, Enter, Tab, Backspace, Insert, Delete, 
+		Right, Left, Down, Up, PageUp, PageDown, Home, End, 
+		CapsLock, ScrollLock, NumLock, PrintScreen, Pause,
+		F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17,
+		F18, F19, F20, F21, F22, F23, F24, F25,
 		Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, 
-		Numpad7, Numpad8, Numpad9, NumpadEnter,
-		LeftShift, RightShift,
-		LeftCtrl, RightCtrl,
-		LeftAlt, RightAlt,
-		LeftSuper, RightSuper,
-		CapsLock, Unknown
+		Numpad7, Numpad8, Numpad9, NumpadDecimal, NumpadDivide, NumpadMultiply,
+		NumpadSubtract, NumpadAdd, NumpadEnter, NumpadEqual,
+		LeftShift, LeftCtrl, LeftAlt, LeftSuper, 
+		RightShift, RightCtrl, RightAlt, RightSuper,
+		Menu, Unknown
 	};
 
-	struct KeyboardEvent {
-		KeyState state;
-		KeyboardKey key;
-		std::vector<KeyboardMod> mod;
+	class KeyboardEvent {
+		private:
+			std::bitset<static_cast<size_t>(Key::Unknown)> states;
+
+		public:
+			bool isPressed(Key key) const {
+				return states.test(static_cast<size_t>(key));
+			}
+
+			bool isReleased(Key key) const {
+				return !states.test(static_cast<size_t>(key));
+			}
+
+			void set(Key key, KeyState state) {
+				const size_t idx = static_cast<size_t>(key);
+
+				if(state == KeyState::Pressed) {
+					states.set(idx);
+				} else {
+					states.reset(idx);
+				}
+			}
+			
+			std::vector<Key> pressedKeys() const {
+				std::vector<Key> keys;
+				keys.reserve(states.count());
+				for (size_t i = 0; i < states.size(); ++i) {
+					if (states[i]) keys.emplace_back(static_cast<Key>(i));
+				}
+				return keys;
+			}
 	};
 
 	//----
@@ -69,7 +95,7 @@ export namespace mka::graphic {
 	class Window {
 	
 		public:
-			Window(size_t width, size_t height, const std::string& name, std::unique_ptr<Context> ctx) : width(width), height(height), name(name), ctx(std::move(ctx)), window(nullptr) {
+			Window(size_t width, size_t height, const std::string& name, std::unique_ptr<Context> ctx) : size(width,height), name(name), ctx(std::move(ctx)), window(nullptr) {
 				if(!glfwInit()) {
 					state = State::Terminated;
 					return;
@@ -77,7 +103,7 @@ export namespace mka::graphic {
 
 				state = State::Inited;
 		
-				glfwToKey.fill(KeyboardKey::Unknown);
+				glfwToKey.fill(Key::Unknown);
 				initKeyMap();
 
 				switch (this->ctx->getAPI()) {
@@ -99,8 +125,7 @@ export namespace mka::graphic {
 						break;
 				}
 
-
-				window = glfwCreateWindow(this->width, this->height, this->name.c_str(), nullptr, nullptr);
+				window = glfwCreateWindow(size.x, size.y, this->name.c_str(), nullptr, nullptr);
 
 				if(!window) {
 					state = State::Terminated;
@@ -115,55 +140,23 @@ export namespace mka::graphic {
 					[](GLFWwindow* win, int w, int h) {
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
 						self->orthographicProjection = glm::ortho(0.0f, float(w), float(h), 0.0f, -1.0f, 1.0f);
-						self->width = w;
-						self->height = h;
+						self->size = glm::vec2(w, h);
 					}
 				);
 
 				glfwSetCursorPosCallback(window,
 					[](GLFWwindow* win, double x, double y) {	
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
-						self->mouseEvent.position.x = x;
-						self->mouseEvent.position.y = y;
+						self->mouseEvent.position = glm::vec2(x, y);
 					}
 				);
 				
 				glfwSetKeyCallback(window, 
-					[](GLFWwindow* win, int key, int /*scancode*/, int action, int mods) {
+					[](GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/) {
 						
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
 						
-						KeyboardEvent e {};
-						e.key = self->glfwToKey[key];
-
-						//----
-						if (mods & GLFW_MOD_SHIFT) {
-							e.mod.emplace_back(KeyboardMod::Shift);
-						}
-						if (mods & GLFW_MOD_CONTROL) {
-							e.mod.emplace_back(KeyboardMod::Ctrl);
-						}
-						if (mods & GLFW_MOD_ALT) {
-							e.mod.emplace_back(KeyboardMod::Alt);
-						}
-						if (mods & GLFW_MOD_SUPER) {
-							e.mod.emplace_back(KeyboardMod::Super);
-						}
-						if (mods & GLFW_MOD_CAPS_LOCK) {
-							e.mod.emplace_back(KeyboardMod::CapsLock);
-						}
-						if (mods & GLFW_MOD_NUM_LOCK) {
-							e.mod.emplace_back(KeyboardMod::NumLock);
-						}
-
-						if (action == GLFW_PRESS) {
-							e.state = KeyState::Pressed;
-						}
-						else if (action == GLFW_RELEASE) {
-							e.state = KeyState::Released;
-						}
-
-						self->eventQueue.emplace_back(e);
+						self->keyboardEvent.set(self->glfwToKey[key], (action == GLFW_PRESS) ? KeyState::Pressed : KeyState::Released);
 					}
 				);
 				
@@ -172,8 +165,8 @@ export namespace mka::graphic {
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
 						self->mouseEvent.scroll = glm::vec2(xOffset, yOffset);
 						
-						if(yOffset > 0) self->mouseEvent.set(MouseBUtton::Middle, MouseState::ScrollUp);
-						if(yOffset < 0) self->mouseEvent.set(MouseBUtton::Middle, MouseState::ScrollDown);
+						if(yOffset > 0) self->mouseEvent.set(MouseButton::Middle, MouseState::ScrollUp);
+						if(yOffset < 0) self->mouseEvent.set(MouseButton::Middle, MouseState::ScrollDown);
 					}
 				);
 
@@ -201,7 +194,7 @@ export namespace mka::graphic {
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 			
-			virtual void render(const MouseEvent& mouse) = 0;
+			virtual void render(const glm::vec2& size, const MouseEvent& mouse, const KeyboardEvent& keyboard) = 0;
 
 			/// @brief Projection updated whenever the window size changes.
 			const glm::mat4& getOrthographicProjection() const {
@@ -219,7 +212,7 @@ export namespace mka::graphic {
 
 					ctx->makeCurrent();
 
-					render(mouseEvent);
+					render(size, mouseEvent, keyboardEvent);
 
 					ctx->swapBuffers();
 				}
@@ -239,128 +232,154 @@ export namespace mka::graphic {
 				return state;
 			}
 
-			/// @brief Return current window dimensions in pixels.
-			const glm::vec2 getSize() {
-				return glm::vec2(width, height);
-			}
-
 		private:
 		void initKeyMap() {
-			glfwToKey[GLFW_KEY_A] = KeyboardKey::A;
-			glfwToKey[GLFW_KEY_B] = KeyboardKey::B;
-			glfwToKey[GLFW_KEY_C] = KeyboardKey::C;
-			glfwToKey[GLFW_KEY_D] = KeyboardKey::D;
-			glfwToKey[GLFW_KEY_E] = KeyboardKey::E;
-			glfwToKey[GLFW_KEY_F] = KeyboardKey::F;
-			glfwToKey[GLFW_KEY_G] = KeyboardKey::G;
-			glfwToKey[GLFW_KEY_H] = KeyboardKey::H;
-			glfwToKey[GLFW_KEY_I] = KeyboardKey::I;
-			glfwToKey[GLFW_KEY_J] = KeyboardKey::J;
-			glfwToKey[GLFW_KEY_K] = KeyboardKey::K;
-			glfwToKey[GLFW_KEY_L] = KeyboardKey::L;
-			glfwToKey[GLFW_KEY_M] = KeyboardKey::M;
-			glfwToKey[GLFW_KEY_N] = KeyboardKey::N;
-			glfwToKey[GLFW_KEY_O] = KeyboardKey::O;
-			glfwToKey[GLFW_KEY_P] = KeyboardKey::P;
-			glfwToKey[GLFW_KEY_Q] = KeyboardKey::Q;
-			glfwToKey[GLFW_KEY_R] = KeyboardKey::R;
-			glfwToKey[GLFW_KEY_S] = KeyboardKey::S;
-			glfwToKey[GLFW_KEY_T] = KeyboardKey::T;
-			glfwToKey[GLFW_KEY_U] = KeyboardKey::U;
-			glfwToKey[GLFW_KEY_V] = KeyboardKey::V;
-			glfwToKey[GLFW_KEY_W] = KeyboardKey::W;
-			glfwToKey[GLFW_KEY_X] = KeyboardKey::X;
-			glfwToKey[GLFW_KEY_Y] = KeyboardKey::Y;
-			glfwToKey[GLFW_KEY_Z] = KeyboardKey::Z;
 
-			glfwToKey[GLFW_KEY_0] = KeyboardKey::Num0;
-			glfwToKey[GLFW_KEY_1] = KeyboardKey::Num1;
-			glfwToKey[GLFW_KEY_2] = KeyboardKey::Num2;
-			glfwToKey[GLFW_KEY_3] = KeyboardKey::Num3;
-			glfwToKey[GLFW_KEY_4] = KeyboardKey::Num4;
-			glfwToKey[GLFW_KEY_5] = KeyboardKey::Num5;
-			glfwToKey[GLFW_KEY_6] = KeyboardKey::Num6;
-			glfwToKey[GLFW_KEY_7] = KeyboardKey::Num7;
-			glfwToKey[GLFW_KEY_8] = KeyboardKey::Num8;
-			glfwToKey[GLFW_KEY_9] = KeyboardKey::Num9;
+			glfwToKey[GLFW_KEY_SPACE] = Key::Space;
+			glfwToKey[GLFW_KEY_APOSTROPHE] = Key::Apostrophe;
+			glfwToKey[GLFW_KEY_COMMA] = Key::Comma;
+			glfwToKey[GLFW_KEY_MINUS] = Key::Minus;
+			glfwToKey[GLFW_KEY_PERIOD] = Key::Period;
+			glfwToKey[GLFW_KEY_SLASH] = Key::Slash;
+			
+			glfwToKey[GLFW_KEY_0] = Key::Num0;
+			glfwToKey[GLFW_KEY_1] = Key::Num1;
+			glfwToKey[GLFW_KEY_2] = Key::Num2;
+			glfwToKey[GLFW_KEY_3] = Key::Num3;
+			glfwToKey[GLFW_KEY_4] = Key::Num4;
+			glfwToKey[GLFW_KEY_5] = Key::Num5;
+			glfwToKey[GLFW_KEY_6] = Key::Num6;
+			glfwToKey[GLFW_KEY_7] = Key::Num7;
+			glfwToKey[GLFW_KEY_8] = Key::Num8;
+			glfwToKey[GLFW_KEY_9] = Key::Num9;
 
-			glfwToKey[GLFW_KEY_F1] = KeyboardKey::F1;
-			glfwToKey[GLFW_KEY_F2] = KeyboardKey::F2;
-			glfwToKey[GLFW_KEY_F3] = KeyboardKey::F3;
-			glfwToKey[GLFW_KEY_F4] = KeyboardKey::F4;
-			glfwToKey[GLFW_KEY_F5] = KeyboardKey::F5;
-			glfwToKey[GLFW_KEY_F6] = KeyboardKey::F6;
-			glfwToKey[GLFW_KEY_F7] = KeyboardKey::F7;
-			glfwToKey[GLFW_KEY_F8] = KeyboardKey::F8;
-			glfwToKey[GLFW_KEY_F9] = KeyboardKey::F9;
-			glfwToKey[GLFW_KEY_F10] = KeyboardKey::F10;
-			glfwToKey[GLFW_KEY_F11] = KeyboardKey::F11;
-			glfwToKey[GLFW_KEY_F12] = KeyboardKey::F12;
+			glfwToKey[GLFW_KEY_SEMICOLON] = Key::Semicolon;
+			glfwToKey[GLFW_KEY_EQUAL] = Key::Equal;
+			
+			glfwToKey[GLFW_KEY_A] = Key::A;
+			glfwToKey[GLFW_KEY_B] = Key::B;
+			glfwToKey[GLFW_KEY_C] = Key::C;
+			glfwToKey[GLFW_KEY_D] = Key::D;
+			glfwToKey[GLFW_KEY_E] = Key::E;
+			glfwToKey[GLFW_KEY_F] = Key::F;
+			glfwToKey[GLFW_KEY_G] = Key::G;
+			glfwToKey[GLFW_KEY_H] = Key::H;
+			glfwToKey[GLFW_KEY_I] = Key::I;
+			glfwToKey[GLFW_KEY_J] = Key::J;
+			glfwToKey[GLFW_KEY_K] = Key::K;
+			glfwToKey[GLFW_KEY_L] = Key::L;
+			glfwToKey[GLFW_KEY_M] = Key::M;
+			glfwToKey[GLFW_KEY_N] = Key::N;
+			glfwToKey[GLFW_KEY_O] = Key::O;
+			glfwToKey[GLFW_KEY_P] = Key::P;
+			glfwToKey[GLFW_KEY_Q] = Key::Q;
+			glfwToKey[GLFW_KEY_R] = Key::R;
+			glfwToKey[GLFW_KEY_S] = Key::S;
+			glfwToKey[GLFW_KEY_T] = Key::T;
+			glfwToKey[GLFW_KEY_U] = Key::U;
+			glfwToKey[GLFW_KEY_V] = Key::V;
+			glfwToKey[GLFW_KEY_W] = Key::W;
+			glfwToKey[GLFW_KEY_X] = Key::X;
+			glfwToKey[GLFW_KEY_Y] = Key::Y;
+			glfwToKey[GLFW_KEY_Z] = Key::Z;
 
-			glfwToKey[GLFW_KEY_SPACE] = KeyboardKey::Space;
-			glfwToKey[GLFW_KEY_ENTER] = KeyboardKey::Enter;
-			glfwToKey[GLFW_KEY_ESCAPE] = KeyboardKey::Escape;
+			glfwToKey[GLFW_KEY_LEFT_BRACKET] = Key::LBracket;
+			glfwToKey[GLFW_KEY_BACKSLASH] = Key::Backslash;
+			glfwToKey[GLFW_KEY_RIGHT_BRACKET] = Key::RBracket;
+			glfwToKey[GLFW_KEY_GRAVE_ACCENT] = Key::GraveAccent;
+			/**/
+			/**/
+			glfwToKey[GLFW_KEY_ESCAPE] = Key::Escape;
+			glfwToKey[GLFW_KEY_ENTER] = Key::Enter;
+			glfwToKey[GLFW_KEY_TAB] = Key::Tab;
+			glfwToKey[GLFW_KEY_BACKSPACE] = Key::Backspace;
+			glfwToKey[GLFW_KEY_INSERT] = Key::Insert;
+			glfwToKey[GLFW_KEY_DELETE] = Key::Delete;
+			
+			glfwToKey[GLFW_KEY_RIGHT] = Key::Right;
+			glfwToKey[GLFW_KEY_LEFT]  = Key::Left;
+			glfwToKey[GLFW_KEY_DOWN]  = Key::Down;
+			glfwToKey[GLFW_KEY_UP]    = Key::Up;
+			
+			glfwToKey[GLFW_KEY_PAGE_UP] = Key::PageUp;
+			glfwToKey[GLFW_KEY_PAGE_DOWN] = Key::PageDown;
+			glfwToKey[GLFW_KEY_HOME] = Key::Home;
+			glfwToKey[GLFW_KEY_END] = Key::End;
+			
+			glfwToKey[GLFW_KEY_CAPS_LOCK] = Key::CapsLock;
+			glfwToKey[GLFW_KEY_SCROLL_LOCK] = Key::ScrollLock;
+			glfwToKey[GLFW_KEY_NUM_LOCK] = Key::NumLock;
+			glfwToKey[GLFW_KEY_PRINT_SCREEN] = Key::PrintScreen;
+			glfwToKey[GLFW_KEY_PAUSE] = Key::Pause;
+			
+			glfwToKey[GLFW_KEY_F1] = Key::F1;
+			glfwToKey[GLFW_KEY_F2] = Key::F2;
+			glfwToKey[GLFW_KEY_F3] = Key::F3;
+			glfwToKey[GLFW_KEY_F4] = Key::F4;
+			glfwToKey[GLFW_KEY_F5] = Key::F5;
+			glfwToKey[GLFW_KEY_F6] = Key::F6;
+			glfwToKey[GLFW_KEY_F7] = Key::F7;
+			glfwToKey[GLFW_KEY_F8] = Key::F8;
+			glfwToKey[GLFW_KEY_F9] = Key::F9;
+			glfwToKey[GLFW_KEY_F10] =Key::F10;
+			glfwToKey[GLFW_KEY_F11] =Key::F11;
+			glfwToKey[GLFW_KEY_F12] =Key::F12;
+			glfwToKey[GLFW_KEY_F13] =Key::F13;
+			glfwToKey[GLFW_KEY_F14] =Key::F14;
+			glfwToKey[GLFW_KEY_F15] =Key::F15;
+			glfwToKey[GLFW_KEY_F16] =Key::F16;
+			glfwToKey[GLFW_KEY_F17] =Key::F17;
+			glfwToKey[GLFW_KEY_F18] =Key::F18;
+			glfwToKey[GLFW_KEY_F19] =Key::F19;
+			glfwToKey[GLFW_KEY_F20] =Key::F20;
+			glfwToKey[GLFW_KEY_F21] =Key::F21;
+			glfwToKey[GLFW_KEY_F22] =Key::F22;
+			glfwToKey[GLFW_KEY_F23] =Key::F23;
+			glfwToKey[GLFW_KEY_F24] =Key::F24;
+			glfwToKey[GLFW_KEY_F25] =Key::F25;
 
-			glfwToKey[GLFW_KEY_LEFT]  = KeyboardKey::Left;
-			glfwToKey[GLFW_KEY_RIGHT] = KeyboardKey::Right;
-			glfwToKey[GLFW_KEY_UP]    = KeyboardKey::Up;
-			glfwToKey[GLFW_KEY_DOWN]  = KeyboardKey::Down;
+			glfwToKey[GLFW_KEY_KP_0] = Key::Numpad0;
+			glfwToKey[GLFW_KEY_KP_1] = Key::Numpad1;
+			glfwToKey[GLFW_KEY_KP_2] = Key::Numpad2;
+			glfwToKey[GLFW_KEY_KP_3] = Key::Numpad3;
+			glfwToKey[GLFW_KEY_KP_4] = Key::Numpad4;
+			glfwToKey[GLFW_KEY_KP_5] = Key::Numpad5;
+			glfwToKey[GLFW_KEY_KP_6] = Key::Numpad6;
+			glfwToKey[GLFW_KEY_KP_7] = Key::Numpad7;
+			glfwToKey[GLFW_KEY_KP_8] = Key::Numpad8;
+			glfwToKey[GLFW_KEY_KP_9] = Key::Numpad9;
 
-			glfwToKey[GLFW_KEY_KP_ADD]      = KeyboardKey::NumpadAdd;
-			glfwToKey[GLFW_KEY_KP_SUBTRACT] = KeyboardKey::NumpadSubtract;
-						
-			glfwToKey[GLFW_KEY_TAB] = KeyboardKey::Tab;
-			glfwToKey[GLFW_KEY_CAPS_LOCK] = KeyboardKey::CapsLock;
+			glfwToKey[GLFW_KEY_KP_DECIMAL] = Key::NumpadDecimal;
+			glfwToKey[GLFW_KEY_KP_DIVIDE] = Key::NumpadDivide;
+			glfwToKey[GLFW_KEY_KP_MULTIPLY] = Key::NumpadMultiply;
+			glfwToKey[GLFW_KEY_KP_SUBTRACT] = Key::NumpadSubtract;
+			glfwToKey[GLFW_KEY_KP_ADD] = Key::NumpadAdd;
+			glfwToKey[GLFW_KEY_KP_ENTER] = Key::NumpadEnter;	
 			
-			glfwToKey[GLFW_KEY_LEFT_SHIFT] = KeyboardKey::LeftShift;
-			glfwToKey[GLFW_KEY_RIGHT_SHIFT] = KeyboardKey::RightShift;
+			glfwToKey[GLFW_KEY_LEFT_SHIFT] = Key::LeftShift;
+			glfwToKey[GLFW_KEY_LEFT_CONTROL] = Key::LeftCtrl;
+			glfwToKey[GLFW_KEY_LEFT_ALT] = Key::LeftAlt;
+			glfwToKey[GLFW_KEY_LEFT_SUPER] = Key::LeftSuper;
 			
-			glfwToKey[GLFW_KEY_LEFT_CONTROL] = KeyboardKey::LeftCtrl;
-			glfwToKey[GLFW_KEY_RIGHT_CONTROL] = KeyboardKey::RightCtrl;
+			glfwToKey[GLFW_KEY_RIGHT_SHIFT] = Key::RightShift;
+			glfwToKey[GLFW_KEY_RIGHT_CONTROL] = Key::RightCtrl;
+			glfwToKey[GLFW_KEY_RIGHT_ALT] = Key::RightAlt;
+			glfwToKey[GLFW_KEY_RIGHT_SUPER] = Key::RightSuper;
 			
-			glfwToKey[GLFW_KEY_LEFT_ALT] = KeyboardKey::LeftAlt;
-			glfwToKey[GLFW_KEY_RIGHT_ALT] = KeyboardKey::RightAlt;
-			
-			glfwToKey[GLFW_KEY_LEFT_SUPER] = KeyboardKey::LeftSuper;
-			glfwToKey[GLFW_KEY_RIGHT_SUPER] = KeyboardKey::RightSuper;
-			
-			glfwToKey[GLFW_KEY_BACKSPACE] = KeyboardKey::Backspace;
-			glfwToKey[GLFW_KEY_DELETE] = KeyboardKey::Delete;
-			glfwToKey[GLFW_KEY_INSERT] = KeyboardKey::Insert;
-			
-			glfwToKey[GLFW_KEY_HOME] = KeyboardKey::Home;
-			glfwToKey[GLFW_KEY_END] = KeyboardKey::End;
-			glfwToKey[GLFW_KEY_PAGE_UP] = KeyboardKey::PageUp;
-			glfwToKey[GLFW_KEY_PAGE_DOWN] = KeyboardKey::PageDown;
-			
-			glfwToKey[GLFW_KEY_KP_0] = KeyboardKey::Numpad0;
-			glfwToKey[GLFW_KEY_KP_1] = KeyboardKey::Numpad1;
-			glfwToKey[GLFW_KEY_KP_2] = KeyboardKey::Numpad2;
-			glfwToKey[GLFW_KEY_KP_3] = KeyboardKey::Numpad3;
-			glfwToKey[GLFW_KEY_KP_4] = KeyboardKey::Numpad4;
-			glfwToKey[GLFW_KEY_KP_5] = KeyboardKey::Numpad5;
-			glfwToKey[GLFW_KEY_KP_6] = KeyboardKey::Numpad6;
-			glfwToKey[GLFW_KEY_KP_7] = KeyboardKey::Numpad7;
-			glfwToKey[GLFW_KEY_KP_8] = KeyboardKey::Numpad8;
-			glfwToKey[GLFW_KEY_KP_9] = KeyboardKey::Numpad9;
-
-			glfwToKey[GLFW_KEY_KP_ENTER] = KeyboardKey::NumpadEnter;
-			glfwToKey[GLFW_KEY_KP_MULTIPLY] = KeyboardKey::NumpadMultiply;
-			glfwToKey[GLFW_KEY_KP_DIVIDE] = KeyboardKey::NumpadDivide;
+			glfwToKey[GLFW_KEY_MENU] = Key::Menu;
 		}
 		private:
 
-		size_t width = 0;
-		size_t height = 0;
+		glm::vec2 size = {0.0, 0.0};
 		std::string	name;
 		std::unique_ptr<Context> ctx;
 		State state = State::Terminated;
 		GLFWwindow* window = nullptr;
 		glm::mat4 orthographicProjection;
 		MouseEvent mouseEvent;
+		KeyboardEvent keyboardEvent;
 
 		static constexpr int KEY_COUNT = GLFW_KEY_LAST + 1;
-		std::array<KeyboardKey, KEY_COUNT> glfwToKey;
-		std::deque<KeyboardEvent> eventQueue;
+		std::array<Key, KEY_COUNT> glfwToKey;
 	};
 }
