@@ -178,8 +178,13 @@ public:
 			a->backgroundColorB = {1.0, 0.0, 0.0, 1.0};
 		}
 
-		for(auto&& i : keyboard.pressedKeys()) {
-			std::cout << to_string(i);
+		auto c = keyboard.pressedKeys();
+		if(!c.empty()) {
+
+			for(auto&& i : c) {
+				std::cout << to_string(i);
+			}
+			std::cout << '\n';
 		}
 
         renderer.draw(projection);
