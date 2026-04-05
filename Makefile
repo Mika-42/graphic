@@ -7,6 +7,7 @@ BUILD_DIR := build
 # Modules (ordre IMPORTANT)
 MODULES := \
 	$(SRC_DIR)/sanitize.cppm \
+	$(SRC_DIR)/mouse.cppm \
 	$(SRC_DIR)/context.cppm \
 	$(SRC_DIR)/window.cppm \
 	$(SRC_DIR)/uniform.cppm \

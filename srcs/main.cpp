@@ -5,6 +5,8 @@
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 
+using namespace mka::graphic;
+
 class MinimalApp : public mka::graphic::Window {
 public:
     MinimalApp(std::unique_ptr<mka::graphic::Context> ctx)
@@ -44,7 +46,7 @@ public:
 			.letterSpacing = 3		
 		});
 
-		if(auto d = mka::graphic::gl::distance(a, mouse.position); d <= 0) {
+		if(auto d = mka::graphic::gl::distance(a, mouse.position); d <= 0 && mouse.isPressed(MouseButton::Left)) {
 			std::cout << d << '\n';
 		}
 

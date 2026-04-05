@@ -7,10 +7,10 @@ module;
 #include <string>
 #include <array>
 #include <deque>
-#include <variant>
 
 export module mka.graphic.window;
 export import mka.graphic.context;
+export import mka.graphic.mouse;
 
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
@@ -29,10 +29,6 @@ export namespace mka::graphic {
 		Pressed, Released
 	};
 
-	enum class MouseButton {
-		Left, Middle, Right,
-	};
-	
 	enum class KeyboardMod {
 		CapsLock, NumLock, Shift, Ctrl, Alt, Super
 	};
@@ -52,33 +48,6 @@ export namespace mka::graphic {
 		LeftAlt, RightAlt,
 		LeftSuper, RightSuper,
 		CapsLock, Unknown
-	};
-
-	class MouseEvent {
-		private:
-		enum class MouseState {
-			Pressed, Released, ScrollUp, ScrollDown
-		} states[3];
-	
-		public:
-		bool isPressed(MouseButton btn) {
-			return states[static_cast<size_t>(btn)] == MouseState::Pressed;
-		}
-
-		bool isReleased(MouseButton btn) {
-			return states[static_cast<size_t>(btn)] == MouseState::Released;
-		}
-
-		bool isScrollUp(MouseButton btn) {
-			return states[static_cast<size_t>(btn)] == MouseState::ScrollUp;
-		}
-
-		bool isScrollDown(MouseButton btn) {
-			return states[static_cast<size_t>(btn)] == MouseState::ScrollDown;
-		}
-		
-		glm::vec2 scroll;
-		glm::vec2 position;
 	};
 
 	struct KeyboardEvent {
@@ -202,8 +171,27 @@ export namespace mka::graphic {
 					[](GLFWwindow* win, double xOffset, double yOffset) {
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
 						self->mouseEvent.scroll = glm::vec2(xOffset, yOffset);
+						
+						if(yOffset > 0) self->mouseEvent.set(MouseBUtton::Middle, MouseState::ScrollUp);
+						if(yOffset < 0) self->mouseEvent.set(MouseBUtton::Middle, MouseState::ScrollDown);
 					}
 				);
+
+				glfwSetMouseButtonCallback(window, 
+					[](GLFWwindow* win, int button, int action, int /*mods*/) {
+				    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
+
+					MouseState state = (action == GLFW_PRESS) ? MouseState::Pressed : MouseState::Released;
+					MouseButton btn;
+
+					switch(button) {
+						case GLFW_MOUSE_BUTTON_LEFT:   btn = MouseButton::Left; break;
+						case GLFW_MOUSE_BUTTON_MIDDLE: btn = MouseButton::Middle; break;
+						case GLFW_MOUSE_BUTTON_RIGHT:  btn = MouseButton::Right; break;
+					}
+
+					self->mouseEvent.set(btn, state);
+				});
 
 				if(!this->ctx || !this->ctx->init(window)) {
 					state = State::Terminated;
@@ -373,6 +361,6 @@ export namespace mka::graphic {
 
 		static constexpr int KEY_COUNT = GLFW_KEY_LAST + 1;
 		std::array<KeyboardKey, KEY_COUNT> glfwToKey;
-		std::deque<std::variant<KeyboardEvent, MouseEvent>> eventQueue;
+		std::deque<KeyboardEvent> eventQueue;
 	};
 }
