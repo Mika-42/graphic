@@ -53,3 +53,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 
 clean:
 	rm -rf $(BUILD_DIR) gcm.cache
+
+run:
+	./$(BUILD_DIR)/$(PROJECT_NAME)
+
+debug:
+	gdb ./$(BUILD_DIR)/$(PROJECT_NAME)
+

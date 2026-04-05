@@ -156,7 +156,7 @@ export namespace mka::graphic {
 						
 						Window* self = static_cast<Window*>(glfwGetWindowUserPointer(win));
 						
-						self->keyboardEvent.set(self->glfwToKey[key], (action == GLFW_PRESS) ? KeyState::Pressed : KeyState::Released);
+						self->keyboardEvent.set(self->glfwToKey[key], (action == GLFW_RELEASE) ? KeyState::Released : KeyState::Pressed);
 					}
 				);
 				
