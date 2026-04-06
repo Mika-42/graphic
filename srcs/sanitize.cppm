@@ -1,3 +1,7 @@
+/**
+ * @file sanitize.cppm
+ * @brief C++20 module implementation for `sanitize`.
+ */
 module;
 #include <glm/glm.hpp>
 #include <cmath>

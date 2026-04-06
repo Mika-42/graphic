@@ -1,3 +1,7 @@
+/**
+ * @file shader.cppm
+ * @brief C++20 module implementation for `shader`.
+ */
 module;
 
 #include "glad.h"

@@ -1,75 +1,67 @@
 # Module `mka.graphic.window`
 
-[⬅ Retour index](./README.md) · [⬅ Module context](./mka.graphic.context.md) · [➡ Module renderer](./mka.graphic.opengl.renderer.md)
+[⬅ Back to index](./README.md) · [⬅ Previous: context](./mka.graphic.context.md) · [➡ Next: renderer](./mka.graphic.opengl.renderer.md)
 
-Ce module expose l’abstraction de **fenêtre applicative** et la boucle de rendu principale.
+This module exposes the application window abstraction and the main frame loop.
 
-## Enum
+## Enum `State`
+- `Inited`: initialization succeeded, ready to run.
+- `Running`: frame loop active.
+- `Stopped`: loop exited cleanly.
+- `Terminated`: initialization failed or fully shut down.
 
-### `State`
-- `State::Inited` : fenêtre/context initialisés.
-- `State::Running` : boucle de rendu active.
-- `State::Stopped` : boucle terminée proprement.
-- `State::Terminated` : erreur d’initialisation ou fermeture complète.
+## Struct `Time`
+Per-frame timing values passed to `render(...)`:
+- `now`: absolute GLFW time in milliseconds.
+- `delta`: frame delta in milliseconds.
 
-## Classe `Window`
+## Class `Window`
+`Window` is intended as a base class. You implement `render(...)` and call `run()`.
 
-Classe de base à hériter : l’application implémente `render()` et utilise `run()` pour exécuter la boucle.
+### Constructor
+`Window(size_t width, size_t height, const std::string& name, std::unique_ptr<Context> ctx)`
 
-### Méthodes
+Responsibilities:
+- initialize GLFW,
+- apply API-specific window hints,
+- create native window,
+- register callbacks (resize, cursor, scroll, mouse buttons),
+- initialize context,
+- enable alpha blending for the OpenGL pipeline.
 
-#### `Window(size_t width, size_t height, const std::string& name, std::unique_ptr<Context> ctx)`
-Construit la fenêtre, applique les hints API, crée la fenêtre GLFW et initialise le contexte.
+### Render callback
+`virtual void render(const glm::vec2& size,
+                     const MouseEventView& mouse,
+                     const KeyboardEventView& keyboard,
+                     const Time& time) = 0;`
 
+This callback is called once per frame while the loop is running.
+
+### Other methods
+- `const glm::mat4& getOrthographicProjection() const`: projection matrix maintained on resize.
+- `int run()`: starts blocking loop and drives render flow.
+- `const State& getState()`: current lifecycle state.
+
+## Input views
+`Window` passes read-only wrappers to input state:
+- `KeyboardEventView`: key queries (`isPressed`, `pressedKeys`, key names).
+- `MouseEventView`: button/wheel/cursor queries.
+
+## Example
 ```cpp
 class App : public mka::graphic::Window {
 public:
-    App(std::unique_ptr<mka::graphic::Context> ctx)
+    explicit App(std::unique_ptr<mka::graphic::Context> ctx)
         : Window(1280, 720, "App", std::move(ctx)) {}
 
-    void render() override {}
+    void render(const glm::vec2& size,
+                const MouseEventView& mouse,
+                const KeyboardEventView& keyboard,
+                const Time& time) override {
+        if (keyboard.isPressed(mka::graphic::Key::Escape)) {
+            // example: app-specific quit logic
+        }
+        (void)size; (void)mouse; (void)time;
+    }
 };
-```
-
-#### `virtual void render() = 0`
-Callback utilisateur exécuté à chaque frame.
-
-```cpp
-void render() override {
-    // ici: add/draw via renderer
-}
-```
-
-#### `const glm::mat4& getOrthographicProjection() const`
-Renvoie la projection orthographique tenue à jour au redimensionnement de la fenêtre.
-
-```cpp
-const glm::mat4 projection = getOrthographicProjection();
-```
-
-#### `int run()`
-Démarre la boucle: `makeCurrent() -> render() -> swapBuffers() -> poll events`.
-
-```cpp
-int code = app.run();
-if (code != 0) {
-    // init incorrecte
-}
-```
-
-#### `const State& getState()`
-Expose l’état courant de la fenêtre/boucle.
-
-```cpp
-if (app.getState() == mka::graphic::State::Running) {
-    // monitoring runtime
-}
-```
-
-#### `const glm::vec2 getSize()`
-Renvoie la taille courante de la fenêtre (mise à jour sur callback resize).
-
-```cpp
-auto size = app.getSize();
-std::println("{}x{}", size.x, size.y);
 ```

@@ -1,3 +1,7 @@
+/**
+ * @file context.cppm
+ * @brief C++20 module implementation for `context`.
+ */
 module;
 #include "glad.h"
 #include <GLFW/glfw3.h>

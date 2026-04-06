@@ -1,65 +1,29 @@
 # Module `mka.graphic.opengl.shader`
 
-[⬅ Retour index](./README.md) · [⬅ Module uniform](./mka.graphic.opengl.uniform.md) · [➡ Module renderer](./mka.graphic.opengl.renderer.md)
+[⬅ Back to index](./README.md) · [⬅ Previous: uniform](./mka.graphic.opengl.uniform.md) · [➡ Next: renderer](./mka.graphic.opengl.renderer.md)
 
-Ce module encapsule la gestion d’un programme shader OpenGL (compile, attach, link, use, set uniforms).
+Wrapper around OpenGL program lifecycle and typed uniform updates.
 
-## Enum
+## Enum `ShaderType`
+- `Vertex`
+- `Fragment`
+- `Geometry`
 
-### `ShaderType`
-- `ShaderType::Vertex` : shader de sommet.
-- `ShaderType::Fragment` : shader de fragment.
-- `ShaderType::Geometry` : shader de géométrie.
+## Class `Shader`
+### Responsibilities
+- create/delete OpenGL program object,
+- compile and attach shader stages,
+- link program,
+- bind program for draw calls,
+- write typed uniforms via `mka.graphic.opengl.uniform`.
 
-## Classe `Shader`
+### Main methods
+- `Shader()`
+- `~Shader()`
+- `void use() const`
+- `template<typename T> void set(const std::string& uniform_variable, T value) const`
+- `std::string addScript(const std::string& shaderCode, ShaderType type) const`
+- `std::string link() const`
 
-### Méthodes
-
-#### `Shader()`
-Crée un objet programme OpenGL.
-
-```cpp
-mka::graphic::gl::Shader shader;
-```
-
-#### `~Shader()`
-Libère le programme OpenGL.
-
-```cpp
-{
-    mka::graphic::gl::Shader tmp;
-} // destruction automatique
-```
-
-#### `void use() const`
-Active le programme pour les draw calls suivants.
-
-```cpp
-shader.use();
-```
-
-#### `template<typename T> void set(const std::string& uniform_variable, T value) const`
-Récupère la location puis écrit la valeur via `glUniform` du module uniform.
-
-```cpp
-shader.set("uOpacity", 0.75f);
-shader.set("uProjection", glm::mat4{1.0f});
-```
-
-#### `std::string addScript(const std::string& shaderCode, ShaderType type) const`
-Compile et attache un script shader; retourne un log en cas d’erreur.
-
-```cpp
-auto vLog = shader.addScript(vertexSource, mka::graphic::gl::ShaderType::Vertex);
-auto fLog = shader.addScript(fragmentSource, mka::graphic::gl::ShaderType::Fragment);
-```
-
-#### `std::string link() const`
-Link le programme et retourne le log linker si échec.
-
-```cpp
-auto linkLog = shader.link();
-if (!linkLog.empty()) {
-    // debug link errors
-}
-```
+### Error handling
+`addScript()` and `link()` return OpenGL logs as strings. Empty string means success or no diagnostics.

@@ -1,3 +1,7 @@
+/**
+ * @file keyboard.cppm
+ * @brief C++20 module implementation for `keyboard`.
+ */
 module;
 #include <GLFW/glfw3.h>
 #include <string>
@@ -8,8 +12,10 @@ export module mka.graphic.keyboard;
 
 export namespace mka::graphic {
 
+/** @brief Runtime state of a keyboard key. */
 enum class KeyState { Pressed, Released };
 
+/** @brief Internal key identifier used by the engine. */
 enum class Key {
   Space,
   Apostrophe,
@@ -132,10 +138,17 @@ enum class Key {
   Unknown
 };
 
+/**
+ * @brief Keyboard state table synchronized once per frame from GLFW.
+ *
+ * `Window::handleKeyboard()` updates each entry so render code can query
+ * stable key states without touching GLFW directly.
+ */
 class KeyboardEvent {
 public:
   static constexpr int KEY_COUNT = 121;
 
+  /** @brief Mapping between GLFW key code, engine key and human-readable name. */
   struct CastElement {
     const size_t glfw;
     const Key key;
@@ -302,6 +315,7 @@ public:
     return {};
   }
 public:
+  /** @brief Return true when `key` is currently pressed. */
   bool isPressed(Key key) const {
     auto e = get(key);
     if (!e)
@@ -310,6 +324,7 @@ public:
     return e->state == KeyState::Pressed;
   }
 
+  /** @brief Return true when `key` is currently released. */
   bool isReleased(Key key) const {
     auto e = get(key);
     if (!e)
@@ -318,6 +333,7 @@ public:
     return e->state == KeyState::Released;
   }
 
+  /** @brief Return a compact list of all keys currently pressed. */
   std::vector<Key> pressedKeys() const {
     std::vector<Key> keys;
     for (const auto &e : castTable) {

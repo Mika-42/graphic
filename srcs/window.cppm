@@ -1,3 +1,7 @@
+/**
+ * @file window.cppm
+ * @brief C++20 module implementation for `window`.
+ */
 module;
 
 #include <GLFW/glfw3.h>
@@ -21,8 +25,8 @@ export namespace mka::graphic {
 enum class State { Inited, Running, Stopped, Terminated };
 
 struct Time {
-  double now = 0.0;   // temps absolu (micro secondes)
-  double delta = 0.0; // temps entre deux frames (micro secondes)
+  double now = 0.0;   /// Absolute time from GLFW (milliseconds).
+  double delta = 0.0; /// Delta between two frames (milliseconds).
 };
 
 /**

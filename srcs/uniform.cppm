@@ -1,3 +1,7 @@
+/**
+ * @file uniform.cppm
+ * @brief C++20 module implementation for `uniform`.
+ */
 module;
 
 #include <vector>

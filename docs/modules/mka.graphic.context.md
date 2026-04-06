@@ -1,72 +1,38 @@
 # Module `mka.graphic.context`
 
-[⬅ Retour index](./README.md) · [➡ Module window](./mka.graphic.window.md)
+[⬅ Back to index](./README.md) · [➡ Next: window](./mka.graphic.window.md)
 
-Ce module définit l’abstraction de **contexte graphique** (backend + loader) utilisée par la fenêtre pour initialiser et piloter le rendu.
+`mka.graphic.context` defines the rendering backend abstraction. A context instance is responsible for backend initialization, making itself current on the calling thread, and swapping buffers.
 
 ## Enums
 
 ### `API`
-- `API::None` : aucun backend.
-- `API::OpenGL` : backend OpenGL.
-- `API::Vulkan` : backend Vulkan (placeholder actuellement).
-- `API::DirectX` : backend DirectX (placeholder actuellement).
-- `API::Metal` : backend Metal (placeholder actuellement).
+- `API::None`: no backend selected.
+- `API::OpenGL`: OpenGL backend.
+- `API::Vulkan`: Vulkan backend (placeholder).
+- `API::DirectX`: DirectX backend (placeholder).
+- `API::Metal`: Metal backend (placeholder).
 
 ### `Loader`
-- `Loader::None` : aucun loader OpenGL.
-- `Loader::Glad` : loader GLAD.
-- `Loader::Glew` : loader GLEW (placeholder actuellement).
+- `Loader::None`: no loader.
+- `Loader::Glad`: GLAD loader.
+- `Loader::Glew`: GLEW loader (placeholder).
 
-## Classe `Context`
+## Class `Context`
 
-Interface de base pour tous les contextes graphiques.
+Pure interface for concrete backend contexts.
 
-### Méthodes
+### Methods
+- `bool init(GLFWwindow* window)`: initialize backend state from a native GLFW window.
+- `std::string getName() const`: backend display name, useful in logs.
+- `API getAPI() const`: returns the backend family.
+- `void makeCurrent()`: activate the context on current thread.
+- `void swapBuffers()`: present rendered content.
 
-#### `bool init(GLFWwindow* window)`
-Initialise le backend sur une fenêtre GLFW native.
-
-```cpp
-if (!ctx->init(glfwWindowPtr)) {
-    // échec d'initialisation du backend
-}
-```
-
-#### `std::string getName() const`
-Renvoie un nom lisible du backend actif (utile pour logs/debug).
-
-```cpp
-std::println("Backend: {}", ctx->getName());
-```
-
-#### `API getAPI() const`
-Renvoie la famille d’API utilisée par le contexte.
-
-```cpp
-if (ctx->getAPI() == mka::graphic::API::OpenGL) {
-    // config OpenGL
-}
-```
-
-#### `void makeCurrent()`
-Active le contexte sur le thread courant avant le rendu.
-
-```cpp
-ctx->makeCurrent();
-```
-
-#### `void swapBuffers()`
-Présente l’image rendue (swap front/back buffer).
-
-```cpp
-ctx->swapBuffers();
-```
-
-## Fonction exportée
+## Factory function
 
 ### `std::unique_ptr<Context> createContext(API api, Loader loader = Loader::None)`
-Fabrique une implémentation concrète de `Context` selon l’API et le loader choisis.
+Creates a concrete implementation from (`API`, `Loader`) pair.
 
 ```cpp
 auto ctx = mka::graphic::createContext(
@@ -74,6 +40,11 @@ auto ctx = mka::graphic::createContext(
     mka::graphic::Loader::Glad
 );
 if (!ctx) {
-    // combinaison API/loader invalide ou non implémentée
+    // unsupported or invalid combination
 }
 ```
+
+## Current implementation status
+- OpenGL + GLAD: implemented.
+- OpenGL + GLEW: not implemented yet.
+- Vulkan / DirectX / Metal: stub classes returning `false` from `init()`.

@@ -1,3 +1,7 @@
+/**
+ * @file renderer.cppm
+ * @brief C++20 module implementation for `renderer`.
+ */
 module;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
