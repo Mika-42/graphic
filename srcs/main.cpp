@@ -1,6 +1,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <glm/gtc/constants.hpp>
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
@@ -15,10 +16,8 @@ public:
     void render(
 			const glm::vec2& /*size*/, 
 			const MouseEventView& mouse,
-			const KeyboardEventView& keyboard) override {
-
-		static float t = 0.0f;
-		t += 0.01f;
+			const KeyboardEventView& keyboard,
+			const Time& time) override {
 
         const glm::mat4 projection = getOrthographicProjection();
         renderer.setBackgroundColor({0.5, 0.5, 0.5, 1});
@@ -43,7 +42,7 @@ public:
 			.color = {1.0, 0.0, 0.0, 1.0},
 			.gradientColorA = {1.0, 0.0, 0.0, 1.0},
 			.gradientColorB = {0.0, 0.0, 1.0, 1.0},
-			.gradientAngle = 360.0f * glm::cos(t),
+			.gradientAngle = 360.0f * glm::cos(float(2.0 * glm::pi<double>() * 0.50 * time.now / 1000.0)),
 			.position = { 100, 100 },
 			.fontSize = 40,
 			.letterSpacing = 3

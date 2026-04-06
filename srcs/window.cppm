@@ -20,6 +20,11 @@ export namespace mka::graphic {
 /// @brief High-level runtime state of a window instance.
 enum class State { Inited, Running, Stopped, Terminated };
 
+struct Time {
+  double now = 0.0;   // temps absolu (micro secondes)
+  double delta = 0.0; // temps entre deux frames (micro secondes)
+};
+
 /**
  * @brief Base window abstraction hosting the render loop.
  *
@@ -167,7 +172,7 @@ public:
   }
 
   virtual void render(const glm::vec2 &size, const MouseEventView &mouse,
-                      const KeyboardEventView &keyboard) = 0;
+                      const KeyboardEventView &keyboard, const Time& time) = 0;
 
   /// @brief Projection updated whenever the window size changes.
   const glm::mat4 &getOrthographicProjection() const {
@@ -180,15 +185,21 @@ public:
       return -1;
 
     state = State::Running;
+    lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
 
       handleKeyboard();
 
+      double current = glfwGetTime();
+      time.delta = (current - lastTime) * 1000.0;
+      time.now = current * 1000.0;
+      lastTime = current;
+
       ctx->makeCurrent();
 
-      render(size, mouseEventView, keyboardEventView);
+      render(size, mouseEventView, keyboardEventView, time);
 
       ctx->swapBuffers();
     }
@@ -218,6 +229,9 @@ private:
 
   MouseEventView mouseEventView;
   KeyboardEventView keyboardEventView;
+
+  double lastTime = 0.0;
+  Time time;
 
 private:
   void handleKeyboard() {
