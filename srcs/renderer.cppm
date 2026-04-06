@@ -434,7 +434,7 @@ namespace mka::graphic::gl {
 					);
 					return nullptr;
 				}
-				rectangles[rectangleCount] = r;
+				rectangles[rectangleCount] = std::move(r);
 				return &rectangles[rectangleCount++];
 			}
 
