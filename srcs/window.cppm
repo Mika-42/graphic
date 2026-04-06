@@ -166,8 +166,8 @@ public:
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
 
-  virtual void render(const glm::vec2 &size, const struct MouseEventView &mouse,
-                      const struct KeyboardEventView &keyboard) = 0;
+  virtual void render(const glm::vec2 &size, const MouseEventView &mouse,
+                      const KeyboardEventView &keyboard) = 0;
 
   /// @brief Projection updated whenever the window size changes.
   const glm::mat4 &getOrthographicProjection() const {
