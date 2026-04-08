@@ -12,7 +12,7 @@ module;
 
 export module mka.graphic.opengl.uniform;
 
-namespace mka::graphic::gl {
+namespace mka::graphic {
 
     /// @brief Primary trait specialized for each supported uniform type.
     // =========================

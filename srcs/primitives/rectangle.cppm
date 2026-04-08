@@ -7,7 +7,7 @@ module;
 export module mka.graphic.opengl.rectangle;
 
 //OpenGL
-export namespace mka::graphic::gl {
+export namespace mka::graphic {
 	
 	/**
 	 * @brief GPU instance payload for rectangle/text rendering.

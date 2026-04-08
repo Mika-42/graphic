@@ -216,7 +216,7 @@ const auto fs = R"(
 			)";
 
 //OpenGL
-namespace mka::graphic::gl {
+namespace mka::graphic {
 	
 	constexpr uint32_t TEXT = 1u << 0;
 

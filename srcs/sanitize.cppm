@@ -65,7 +65,7 @@ export namespace mka::graphic {
 	}
 
 	/// @brief Clamp/normalize rectangle attributes before uploading to the GPU.
-	void sanitizeRectangle(gl::Rectangle &r) {
+	void sanitizeRectangle(Rectangle &r) {
 		sanitizeGeometry(r.geometry);
 		sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
 		sanitizeColor(r.backgroundColorA);

@@ -10,7 +10,7 @@ module;
 export module mka.graphic.opengl.shader;
 export import mka.graphic.opengl.uniform;
 
-export namespace mka::graphic::gl {
+export namespace mka::graphic {
 
 	/// @brief Shader stage identifiers mapped to OpenGL enums.
 	enum class ShaderType : GLenum {
@@ -54,7 +54,7 @@ export namespace mka::graphic::gl {
 		/// @brief Set a uniform by name using typed specializations from `uniform` module.
         void set(const std::string &uniform_variable, const auto value) const {
             const GLint location = glGetUniformLocation(program, uniform_variable.c_str());
-            mka::graphic::gl::glUniform(program, location, value);
+            mka::graphic::glUniform(program, location, value);
         }
 
 		/// @brief Compile and attach one shader stage, returning compile log if any.

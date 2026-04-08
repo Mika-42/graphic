@@ -18,7 +18,7 @@ struct PianoOctave {
   glm::vec4 whiteKeyColor;
   glm::vec4 blackKeyColor;
   int octave = 0;
-  gl::Rectangle keys[12];
+  Rectangle keys[12];
 
   struct KeyInfo {
     KeyNote note;
@@ -114,7 +114,7 @@ public:
 private:
   static constexpr size_t OCTAVE_COUNT = 11;
   PianoOctave octave[OCTAVE_COUNT];
-  mka::graphic::gl::Renderer<1024> renderer;
+  mka::graphic::Renderer<1024> renderer;
 };
 
 int main() {
