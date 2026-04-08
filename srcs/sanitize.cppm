@@ -6,6 +6,7 @@ module;
 #include <glm/glm.hpp>
 #include <cmath>
 export module mka.graphic.sanitize;
+import mka.graphic.opengl.rectangle;
 
 export namespace mka::graphic {
 
@@ -60,6 +61,22 @@ export namespace mka::graphic {
 			if (!std::isfinite(shadowOffset[i])) {
 				shadowOffset[i] = 0.0f;
 			}
+		}
+	}
+
+	/// @brief Clamp/normalize rectangle attributes before uploading to the GPU.
+	void sanitizeRectangle(gl::Rectangle &r) {
+		sanitizeGeometry(r.geometry);
+		sanitizeRadius(r.radius, glm::vec2(r.geometry.z, r.geometry.w));
+		sanitizeColor(r.backgroundColorA);
+		sanitizeColor(r.backgroundColorB);
+		sanitizeColor(r.borderColor);
+		sanitizeColor(r.shadowColor);
+		sanitizeShadow(r.shadowOffset, r.shadowSoftness, r.shadowSpread);
+		sanitizeBorderThickness(r.borderThickness);
+		r.gradientAngle = std::fmod(r.gradientAngle, 360.0f);
+		if (r.gradientAngle < 0.0f) {
+			r.gradientAngle += 360.0f;
 		}
 	}
 }
