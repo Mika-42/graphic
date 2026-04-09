@@ -35,18 +35,23 @@ export namespace mka::graphic {
 				}
 
 				child->setPosition({leftOffset + geometry.x, geometry.y + offset});
-				offset += child->getSize().y;
+				offset += child->getSize().y + gap;
 			}
 			geometry.w = offset;
 			View::draw(renderer);
 		}
 		
+		void setGap(float v) {
+			gap = sanitizeFloat(v, 0.0f);
+		}
+
 		void setAlign(Align a) {
 			align = a;
 		}
 
 		private:
 			Align align = Align::Left;
+			float gap = 0.0f;
 	};
 
 } // mka::graphic

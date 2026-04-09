@@ -8,8 +8,8 @@ BUILD_DIR := build
 MODULES := \
 	$(SRC_DIR)/primitives/rectangle.cppm \
 	$(SRC_DIR)/sanitize.cppm \
-	$(SRC_DIR)/uniform.cppm \
-	$(SRC_DIR)/shader.cppm \
+	$(SRC_DIR)/opengl/uniform.cppm \
+	$(SRC_DIR)/opengl/shader.cppm \
 	$(SRC_DIR)/renderer.cppm \
 	$(SRC_DIR)/views/view.cppm \
 	$(SRC_DIR)/views/stackview.cppm \
@@ -28,7 +28,7 @@ C_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CS:.c=.o))
 
 OBJS := $(MODULE_OBJS) $(CPP_OBJS) $(C_OBJS)
 
-FLAGS := -std=c++20 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG
+FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG
 LINK_FLAGS := -lglfw -lGL -lfreetype
 INCLUDES := -I$(SRC_DIR) -Iglad -I/usr/include/freetype2
 
