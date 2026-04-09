@@ -7,6 +7,8 @@ BUILD_DIR := build
 # Modules (ordre IMPORTANT)
 MODULES := \
 	$(SRC_DIR)/primitives/rectangle.cppm \
+	$(SRC_DIR)/views/view.cppm \
+	$(SRC_DIR)/views/scrollview.cppm \
 	$(SRC_DIR)/sanitize.cppm \
 	$(SRC_DIR)/inputs/keyboard.cppm \
 	$(SRC_DIR)/inputs/mouse.cppm \
