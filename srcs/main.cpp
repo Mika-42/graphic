@@ -89,6 +89,7 @@ public:
 	  octave->setSize({50 + 50 * o, 200});
       octave->whiteKeyColor = {1.0, 1.0, 1.0, 1.0};
       octave->blackKeyColor = {0.0, 0.0, 0.0, 1.0};
+	  if(o == 1) octave->setVisible(false);
 	  s.addChild(std::move(octave));
     }
   }

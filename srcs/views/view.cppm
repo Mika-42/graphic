@@ -38,7 +38,7 @@ export namespace mka::graphic {
 
 			virtual void draw(Renderer &renderer) {
 				for(auto& child : children) {
-					if(child) {
+					if(child && child->visible) {
 						child->draw(renderer);
 					}
 				}
@@ -57,13 +57,16 @@ export namespace mka::graphic {
 				geometry.w = s.y; 
 			}
 
+			void setVisible(bool v) { visible = v; }
+			bool isVisible() { return visible; }
+
 		protected:
 			glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
 			std::vector<std::unique_ptr<View>> children;
 	
 		private:
 			View* parent = nullptr;
-
+			bool visible = true;
 		};
 
 } // mka::graphic
