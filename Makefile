@@ -7,16 +7,16 @@ BUILD_DIR := build
 # Modules (ordre IMPORTANT)
 MODULES := \
 	$(SRC_DIR)/primitives/rectangle.cppm \
-	$(SRC_DIR)/views/view.cppm \
-	$(SRC_DIR)/views/scrollview.cppm \
 	$(SRC_DIR)/sanitize.cppm \
+	$(SRC_DIR)/uniform.cppm \
+	$(SRC_DIR)/shader.cppm \
+	$(SRC_DIR)/renderer.cppm \
+	$(SRC_DIR)/views/view.cppm \
+	$(SRC_DIR)/views/stackview.cppm \
 	$(SRC_DIR)/inputs/keyboard.cppm \
 	$(SRC_DIR)/inputs/mouse.cppm \
 	$(SRC_DIR)/context.cppm \
 	$(SRC_DIR)/window.cppm \
-	$(SRC_DIR)/uniform.cppm \
-	$(SRC_DIR)/shader.cppm \
-	$(SRC_DIR)/renderer.cppm
 
 CPPS := $(shell find $(SRC_DIR) -name "*.cpp")
 CS := $(shell find $(SRC_DIR) -name "*.c")

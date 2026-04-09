@@ -6,6 +6,9 @@
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
+import mka.graphic.view;
+import mka.graphic.view.stackview;
+import mka.graphic.sanitize;
 
 using namespace mka::graphic;
 
@@ -13,12 +16,11 @@ enum class KeyColor { Black, White };
 enum class KeyNote { C, D, E, F, G, A, B };
 enum class KeySymbol { Sharp, Bemol, None };
 
-struct PianoOctave {
-  glm::vec4 geometry;
+class PianoOctave : public View {
+	public:
   glm::vec4 whiteKeyColor;
   glm::vec4 blackKeyColor;
   int octave = 0;
-  Rectangle keys[12];
 
   struct KeyInfo {
     KeyNote note;
@@ -43,26 +45,30 @@ struct PianoOctave {
       KeyInfo{KeyNote::A, KeySymbol::Sharp, KeyColor::Black, 1.0f, 8.5f}  // A#
   };
 
-  void evalPos() {
+  void draw(Renderer &renderer) override {
 
     const float keyHeight = geometry.w / 10.5f;
+    const float radius = keyHeight * 0.25f;
 
-    for (size_t i = 0; i < 12; ++i) {
-      const bool isBlackKey = (keyPattern[i].color == KeyColor::Black);
-      keys[i].geometry.z = geometry.z * (isBlackKey ? 0.6f : 1.0f);
-      keys[i].geometry.w = keyPattern[i].height * keyHeight;
-      keys[i].geometry.x = geometry.x;
-      keys[i].geometry.y =
-          geometry.y +
-          (geometry.w -
-           (keyPattern[i].position + keyPattern[i].height) * keyHeight);
+    for (auto &k : keyPattern) {
+      const bool isBlackKey = (k.color == KeyColor::Black);
+      const glm::vec4 keyColor = isBlackKey ? blackKeyColor : whiteKeyColor;
+      const float keyWidth = geometry.z * (isBlackKey ? 0.6f : 1.0f);
 
-      keys[i].backgroundColorA = keys[i].backgroundColorB =
-          isBlackKey ? blackKeyColor : whiteKeyColor;
+      Rectangle key{
+          .geometry = {geometry.x, 0.0f, keyWidth, k.height * keyHeight},
+          .radius = {radius, radius, 0, 0},
+          .backgroundColorA = keyColor,
+          .backgroundColorB = keyColor,
+      };
 
-      const float radius = keyHeight * 0.25f;
-      keys[i].radius = {radius, radius, 0, 0};
+      key.geometry.y =
+          geometry.y + geometry.w - (k.position + k.height) * keyHeight;
+
+      renderer.add(key);
     }
+
+	  View::draw(renderer);
   }
 };
 
@@ -71,11 +77,18 @@ public:
   MinimalApp(std::unique_ptr<mka::graphic::Context> ctx)
       : Window(800, 600, "Minimal", std::move(ctx)) {
 
+	s.setPosition({200, 200});
+	s.setAlign(Align::Right);
+
     for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
-      octave[o].octave = o;
-      octave[o].geometry = {0, o * 200, 50, 200};
-      octave[o].whiteKeyColor = {1.0, 1.0, 1.0, 1.0};
-      octave[o].blackKeyColor = {0.0, 0.0, 0.0, 1.0};
+      auto octave = std::make_unique<PianoOctave>();
+		
+	  octave->octave = o;
+      octave->setPosition({0, o * 200});
+	  octave->setSize({50 + 50 * o, 200});
+      octave->whiteKeyColor = {1.0, 1.0, 1.0, 1.0};
+      octave->blackKeyColor = {0.0, 0.0, 0.0, 1.0};
+	  s.addChild(std::move(octave));
     }
   }
 
@@ -85,35 +98,13 @@ public:
 
     const glm::mat4 projection = getOrthographicProjection();
     renderer.setBackgroundColor({0.15, 0.15, 0.15, 1});
-
-    for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
-      octave[o].evalPos();
-
-      if (octave[o].octave == 11) {
-
-        for (size_t i = 0; i < 12; ++i) {
-          const bool isGSharp =
-              (octave[o].keyPattern[i].note == KeyNote::G &&
-               octave[o].keyPattern[i].symbol == KeySymbol::Sharp);
-          const bool isA = octave[o].keyPattern[i].note == KeyNote::A;
-          const bool isB = octave[o].keyPattern[i].note == KeyNote::B;
-
-          if (!isGSharp && !isA && !isB) {
-            renderer.add(std::move(octave[o].keys[i]));
-          }
-        }
-      }
-
-      for (size_t i = 0; i < 12; ++i) {
-        renderer.add(std::move(octave[o].keys[i]));
-      }
-    }
+	s.draw(renderer);
     renderer.draw(projection);
   }
 
 private:
-  static constexpr size_t OCTAVE_COUNT = 11;
-  PianoOctave octave[OCTAVE_COUNT];
+  static constexpr size_t OCTAVE_COUNT = 3;
+  StackView s;
   mka::graphic::Renderer renderer;
 };
 

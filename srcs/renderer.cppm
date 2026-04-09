@@ -311,6 +311,9 @@ namespace mka::graphic {
 				rectangles.emplace_back(std::move(r));
 			}
 
+			void add(Rectangle& r) {
+				rectangles.emplace_back(r);
+			}
 			/**
 			 * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
 			 * @return Number of generated rectangle instances.
