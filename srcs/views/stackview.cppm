@@ -1,8 +1,11 @@
 module;
 
+#include <algorithm>
 #include <vector>
 #include <memory>
 #include <glm/glm.hpp>
+#include <ranges>
+#include <algorithm>
 
 export module mka.graphic.view.stackview;
 import mka.graphic.view;
@@ -25,6 +28,7 @@ export namespace mka::graphic {
 		void setSize(const glm::vec2& s) = delete;
 
 		void draw(Renderer& renderer) override {
+		
 			switch(orientation) {
 				case Orientation::Vertical: vlayout(); break;
 				case Orientation::Horizontal: hlayout(); break;
@@ -46,57 +50,85 @@ export namespace mka::graphic {
 			orientation = o;
 		}
 
+		void reverse(bool r) {
+			reverseOrder = r;
+		}
+
 		const float& getGap() { return gap; }
 		const Align& getAlign() { return align; }
 		const Orientation& getOrientation() { return orientation; }
+		const bool& isReversed() { return reverseOrder; }
 
 		private:
+
+			float alignOffset(const std::unique_ptr<View>& view) const {
+
+					const float dw = geometry.z - view->getSize().x;
+					const float dh = geometry.w - view->getSize().y;
+					const bool isVertical = (orientation == Orientation::Vertical);
+					
+					switch(align) {
+					
+						case Align::Right:	return dw; 
+						case Align::Bottom:	return dh;
+						
+						case Align::Center: return isVertical ? 0.5f * dw : 0.5f * dh;
+						
+						case Align::Left:	return 0.0f;
+						case Align::Top:	return 0.0f;
+						
+						default:			return 0.0f;
+					}
+			}
+
 			void vlayout() {
 
 				float offset = 0.0f;
-				for(auto& child : children) {
+				
+				auto process = [&](std::unique_ptr<View>& child){
+
 					geometry.z = glm::max(geometry.z, child->getSize().x);
 				
-					float leftOffset = 0.0f;
-
-					switch(align) {
-						case Align::Center: leftOffset = 0.5f * (geometry.z - child->getSize().x); break;
-						case Align::Left:	leftOffset = 0.0f; break;
-						case Align::Right:	leftOffset = geometry.z - child->getSize().x; break;
-						default:			leftOffset = 0.0f;
-					}
-
-					child->setPosition({leftOffset + geometry.x, geometry.y + offset});
+					child->setPosition({alignOffset(child) + geometry.x, geometry.y + offset});
 					offset += child->getSize().y + gap;
+				};
+
+				if(reverseOrder) {
+					std::ranges::for_each(children | std::views::reverse, process);
+				} else {
+					std::ranges::for_each(children, process);
 				}
+
 				geometry.w = offset;
 			}
 
 			void hlayout() {
 
 				float offset = 0.0f;
-				for(auto& child : children) {
+
+				auto process = [&](std::unique_ptr<View>& child){
+
 					geometry.w = glm::max(geometry.w, child->getSize().y);
 				
-					float bottomOffset = 0.0f;
-
-					switch(align) {
-						case Align::Center: bottomOffset = 0.5f * (geometry.w - child->getSize().y); break;
-						case Align::Bottom:	bottomOffset = geometry.w - child->getSize().y; break;
-						case Align::Top: bottomOffset = 0.0f; break;
-						default:			bottomOffset = geometry.w - child->getSize().y;
-					}
-
-					child->setPosition({geometry.x + offset, geometry.y + bottomOffset});
+					child->setPosition({geometry.x + offset, geometry.y + alignOffset(child)});
 					offset += child->getSize().x + gap;
+				};
+
+				if(reverseOrder) {
+					std::ranges::for_each(children | std::views::reverse, process);
+				} else {
+					std::ranges::for_each(children, process);
 				}
+
 				geometry.z = offset;
 			}
 
 		private:
+
 			Align align = Align::Left;
 			Orientation orientation = Orientation::Vertical;
 			float gap = 0.0f;
+			bool reverseOrder = false;
 	};
 
 } // mka::graphic

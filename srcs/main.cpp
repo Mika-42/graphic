@@ -81,6 +81,7 @@ public:
 	s.setOrientation(Orientation::Horizontal);
 	s.setAlign(Align::Center);
 	s.setGap(5);
+	s.reverse(false);
 
     for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
       auto octave = std::make_unique<PianoOctave>();
