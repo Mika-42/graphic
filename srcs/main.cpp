@@ -78,7 +78,8 @@ public:
       : Window(800, 600, "Minimal", std::move(ctx)) {
 
 	s.setPosition({200, 200});
-	s.setAlign(Align::Right);
+	s.setOrientation(Orientation::Horizontal);
+	s.setAlign(Align::Center);
 	s.setGap(5);
 
     for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
@@ -86,10 +87,9 @@ public:
 		
 	  octave->octave = o;
       octave->setPosition({0, o * 200});
-	  octave->setSize({50 + 50 * o, 200});
+	  octave->setSize({50 + 50 * o, 200 + 10 * o});
       octave->whiteKeyColor = {1.0, 1.0, 1.0, 1.0};
       octave->blackKeyColor = {0.0, 0.0, 0.0, 1.0};
-	  if(o == 1) octave->setVisible(false);
 	  s.addChild(std::move(octave));
     }
   }
