@@ -251,10 +251,8 @@ namespace mka::graphic {
 
 	/**
 	 * @brief Instanced rectangle renderer with optional text support.
-	 *
-	 * `MAX_RECTANGLE_COUNT` defines fixed CPU-side buffering capacity.
 	 */
-	export template<size_t MAX_RECTANGLE_COUNT> class Renderer {
+	export class Renderer {
 		
 		public:
 
@@ -309,16 +307,8 @@ namespace mka::graphic {
 				}
 			}
 
-			[[maybe_unused]] Rectangle* add(Rectangle&& r) {
-				if (rectangleCount >= MAX_RECTANGLE_COUNT) {
-					DEBUG_LOG(
-						"rectangleCount exceeded MAX_RECTANGLE_COUNT (" +
-						std::to_string(rectangleCount) + "/" + std::to_string(MAX_RECTANGLE_COUNT) + ")."
-					);
-					return nullptr;
-				}
-				rectangles[rectangleCount] = std::move(r);
-				return &rectangles[rectangleCount++];
+			void add(Rectangle&& r) {
+				rectangles.emplace_back(std::move(r));
 			}
 
 			/**
@@ -378,11 +368,6 @@ namespace mka::graphic {
 				const float lineBottomY = sanitizedText.position.y + lineHeight;
 
 				for (char c : sanitizedText.content) {
-					if (rectangleCount >= MAX_RECTANGLE_COUNT) {
-						DEBUG_LOG("Stopped glyph generation: rectangle buffer full.");
-						break;
-					}
-
 					const CachedGlyph* glyph = getOrCreateGlyph(
 						*fontCache,
 						static_cast<unsigned char>(c),
@@ -465,10 +450,7 @@ namespace mka::graphic {
 					);
 					glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
 					glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
-					if (add(std::move(glyphRect)) == nullptr) {
-						DEBUG_LOG("Failed to append generated glyph rectangle to renderer queue.");
-						break;
-					}
+					add(std::move(glyphRect));
 					++addedCount;
 				}
 
@@ -481,20 +463,21 @@ namespace mka::graphic {
 				glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 				glClear(GL_COLOR_BUFFER_BIT);
 
-				if (rectangleCount == 0) return;
+				if (rectangles.empty()) return;
 				if (ssbo == 0 || vao == 0) {
 					DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
-					rectangleCount = 0;
+					rectangles.clear();
 					return;
 				}
 				
-				for (size_t i = 0; i < rectangleCount; ++i) {
-					sanitizeRectangle(rectangles[i]);
+				for (auto &rect : rectangles) {
+					sanitizeRectangle(rect);
 				}
-				const size_t uploadBytes = rectangleCount * sizeof(Rectangle);
-				if (uploadBytes / sizeof(Rectangle) != rectangleCount) {
+
+				const size_t uploadBytes = rectangles.size() * sizeof(Rectangle);
+				if (uploadBytes / sizeof(Rectangle) != rectangles.size()) {
 					DEBUG_LOG("draw aborted: size_t overflow detected during SSBO upload size calculation.");
-					rectangleCount = 0;
+					rectangles.clear();
 					return;
 				}
 
@@ -514,9 +497,9 @@ namespace mka::graphic {
 				
 				glBindVertexArray(vao);
 
-				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangleCount);
+				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
 
-				rectangleCount = 0;
+				rectangles.clear();
 			}
 
 			/// @brief Set clear color used by `draw`.
@@ -667,8 +650,7 @@ namespace mka::graphic {
 				return &fontCache.glyphs.emplace(glyphKey, std::move(cached)).first->second;
 			}
 
-			std::array<Rectangle, MAX_RECTANGLE_COUNT> rectangles;
-			size_t rectangleCount = 0;
+			std::vector<Rectangle> rectangles;
 			FT_Library ftLibrary {};
 			std::unordered_map<std::string, FontCache> fontCaches;
 

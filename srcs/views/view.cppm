@@ -2,7 +2,7 @@ module;
 
 #include <glm/glm.hpp>
 
-export module mka.graphic.view;
+export module mka.graphic.view.base;
 
 export namespace mka::graphic {
 
