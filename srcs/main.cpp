@@ -114,7 +114,7 @@ public:
 private:
   static constexpr size_t OCTAVE_COUNT = 11;
   PianoOctave octave[OCTAVE_COUNT];
-  mka::graphic::Renderer<1024> renderer;
+  mka::graphic::Renderer renderer;
 };
 
 int main() {

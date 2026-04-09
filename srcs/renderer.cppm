@@ -18,7 +18,8 @@ module;
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
+#include <algorithm>
+#include <cstddef>
 #include "debug.hpp"
 
 export module mka.graphic.opengl.renderer;
@@ -273,12 +274,11 @@ namespace mka::graphic {
 				if (ssbo == 0) {
 					DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
 				}
-				glNamedBufferData(
-						ssbo, 
-						MAX_RECTANGLE_COUNT * sizeof(Rectangle), 
-						nullptr,
-						GL_DYNAMIC_DRAW
-				);
+
+				rectangles.reserve(initialSsboCapacity);
+				if (!reserveSsboCapacity(initialSsboCapacity)) {
+					DEBUG_LOG("Initial SSBO allocation failed.");
+				}
 
 				if (FT_Init_FreeType(&ftLibrary) != 0) {
 					DEBUG_LOG("FreeType init failed");
@@ -474,6 +474,12 @@ namespace mka::graphic {
 					sanitizeRectangle(rect);
 				}
 
+				if (!reserveSsboCapacity(rectangles.size())) {
+					DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
+					rectangles.clear();
+					return;
+				}
+
 				const size_t uploadBytes = rectangles.size() * sizeof(Rectangle);
 				if (uploadBytes / sizeof(Rectangle) != rectangles.size()) {
 					DEBUG_LOG("draw aborted: size_t overflow detected during SSBO upload size calculation.");
@@ -509,6 +515,38 @@ namespace mka::graphic {
 			}
 
 		private:
+			static constexpr size_t initialSsboCapacity = 1024u;
+
+			[[nodiscard]] bool reserveSsboCapacity(size_t requiredInstances) {
+				if (requiredInstances == 0u) {
+					return true;
+				}
+				if (requiredInstances <= ssboCapacityInstances) {
+					return true;
+				}
+
+				// Grow with power-of-two strategy to keep reallocations rare in real-time rendering.
+				// This avoids per-frame stalls while still accepting bursty dynamic rectangle counts.
+				size_t newCapacity = std::max(ssboCapacityInstances, initialSsboCapacity);
+				while (newCapacity < requiredInstances) {
+					if (newCapacity > (std::numeric_limits<size_t>::max() / 2u)) {
+						DEBUG_LOG("reserveSsboCapacity overflow while growing capacity.");
+						return false;
+					}
+					newCapacity *= 2u;
+				}
+
+				const size_t allocationBytes = newCapacity * sizeof(Rectangle);
+				if (allocationBytes / sizeof(Rectangle) != newCapacity) {
+					DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
+					return false;
+				}
+
+				glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
+				ssboCapacityInstances = newCapacity;
+				return true;
+			}
+
 			struct CachedGlyph {
 				uint64_t texture {};
 				glm::vec2 size {};
@@ -659,5 +697,6 @@ namespace mka::graphic {
 
 			GLuint vao = 0;
 			GLuint ssbo = 0;
+			size_t ssboCapacityInstances = 0;
 	};
 }
