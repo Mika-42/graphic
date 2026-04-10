@@ -214,11 +214,12 @@ private:
 	bool hovered = false;
 	for (auto& item : items | std::views::reverse) {
 
-		//	item.view->hovered = false;
 		if(!hovered && item.view->contain(mouse.position())) {
 			hovered = true;
-		//	item.view->hovered = true;
+			item.view->setMouseFocus(true);
 			item.view->onMouseEvent(mouse);
+		} else {
+			item.view->setMouseFocus(false);
 		}
 	}
 

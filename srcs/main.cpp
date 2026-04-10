@@ -90,14 +90,23 @@ class A : public View {
 		}
 	
 		void draw(Renderer &renderer) override {
+			
+			if(isMouseFocused()) {
+				aa.backgroundColorA = glm::vec4(0.0f, 1.0, 0.0, 1.0);
+				aa.backgroundColorB = glm::vec4(0.0f, 1.0, 0.0, 1.0);
+			} else {
+				aa.backgroundColorA = cc;
+				aa.backgroundColorB = cc;	
+			}
+
 			renderer.add(aa);
 		}
 
-		bool contain(const glm::vec2& mouse) override {
+		bool contain(const glm::vec2& mouse) const override {
 			return (distance(aa, mouse) <= 0.0f);
 		}
 
-		void onMouseEvent(const MouseEventView &mouse) override {
+		void onMouseEvent(const MouseEventView &/*mouse*/) override {
 		}
 
 	private:

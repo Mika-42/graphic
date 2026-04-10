@@ -57,16 +57,16 @@ public:
 
   void setVisible(bool v) { visible = v; }
   void setKeyboardFocus(bool v) { keyboardFocus = v; }
-
+  void setMouseFocus(bool v) { mouseFocus = v; }
   const bool &isVisible() const { return visible; }
-  const bool &isHovered() const { return hovered; }
 
-  virtual bool contain(const glm::vec2 &mouse) {
+  virtual bool contain(const glm::vec2 &mouse) const {
 	return mouse.x >= geometry.x && mouse.x <= geometry.x + geometry.z &&
            mouse.y >= geometry.y && mouse.y <= geometry.y + geometry.w;
   }
 
-  const bool &isKeyboardFocused() const { return keyboardFocus; }
+  const bool &isKeyboardFocused() const { return keyboardFocus; }	
+  const bool &isMouseFocused() const { return mouseFocus; }
 
   int zIndex = 0;
 
@@ -74,11 +74,12 @@ protected:
   glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
   
   std::vector<std::unique_ptr<View>> children;
+
 private:
   View *parent = nullptr;
   bool visible = true;
   bool keyboardFocus = false;
-  bool hovered = false;	
+  bool mouseFocus = false;	
 };
 
 } // namespace mka::graphic
