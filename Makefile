@@ -12,6 +12,7 @@ MODULES := \
 	$(SRC_DIR)/opengl/shader.cppm \
 	$(SRC_DIR)/renderer.cppm \
 	$(SRC_DIR)/views/view.cppm \
+	$(SRC_DIR)/renderlist.cppm \
 	$(SRC_DIR)/views/stackview.cppm \
 	$(SRC_DIR)/inputs/keyboard.cppm \
 	$(SRC_DIR)/inputs/mouse.cppm \

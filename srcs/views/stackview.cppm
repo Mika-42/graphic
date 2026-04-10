@@ -93,7 +93,7 @@ class StackView : public View {
 public:
   void setSize(const glm::vec2 &s) = delete;
 
-  void draw(Renderer &renderer) override {
+  void draw(Renderer& /*renderer*/) override {
 
     switch (orientation) {
     case Orientation::Vertical:

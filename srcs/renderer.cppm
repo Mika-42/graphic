@@ -249,7 +249,7 @@ namespace mka::graphic {
 		if (!std::isfinite(t.position.x)) t.position.x = 0.0f;
 		if (!std::isfinite(t.position.y)) t.position.y = 0.0f;
 	}
-
+	
 	/**
 	 * @brief Instanced rectangle renderer with optional text support.
 	 */

@@ -8,11 +8,16 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include "debug.hpp"
 
 export module mka.graphic.window;
-export import mka.graphic.context;
-export import mka.graphic.keyboard;
-export import mka.graphic.mouse;
+export import mka.graphic.context; //TODO check if usefull to export
+export import mka.graphic.keyboard; //TODO check if usefull to export
+export import mka.graphic.mouse;//TODO check if usefull to export
+
+import mka.graphic.opengl.renderer;
+import mka.graphic.renderlist;
+import mka.graphic.view;
 
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
@@ -173,15 +178,10 @@ public:
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	renderer = std::make_unique<Renderer>();
   }
 
-  virtual void render(const glm::vec2 &size, const MouseEventView &mouse,
-                      const KeyboardEventView &keyboard, const Time& time) = 0;
-
-  /// @brief Projection updated whenever the window size changes.
-  const glm::mat4 &getOrthographicProjection() const {
-    return orthographicProjection;
-  }
 
   /// @brief Run the blocking frame loop until close.
   int run() {
@@ -219,15 +219,47 @@ public:
     glfwTerminate();
   }
 
-  const State &getState() { return state; }
+  const State &getState() const { return state; }
+
+  void setBackgroundColor(const glm::vec4& color) { bgColor = color; }
+ 
+  void setRoot(View& root) { rootView = &root; }
 
 private:
+
+  void render(const glm::vec2 & /*size*/, const MouseEventView &/*mouse*/,
+                      const KeyboardEventView &/*keyboard*/, const Time& /*time*/) {
+	
+    renderer->setBackgroundColor(bgColor);
+	items.clear();
+	path.clear();
+
+	if(!rootView) {
+		DEBUG_LOG("root view is not set.");
+		return;
+	}
+
+    collect(rootView, path, items);
+
+    std::sort(items.begin(), items.end(),
+        [](const RenderItem& a, const RenderItem& b) {
+            return a.zPath < b.zPath;
+        });
+
+    for (auto& item : items) {
+        item.view->draw(*renderer);
+    }
+
+    renderer->draw(orthographicProjection);
+  }
+private:
   glm::vec2 size = {0.0, 0.0};
+  glm::mat4 orthographicProjection;
+  glm::vec4 bgColor = glm::vec4(1.0f);
   std::string name;
   std::unique_ptr<Context> ctx;
   State state = State::Terminated;
   GLFWwindow *window = nullptr;
-  glm::mat4 orthographicProjection;
   MouseEvent mouseEvent;
   KeyboardEvent keyboardEvent;
 
@@ -237,6 +269,12 @@ private:
   double lastTime = 0.0;
   Time time;
 
+  std::unique_ptr<Renderer> renderer;
+
+  View* rootView = nullptr;
+  
+	std::vector<RenderItem> items;
+    std::vector<int> path;
 private:
   void handleKeyboard() {
     for (auto &i : keyboardEvent.castTable) {

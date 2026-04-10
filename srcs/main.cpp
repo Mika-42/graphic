@@ -6,6 +6,7 @@
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
+import mka.graphic.renderlist;
 import mka.graphic.view;
 import mka.graphic.view.stackview;
 import mka.graphic.sanitize;
@@ -67,17 +68,18 @@ class PianoOctave : public View {
 
       renderer.add(key);
     }
-
-	  View::draw(renderer);
   }
 };
 
-class MinimalApp : public mka::graphic::Window {
-public:
-  MinimalApp(std::unique_ptr<mka::graphic::Context> ctx)
-      : Window(800, 600, "Minimal", std::move(ctx)) {
+int main() {
+  auto ctx = mka::graphic::createContext(mka::graphic::API::OpenGL,
+                                         mka::graphic::Loader::Glad);
+  Window app(800, 600, "Example", std::move(ctx));
 
-	s.setPosition({200, 200});
+
+  static constexpr size_t OCTAVE_COUNT = 3;
+  StackView s;
+  s.setPosition({200, 200});
 	s.setOrientation(Orientation::Horizontal);
 	s.setAlign(Align::Center);
 	s.setGap(5);
@@ -93,27 +95,9 @@ public:
       octave->blackKeyColor = {0.0, 0.0, 0.0, 1.0};
 	  s.addChild(std::move(octave));
     }
-  }
 
-  void render(const glm::vec2 & /*size*/, const MouseEventView & /*mouse*/,
-              const KeyboardEventView & /*keyboard*/,
-              const Time & /*time*/) override {
+	app.setBackgroundColor({0.25, 0.25, 0.25, 1.0});
+	app.setRoot(s);
 
-    const glm::mat4 projection = getOrthographicProjection();
-    renderer.setBackgroundColor({0.15, 0.15, 0.15, 1});
-	s.draw(renderer);
-    renderer.draw(projection);
-  }
-
-private:
-  static constexpr size_t OCTAVE_COUNT = 3;
-  StackView s;
-  mka::graphic::Renderer renderer;
-};
-
-int main() {
-  auto ctx = mka::graphic::createContext(mka::graphic::API::OpenGL,
-                                         mka::graphic::Loader::Glad);
-  MinimalApp app(std::move(ctx));
   return app.run();
 }

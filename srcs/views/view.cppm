@@ -36,13 +36,7 @@ export namespace mka::graphic {
 				return children;
 			}
 
-			virtual void draw(Renderer &renderer) {
-				for(auto& child : children) {
-					if(child && child->visible) {
-						child->draw(renderer);
-					}
-				}
-			}
+			virtual void draw(class Renderer &renderer) = 0;
 
 			glm::vec2 getPosition() const { return glm::vec2{geometry.x, geometry.y}; }
 			glm::vec2 getSize() const { return glm::vec2{geometry.z, geometry.w}; }
