@@ -59,11 +59,13 @@ export namespace mka::graphic {
 
 			void setVisible(bool v) { visible = v; }
 			bool isVisible() { return visible; }
+			
+			int zIndex = 0;
 
 		protected:
 			glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
 			std::vector<std::unique_ptr<View>> children;
-	
+				
 		private:
 			View* parent = nullptr;
 			bool visible = true;
