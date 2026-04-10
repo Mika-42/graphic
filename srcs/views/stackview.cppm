@@ -94,19 +94,16 @@ public:
   void setSize(const glm::vec2 &s) = delete;
 
   virtual void draw(Renderer& /*renderer*/) override {
-
-    switch (orientation) {
-    case Orientation::Vertical:
-      vlayout();
-      break;
-    case Orientation::Horizontal:
-      hlayout();
-      break;
-    default:
-      vlayout();
-    }
+	layout();
   }
 
+  glm::vec2 getSize() const override {
+	layout();
+	return View::getSize();
+  }
+
+
+  
   void setGap(float v) { gap = sanitizeFloat(v, 0.0f); }
 
   void setAlign(Align a) { align = a; }
@@ -187,6 +184,19 @@ private:
     geometry.z = offset;
   }
 
+  virtual void layout() final {
+
+    switch (orientation) {
+    case Orientation::Vertical:
+      vlayout();
+      break;
+    case Orientation::Horizontal:
+      hlayout();
+      break;
+    default:
+      vlayout();
+    }
+  }
 private:
   Align align = Align::Left;
   Orientation orientation = Orientation::Vertical;

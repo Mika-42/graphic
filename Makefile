@@ -18,6 +18,7 @@ MODULES := \
 	$(SRC_DIR)/views/view.cppm \
 	$(SRC_DIR)/renderlist.cppm \
 	$(SRC_DIR)/views/stackview.cppm \
+	$(SRC_DIR)/views/floatview.cppm \
 	$(SRC_DIR)/context.cppm \
 	$(SRC_DIR)/window.cppm \
 
