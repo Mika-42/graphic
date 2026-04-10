@@ -16,7 +16,7 @@ using namespace mka::graphic;
 enum class KeyColor { Black, White };
 enum class KeyNote { C, D, E, F, G, A, B };
 enum class KeySymbol { Sharp, Bemol, None };
-
+/*
 class PianoOctave : public View {
 	public:
   glm::vec4 whiteKeyColor;
@@ -70,6 +70,41 @@ class PianoOctave : public View {
     }
   }
 };
+*/
+
+class Container : public View {
+	public:
+		void draw(Renderer &) override {
+
+		}
+};
+
+class A : public View {
+	public:
+		A(glm::vec4 c, glm::vec2 p) : cc(c), pp(p) {
+			aa = {
+				.geometry = {pp.x, pp.y, 200, 200},
+				.backgroundColorA = cc,
+				.backgroundColorB = cc,
+			};
+		}
+	
+		void draw(Renderer &renderer) override {
+			renderer.add(aa);
+		}
+
+		bool contain(const glm::vec2& mouse) override {
+			return (distance(aa, mouse) <= 0.0f);
+		}
+
+		void onMouseEvent(const MouseEventView &mouse) override {
+		}
+
+	private:
+		glm::vec4 cc;
+		glm::vec2 pp;
+		Rectangle aa;
+};
 
 int main() {
   auto ctx = mka::graphic::createContext(mka::graphic::API::OpenGL,
@@ -77,8 +112,17 @@ int main() {
   Window app(800, 600, "Example", std::move(ctx));
 
 
-  static constexpr size_t OCTAVE_COUNT = 3;
-  StackView s;
+//  static constexpr size_t OCTAVE_COUNT = 3;
+  Container s;
+  auto a1 = std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 1.0}, glm::vec2{100, 100});
+  auto a2 = std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 1.0}, glm::vec2{150, 100});
+
+  a1->zIndex = 1;
+  a2->zIndex = 1000;
+  s.addChild(std::move(a1));
+  s.addChild(std::move(a2));
+
+  /*StackView s;
   s.setPosition({200, 200});
 	s.setOrientation(Orientation::Horizontal);
 	s.setAlign(Align::Center);
@@ -94,7 +138,7 @@ int main() {
       octave->whiteKeyColor = {1.0, 1.0, 1.0, 1.0};
       octave->blackKeyColor = {0.0, 0.0, 0.0, 1.0};
 	  s.addChild(std::move(octave));
-    }
+    }*/
 
 	app.setBackgroundColor({0.25, 0.25, 0.25, 1.0});
 	app.setRoot(s);

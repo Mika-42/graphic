@@ -1,5 +1,5 @@
 module;
-
+#include <cstdint>
 #include <vector>
 export module mka.graphic.renderlist;
 import mka.graphic.view;
@@ -8,24 +8,23 @@ export namespace mka::graphic {
 
 struct RenderItem {
   View *view;
-  std::vector<int> zPath;
+  uint64_t zPath64; // [lvl3 | lvl2 | lvl1 | lvl0] 16-bit chacun
+
+  RenderItem() = default;
+  RenderItem(View *v, uint64_t z) : view(v), zPath64(z) {}
 };
 
-void collect(mka::graphic::View *view, std::vector<int> &path,
-             std::vector<RenderItem> &out) {
+void collect(mka::graphic::View *view, std::vector<RenderItem> &out,
+             uint64_t parentZ = 0, uint8_t depth = 0) {
 
-  if (!view->isVisible()) {
-    return;
-  }
+  if (depth >= 4) return;
 
-  path.push_back(view->zIndex);
+  uint64_t zPath64 = (parentZ << 16) | static_cast<uint32_t>(view->zIndex);
 
-  out.push_back({view, path});
+  out.emplace_back(view, zPath64);
 
   for (auto &child : view->getChildren()) {
-    collect(child.get(), path, out);
+    collect(child.get(), out, static_cast<uint32_t>(view->zIndex), depth + 1);
   }
-
-  path.pop_back();
 }
 } // namespace mka::graphic

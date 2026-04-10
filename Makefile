@@ -11,11 +11,13 @@ MODULES := \
 	$(SRC_DIR)/opengl/uniform.cppm \
 	$(SRC_DIR)/opengl/shader.cppm \
 	$(SRC_DIR)/renderer.cppm \
+	$(SRC_DIR)/inputs/keyboard.cppm \
+	$(SRC_DIR)/inputs/keyboardview.cppm \
+	$(SRC_DIR)/inputs/mouse.cppm \
+	$(SRC_DIR)/inputs/mouseview.cppm \
 	$(SRC_DIR)/views/view.cppm \
 	$(SRC_DIR)/renderlist.cppm \
 	$(SRC_DIR)/views/stackview.cppm \
-	$(SRC_DIR)/inputs/keyboard.cppm \
-	$(SRC_DIR)/inputs/mouse.cppm \
 	$(SRC_DIR)/context.cppm \
 	$(SRC_DIR)/window.cppm \
 

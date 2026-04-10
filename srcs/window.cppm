@@ -8,13 +8,18 @@ module;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <algorithm>
+#include <ranges>
 #include "debug.hpp"
 
 export module mka.graphic.window;
-export import mka.graphic.context; //TODO check if usefull to export
-export import mka.graphic.keyboard; //TODO check if usefull to export
-export import mka.graphic.mouse;//TODO check if usefull to export
 
+export import mka.graphic.context; //TODO check if usefull to export
+export import mka.graphic.mouseview;//TODO check if usefull to export
+export import mka.graphic.keyboardview;
+
+import mka.graphic.keyboard;
+import mka.graphic.mouse;
 import mka.graphic.opengl.renderer;
 import mka.graphic.renderlist;
 import mka.graphic.view;
@@ -44,42 +49,6 @@ struct Time {
  * - Projection updates on resize
  */
 class Window {
-
-public:
-  struct KeyboardEventView {
-  public:
-    KeyboardEventView(KeyboardEvent &kb) : k(kb) {}
-    bool isPressed(Key key) const { return k.isPressed(key); }
-
-    bool isReleased(Key key) const { return k.isReleased(key); }
-
-    std::vector<Key> pressedKeys() const { return k.pressedKeys(); }
-
-    const std::string getName(Key key) const { return k.getName(key); }
-
-  private:
-    KeyboardEvent &k;
-  };
-
-  struct MouseEventView {
-  public:
-    MouseEventView(MouseEvent &ms) : m(ms) {}
-
-    bool isPressed(MouseButton btn) const { return m.isPressed(btn); }
-
-    bool isReleased(MouseButton btn) const { return m.isReleased(btn); }
-
-    bool isScrollUp(MouseButton btn) const { return m.isScrollUp(btn); }
-
-    bool isScrollDown(MouseButton btn) const { return m.isScrollDown(btn); }
-
-    glm::vec2 scroll() const { return m.scroll; }
-    glm::vec2 position() const { return m.position; }
-
-  private:
-    MouseEvent &m;
-  };
-
 public:
   Window(size_t width, size_t height, const std::string &name,
          std::unique_ptr<Context> ctx)
@@ -227,27 +196,40 @@ public:
 
 private:
 
-  void render(const glm::vec2 & /*size*/, const MouseEventView &/*mouse*/,
-                      const KeyboardEventView &/*keyboard*/, const Time& /*time*/) {
+  void render(const glm::vec2 & /*size*/, const MouseEventView &mouse,
+                      const KeyboardEventView &keyboard, const Time& /*time*/) {
 	
     renderer->setBackgroundColor(bgColor);
 	items.clear();
-	path.clear();
 
 	if(!rootView) {
 		DEBUG_LOG("root view is not set.");
 		return;
 	}
 
-    collect(rootView, path, items);
+    collect(rootView, items);
 
-    std::sort(items.begin(), items.end(),
-        [](const RenderItem& a, const RenderItem& b) {
-            return a.zPath < b.zPath;
-        });
+    std::ranges::sort(items, {}, &RenderItem::zPath64);
+
+	bool hovered = false;
+	for (auto& item : items | std::views::reverse) {
+
+		//	item.view->hovered = false;
+		if(!hovered && item.view->contain(mouse.position())) {
+			hovered = true;
+		//	item.view->hovered = true;
+			item.view->onMouseEvent(mouse);
+		}
+	}
 
     for (auto& item : items) {
-        item.view->draw(*renderer);
+		if(item.view->isKeyboardFocused()) {
+			item.view->onKeyboardEvent(keyboard);
+		}
+
+        if(item.view->isVisible()) {
+			item.view->draw(*renderer);
+		}
     }
 
     renderer->draw(orthographicProjection);
@@ -273,8 +255,8 @@ private:
 
   View* rootView = nullptr;
   
-	std::vector<RenderItem> items;
-    std::vector<int> path;
+  std::vector<RenderItem> items;
+
 private:
   void handleKeyboard() {
     for (auto &i : keyboardEvent.castTable) {

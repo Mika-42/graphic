@@ -93,7 +93,7 @@ class StackView : public View {
 public:
   void setSize(const glm::vec2 &s) = delete;
 
-  void draw(Renderer& /*renderer*/) override {
+  virtual void draw(Renderer& /*renderer*/) override {
 
     switch (orientation) {
     case Orientation::Vertical:
@@ -145,7 +145,7 @@ private:
     }
   }
 
-  void vlayout() {
+  virtual void vlayout() final {
 
     float offset = 0.0f;
 
@@ -166,7 +166,7 @@ private:
     geometry.w = offset;
   }
 
-  void hlayout() {
+  virtual void hlayout() final {
 
     float offset = 0.0f;
 

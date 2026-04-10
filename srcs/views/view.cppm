@@ -1,68 +1,84 @@
 module;
 
-#include <vector>
-#include <memory>
-#include <glm/glm.hpp>
 #include <algorithm>
+#include <glm/glm.hpp>
+#include <memory>
+#include <vector>
 export module mka.graphic.view;
 import mka.graphic.opengl.renderer;
+import mka.graphic.keyboardview;
+import mka.graphic.mouseview;
 
 export namespace mka::graphic {
 
-	class View {
-		public:
 
-			// Constructeur / Destructeur
-			View() = default;
-			virtual ~View() = default;
-			
-			const View* getParent() const { return parent; }
+class View {
+public:
+  // Constructeur / Destructeur
+  View() = default;
+  virtual ~View() = default;
 
-			// --- Gestion des enfants ---
-			void addChild(std::unique_ptr<View> child) {
-				child->parent = this;
-				children.push_back(std::move(child));
-			}
+  const View *getParent() const { return parent; }
 
-			void removeChild(View* child) {
-				children.erase(
-					std::remove_if(children.begin(), children.end(),
-						[&](const std::unique_ptr<View>& c){ return c.get() == child; }),
-					children.end()
-				);
-			}
+  // --- Gestion des enfants ---
+  void addChild(std::unique_ptr<View> child) {
+    child->parent = this;
+    children.push_back(std::move(child));
+  }
 
-			const std::vector<std::unique_ptr<View>>& getChildren() const {
-				return children;
-			}
+  void removeChild(View *child) {
+    children.erase(std::remove_if(children.begin(), children.end(),
+                                  [&](const std::unique_ptr<View> &c) {
+                                    return c.get() == child;
+                                  }),
+                   children.end());
+  }
 
-			virtual void draw(class Renderer &renderer) = 0;
+  const std::vector<std::unique_ptr<View>> &getChildren() const {
+    return children;
+  }
 
-			glm::vec2 getPosition() const { return glm::vec2{geometry.x, geometry.y}; }
-			glm::vec2 getSize() const { return glm::vec2{geometry.z, geometry.w}; }
+  virtual void draw(Renderer &renderer) = 0;
+  virtual void onMouseEvent(const MouseEventView &/*mouse*/) {}
+  virtual void onKeyboardEvent(const KeyboardEventView &/*keyboard*/) {}
 
-			void setPosition(const glm::vec2& p) { 
-				geometry.x = p.x; 
-				geometry.y = p.y;
-			}
+  glm::vec2 getPosition() const { return glm::vec2{geometry.x, geometry.y}; }
+  glm::vec2 getSize() const { return glm::vec2{geometry.z, geometry.w}; }
 
-			void setSize(const glm::vec2& s) { 
-				geometry.z = s.x;
-				geometry.w = s.y; 
-			}
+  void setPosition(const glm::vec2 &p) {
+    geometry.x = p.x;
+    geometry.y = p.y;
+  }
 
-			void setVisible(bool v) { visible = v; }
-			bool isVisible() { return visible; }
-			
-			int zIndex = 0;
+  void setSize(const glm::vec2 &s) {
+    geometry.z = s.x;
+    geometry.w = s.y;
+  }
 
-		protected:
-			glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
-			std::vector<std::unique_ptr<View>> children;
-				
-		private:
-			View* parent = nullptr;
-			bool visible = true;
-		};
+  void setVisible(bool v) { visible = v; }
+  void setKeyboardFocus(bool v) { keyboardFocus = v; }
 
-} // mka::graphic
+  const bool &isVisible() const { return visible; }
+  const bool &isHovered() const { return hovered; }
+
+  virtual bool contain(const glm::vec2 &mouse) {
+	return mouse.x >= geometry.x && mouse.x <= geometry.x + geometry.z &&
+           mouse.y >= geometry.y && mouse.y <= geometry.y + geometry.w;
+  }
+
+  const bool &isKeyboardFocused() const { return keyboardFocus; }
+
+  int zIndex = 0;
+
+protected:
+  glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
+  
+  std::vector<std::unique_ptr<View>> children;
+private:
+  View *parent = nullptr;
+  bool visible = true;
+  bool keyboardFocus = false;
+  bool hovered = false;	
+};
+
+} // namespace mka::graphic
