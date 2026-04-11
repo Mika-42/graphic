@@ -39,6 +39,13 @@ public:
     View::removeChild(child);
   }
 
+  void move(View* child, const glm::vec2& p) {
+  	if (childRelatives.contains(child)) {
+      childRelatives[child] = p;
+    }
+	layout();
+  }
+
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
 
 private:
