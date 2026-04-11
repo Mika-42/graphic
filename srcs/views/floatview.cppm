@@ -27,27 +27,32 @@ export namespace mka::graphic {
  * Place your children using relative position
  */
 class FloatView : public View {
+	private:
+		using View::setSize;
+		using View::addChild;
+		using View::removeChild;
+		using View::getSize;
 public:
-  void setSize(const glm::vec2 &s) = delete;
 
-  virtual void addChild(std::unique_ptr<View> child) {
+  virtual View& addChild(std::unique_ptr<View> child) override {
     childRelatives[child.get()] = child->getPosition();
-    View::addChild(std::move(child));
+    return View::addChild(std::move(child));
   }
 
-  virtual void removeChild(View *child) override {
+  virtual View& removeChild(View *child) override {
     childRelatives.erase(child);
-    View::removeChild(child);
+    return View::removeChild(child);
   }
 
-  void move(View *child, const glm::vec2 &p) {
+  FloatView& move(View *child, const glm::vec2 &p) {
     if (childRelatives.contains(child)) {
       childRelatives[child] = p;
     }
     layout();
+	return *this;
   }
 
-  virtual glm::vec2 getSize() {
+  virtual glm::vec2 getSize() override {
 	layout();
   	return View::getSize();
   }

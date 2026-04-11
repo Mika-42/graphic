@@ -20,7 +20,7 @@ import mka.graphic.opengl.renderer;
  * |     A       |
  * +-------------+
  *
- * reverse: 
+ * reverse:
  *
  * +-------------+
  * |     A       |
@@ -30,12 +30,12 @@ import mka.graphic.opengl.renderer;
  * |     C       |
  * +-------------+
  *
- * direction: 
+ * direction:
  * +-------------+-------------+-------------+
  * |     A       |      B      |      C      |
  * +-------------+-------------+-------------+
  *
- * reverse-direction: 
+ * reverse-direction:
  * +-------------+-------------+-------------+
  * |     C       |      B      |      A      |
  * +-------------+-------------+-------------+
@@ -64,12 +64,12 @@ import mka.graphic.opengl.renderer;
  * align-center
  *
  *      +-------+
- *      |  B    |  
+ *      |  B    |
  * +----+-------+----+
  * |       A         |
  * +-----------------+
- * 
- * gap: 
+ *
+ * gap:
  * +-------------+
  * |     C       |
  * +-------------+
@@ -90,27 +90,38 @@ enum class Align { Left, Right, Center, Top, Bottom };
 enum class Orientation { Vertical, Horizontal };
 
 class StackView : public View {
+	private:
+		
+		using View::setSize;
+		using View::getSize;
 public:
-  void setSize(const glm::vec2 &s) = delete;
 
-  virtual void draw(Renderer& /*renderer*/) override {
-	layout();
-  }
+  virtual void draw(Renderer & /*renderer*/) override { layout(); }
 
   glm::vec2 getSize() override {
-	layout();
-	return View::getSize();
+    layout();
+    return View::getSize();
   }
 
+  StackView &setGap(float v) {
+    gap = sanitizeFloat(v, 0.0f);
+    return *this;
+  }
 
-  
-  void setGap(float v) { gap = sanitizeFloat(v, 0.0f); }
+  StackView &setAlign(Align a) {
+    align = a;
+    return *this;
+  }
 
-  void setAlign(Align a) { align = a; }
+  StackView &setOrientation(Orientation o) {
+    orientation = o;
+    return *this;
+  }
 
-  void setOrientation(Orientation o) { orientation = o; }
-
-  void reverse(bool r) { reverseOrder = r; }
+  StackView &reverse(bool r) {
+    reverseOrder = r;
+    return *this;
+  }
 
   const float &getGap() { return gap; }
   const Align &getAlign() { return align; }
@@ -197,6 +208,7 @@ private:
       vlayout();
     }
   }
+
 private:
   Align align = Align::Left;
   Orientation orientation = Orientation::Vertical;
