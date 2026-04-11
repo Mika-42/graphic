@@ -34,9 +34,10 @@ class FloatView : public View {
 		using View::getSize;
 public:
 
-  virtual View& addChild(std::unique_ptr<View> child) override {
+  template<typename T>
+  T& addChild(std::unique_ptr<T> child) {
     childRelatives[child.get()] = child->getPosition();
-    return View::addChild(std::move(child));
+    return View::addChild<T>(std::move(child));
   }
 
   virtual View& removeChild(View *child) override {

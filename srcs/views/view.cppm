@@ -20,19 +20,33 @@ public:
   const View *getParent() const { return parent; }
 
   // --- Gestion des enfants ---
-  virtual View& addChild(std::unique_ptr<View> child) {
-    child->parent = this;
+  // ! be careful, don't chained this else you'll created child of child :
+  //
+  // expectation :
+  // View
+  //   ┣━━ Child1
+  //   ┣━━ Child2
+  //   ┗━━ Child3
+  // reality :
+  // View
+  //   ┗━━ Child1
+  //           ┗━━ Child2
+  //                   ┗━━ Child3
+
+  template <typename T> T &addChild(std::unique_ptr<T> child) {
+    T *ptr = child.get();
     children.push_back(std::move(child));
-	return *this;
+    ptr->parent = this;
+    return *ptr; // Magic !
   }
 
-  virtual View& removeChild(View *child) {
+  virtual View &removeChild(View *child) {
     children.erase(std::remove_if(children.begin(), children.end(),
                                   [&](const std::unique_ptr<View> &c) {
                                     return c.get() == child;
                                   }),
                    children.end());
-	return *this;
+    return *this;
   }
 
   const std::vector<std::unique_ptr<View>> &getChildren() const {

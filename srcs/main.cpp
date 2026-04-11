@@ -115,19 +115,17 @@ int main() {
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
   FloatView s;
-  auto a1 = std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 0.5});
-  auto a2 = std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 0.5});
+  auto& a1 =s.addChild( std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 0.5}));
+  auto& a2 =s.addChild( std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 0.5}));
 
   s.setPosition({400, 100});
   
-  a1->setPosition({0, 0}).setSize({100, 200});
+  a1.setPosition({0, 0}).setSize({100, 200});
   
-  a2->setPosition({50, 50}).setSize({100, 200});
+  a2.setPosition({50, 50}).setSize({50, 100});
   
-  a1->zIndex = 1;
-  a2->zIndex = 1000;
-
-  s.addChild(std::move(a1)).addChild(std::move(a2));
+  a1.zIndex = 1;
+  a2.zIndex = 1000;
 
   /*StackView s;
   s.setPosition({200, 200});
