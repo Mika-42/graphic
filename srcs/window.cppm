@@ -211,15 +211,12 @@ private:
 
     std::ranges::sort(items, {}, &RenderItem::zPath64);
 
-	bool hovered = false;
 	for (auto& item : items | std::views::reverse) {
 
-		if(!hovered && item.view->contain(mouse.position())) {
-			hovered = true;
+		if(item.view->contain(mouse.position())) {
 			item.view->setMouseFocus(true);
 			item.view->onMouseEvent(mouse);
-		} else {
-			item.view->setMouseFocus(false);
+			break;
 		}
 	}
 
@@ -232,6 +229,10 @@ private:
 			item.view->draw(*renderer);
 		}
     }
+
+    for (auto& item : items) {
+		item.view->setMouseFocus(false);
+	}
 
     renderer->draw(orthographicProjection);
   }

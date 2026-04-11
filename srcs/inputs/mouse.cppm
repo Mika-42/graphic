@@ -61,6 +61,6 @@ export namespace mka::graphic {
 			/** @brief Last wheel delta from GLFW scroll callback. */
 			glm::vec2 scroll = {0.0, 0.0};
 			/** @brief Last cursor position in window coordinates. */
-			glm::vec2 position = {0.0, 0.0};
+			glm::vec2 position = {-99999.0, -99999.0};
 	};
 }

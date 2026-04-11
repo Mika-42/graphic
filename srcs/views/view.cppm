@@ -21,12 +21,12 @@ public:
   const View *getParent() const { return parent; }
 
   // --- Gestion des enfants ---
-  void addChild(std::unique_ptr<View> child) {
+  virtual void addChild(std::unique_ptr<View> child) {
     child->parent = this;
     children.push_back(std::move(child));
   }
 
-  void removeChild(View *child) {
+  virtual void removeChild(View *child) {
     children.erase(std::remove_if(children.begin(), children.end(),
                                   [&](const std::unique_ptr<View> &c) {
                                     return c.get() == child;
@@ -43,7 +43,7 @@ public:
   virtual void onKeyboardEvent(const KeyboardEventView &/*keyboard*/) {}
 
   glm::vec2 getPosition() const { return glm::vec2{geometry.x, geometry.y}; }
-  glm::vec2 getSize() const { return glm::vec2{geometry.z, geometry.w}; }
+  virtual glm::vec2 getSize() { return glm::vec2{geometry.z, geometry.w}; }
 
   void setPosition(const glm::vec2 &p) {
     geometry.x = p.x;

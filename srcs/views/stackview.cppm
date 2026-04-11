@@ -97,7 +97,7 @@ public:
 	layout();
   }
 
-  glm::vec2 getSize() const override {
+  glm::vec2 getSize() override {
 	layout();
 	return View::getSize();
   }

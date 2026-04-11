@@ -9,6 +9,7 @@ import mka.graphic.opengl.renderer;
 import mka.graphic.renderlist;
 import mka.graphic.view;
 import mka.graphic.view.stackview;
+import mka.graphic.view.floatview;
 import mka.graphic.sanitize;
 
 using namespace mka::graphic;
@@ -72,25 +73,17 @@ class PianoOctave : public View {
 };
 */
 
-class Container : public View {
-	public:
-		void draw(Renderer &) override {
-
-		}
-};
-
 class A : public View {
 	public:
-		A(glm::vec4 c, glm::vec2 p) : cc(c), pp(p) {
-			aa = {
-				.geometry = {pp.x, pp.y, 200, 200},
-				.backgroundColorA = cc,
-				.backgroundColorB = cc,
-			};
+		A(glm::vec4 c) : cc(c) {
+				aa.backgroundColorA = cc;
+				aa.backgroundColorB = cc;	
 		}
 	
 		void draw(Renderer &renderer) override {
 			
+			aa.geometry = this->geometry;
+
 			if(isMouseFocused()) {
 				aa.backgroundColorA = glm::vec4(0.0f, 1.0, 0.0, 1.0);
 				aa.backgroundColorB = glm::vec4(0.0f, 1.0, 0.0, 1.0);
@@ -111,7 +104,6 @@ class A : public View {
 
 	private:
 		glm::vec4 cc;
-		glm::vec2 pp;
 		Rectangle aa;
 };
 
@@ -122,12 +114,21 @@ int main() {
 
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
-  Container s;
-  auto a1 = std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 1.0}, glm::vec2{100, 100});
-  auto a2 = std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 1.0}, glm::vec2{150, 100});
+  FloatView s;
+  auto a1 = std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 0.5});
+  auto a2 = std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 0.5});
 
+  s.setPosition({400, 100});
+  
+  a1->setPosition({0, 0});
+  a1->setSize({100, 200});
+  
+  a2->setPosition({50, 50});
+  a2->setSize({100, 200});
+  
   a1->zIndex = 1;
   a2->zIndex = 1000;
+
   s.addChild(std::move(a1));
   s.addChild(std::move(a2));
 
