@@ -118,11 +118,11 @@ int main() {
   auto& a1 =s.addChild( std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 0.5}));
   auto& a2 =s.addChild( std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 0.5}));
 
-  s.setPosition({400, 100});
+  s.setAbsolutePosition({400, 100});
   
-  a1.setPosition({0, 0}).setSize({100, 200});
+  a1.setRelativePosition({0, 0}).setSize({100, 200});
   
-  a2.setPosition({50, 50}).setSize({100, 200});
+  a2.setRelativePosition({50, 50}).setSize({100, 200});
   
   a1.zIndex = 1;
   a2.zIndex = 1000;

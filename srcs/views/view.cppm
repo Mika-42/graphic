@@ -57,16 +57,23 @@ public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  glm::vec2 getPosition() const { return glm::vec2{geometry.x, geometry.y}; }
-  
+  glm::vec2 getAbsolutePosition() const { return glm::vec2{geometry.x, geometry.y}; }
+  glm::vec2 getRelativePosition() const { return relativePosition; } 
+
   glm::vec2 getSize() { 
 		layout();
 	  return glm::vec2{geometry.z, geometry.w}; 
   }
 
-  View &setPosition(const glm::vec2 &p) {
+  View &setAbsolutePosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
+	layout();
+    return *this;
+  }
+
+  View &setRelativePosition(const glm::vec2 &p) {
+	relativePosition = p;
 	layout();
     return *this;
   }
@@ -108,6 +115,8 @@ protected:
   virtual void layout() {}
 
   glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
+
+  glm::vec2 relativePosition = {0, 0};
 
   std::vector<std::unique_ptr<View>> children;
 
