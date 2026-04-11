@@ -58,11 +58,16 @@ public:
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
   glm::vec2 getPosition() const { return glm::vec2{geometry.x, geometry.y}; }
-  virtual glm::vec2 getSize() { return glm::vec2{geometry.z, geometry.w}; }
+  
+  glm::vec2 getSize() { 
+		layout();
+	  return glm::vec2{geometry.z, geometry.w}; 
+  }
 
   View &setPosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
+	layout();
     return *this;
   }
 
@@ -100,6 +105,8 @@ public:
   int zIndex = 0;
 
 protected:
+  virtual void layout() {}
+
   glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
 
   std::vector<std::unique_ptr<View>> children;

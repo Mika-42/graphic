@@ -122,7 +122,7 @@ int main() {
   
   a1.setPosition({0, 0}).setSize({100, 200});
   
-  a2.setPosition({50, 50}).setSize({50, 100});
+  a2.setPosition({50, 50}).setSize({100, 200});
   
   a1.zIndex = 1;
   a2.zIndex = 1000;

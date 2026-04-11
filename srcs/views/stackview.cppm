@@ -93,15 +93,9 @@ class StackView : public View {
 	private:
 		
 		using View::setSize;
-		using View::getSize;
 public:
 
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
-
-  glm::vec2 getSize() override {
-    layout();
-    return View::getSize();
-  }
 
   StackView &setGap(float v) {
     gap = sanitizeFloat(v, 0.0f);

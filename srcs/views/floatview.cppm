@@ -2,7 +2,6 @@ module;
 #include <glm/glm.hpp>
 #include <memory>
 #include <unordered_map>
-#include <limits>
 
 export module mka.graphic.view.floatview;
 import mka.graphic.view;
@@ -31,31 +30,17 @@ class FloatView : public View {
 		using View::setSize;
 		using View::addChild;
 		using View::removeChild;
-		using View::getSize;
 public:
 
   template<typename T>
   T& addChild(std::unique_ptr<T> child) {
-    childRelatives[child.get()] = child->getPosition();
+	childRelatives[child.get()] = {0, 0};
     return View::addChild<T>(std::move(child));
   }
 
   virtual View& removeChild(View *child) override {
     childRelatives.erase(child);
     return View::removeChild(child);
-  }
-
-  FloatView& move(View *child, const glm::vec2 &p) {
-    if (childRelatives.contains(child)) {
-      childRelatives[child] = p;
-    }
-    layout();
-	return *this;
-  }
-
-  virtual glm::vec2 getSize() override {
-	layout();
-  	return View::getSize();
   }
 
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
@@ -69,28 +54,32 @@ private:
 		return;
 	  }
 
-      float minX = std::numeric_limits<float>::max();
-      float minY = std::numeric_limits<float>::max();
-      float maxX = std::numeric_limits<float>::min();
-      float maxY = std::numeric_limits<float>::min();
+      float minX = 0.0f;
+      float minY = 0.0f;
+      float maxX = 0.0f;
+      float maxY = 0.0f;
 
 	  for (auto &child : children) {
-
-      glm::vec2 relativePos = childRelatives[child.get()];
-
-      glm::vec2 absolutePos = getPosition() + relativePos;
-      child->setPosition(absolutePos);
-
-      glm::vec2 size = child->getSize();
-      minX = glm::min(minX, relativePos.x);
-      minY = glm::min(minY, relativePos.y);
-      maxX = glm::max(maxX, relativePos.x + size.x);
-      maxY = glm::max(maxY, relativePos.y + size.y);
+		if (!child) continue;
+		glm::vec2 relPos = childRelatives[child.get()];
+      glm::vec2 childSize = child->getSize();
+      
+      minX = glm::min(minX, relPos.x);
+      minY = glm::min(minY, relPos.y);
+      maxX = glm::max(maxX, relPos.x + childSize.x);
+      maxY = glm::max(maxY, relPos.y + childSize.y);
     }
 	
 	geometry.z = maxX - minX;
     geometry.w = maxY - minY;
 	
+	for (auto& child : children) {
+      if (!child) continue;
+      
+      glm::vec2 relPos = childRelatives[child.get()];
+      glm::vec2 absPos = getPosition() + relPos;
+      child->setPosition(absPos);
+    }
   }
 
   std::unordered_map<View *, glm::vec2> childRelatives;
