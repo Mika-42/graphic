@@ -229,19 +229,6 @@ namespace mka::graphic {
 	
 	constexpr uint32_t TEXT = 1u << 0;
 
-	/// @brief High-level text draw command converted into rectangle instances.
-	export struct Text {
-		std::string content {};
-		std::string font {};
-		glm::vec4 color {};
-		glm::vec4 gradientColorA {};
-		glm::vec4 gradientColorB {};
-		float gradientAngle {};
-		glm::vec2 position {};
-		float fontSize {};
-		float letterSpacing {};
-	};
-
 	/// @brief Sanitize text command values prior to glyph generation.
 	void sanitizeText(Text &t) {
 		sanitizeColor(t.color);	
