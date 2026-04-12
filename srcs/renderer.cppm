@@ -284,13 +284,11 @@ namespace mka::graphic {
 			size_t add(const Text& text) {
 				Text sanitizedText = text;
 				sanitizeText(sanitizedText);
-				// Text now has no separate `color` field:
-				// - solid mode uses gradientColorA on both ends
-				// - gradient mode uses gradientColorA -> gradientColorB
+
+				// Text colors are now fully controlled by gradientColorA/B.
+				// For a solid color, caller can simply set A == B.
 				const glm::vec4 textGradientA = sanitizedText.gradientColorA;
-				const glm::vec4 textGradientB = sanitizedText.useGradient
-					? sanitizedText.gradientColorB
-					: sanitizedText.gradientColorA;
+				const glm::vec4 textGradientB = sanitizedText.gradientColorB;
 
 				if (sanitizedText.content.empty()) {
 					DEBUG_LOG("Empty text content.");

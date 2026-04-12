@@ -13,9 +13,6 @@ export namespace mka::graphic {
 		std::string font {};
 		glm::vec4 gradientColorA {};
 		glm::vec4 gradientColorB {};
-		// false: solid text color from gradientColorA
-		// true: directional gradient from gradientColorA -> gradientColorB
-		bool useGradient {false};
 		float gradientAngle {};
 		glm::vec2 position {};
 		float fontSize {};

@@ -108,8 +108,15 @@ class A : public View {
 			Text t = {
 				.content = "Hello World !",
 				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.
+				.gradientColorA = {1.0f, 0.5f, 0.25f, 1.0f},
+				.gradientColorB = {0.25f, 0.5f, 1.0f, 1.0f},
+				.gradientAngle = 0.0f,
+				.position = this->getAbsolutePosition(),
+				.fontSize = 30.0f,
+				.letterSpacing = 20.0f,
 			};
+
+			renderer.add(t);
 			renderer.add(aa);
 		}
 
@@ -134,8 +141,8 @@ int main() {
 //  static constexpr size_t OCTAVE_COUNT = 3;
   GridView s;
   s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.0f, 0.0f, 0.5f}), 0, 0, 0, 1);
-  s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.25f, 0.5f}), 0, 1, 0, 1);
-  s.addChild( std::make_unique<A>(glm::vec4{1.0f, 1.0f, 0.0f, 0.5f}), 1, 1, 0, 2);
+  //s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.25f, 0.5f}), 0, 1, 0, 1);
+  //s.addChild( std::make_unique<A>(glm::vec4{1.0f, 1.0f, 0.0f, 0.5f}), 1, 1, 0, 2);
  
   s.setSize({200.0f, 200.0f});
   s.setColumns({px(100.f), px(100.0f)});
