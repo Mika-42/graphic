@@ -80,21 +80,30 @@ class A : public View {
 	public:
 		A(glm::vec4 c) : cc(c) {
 				aa.backgroundColorA = cc;
-				aa.backgroundColorB = cc;	
+				aa.backgroundColorB = cc;
+				
 		}
 	
 		void draw(Renderer &renderer) override {
 			
 			aa.geometry = this->geometry;
+			aa.radius = glm::vec4(90.0f);
 
 			if(isMouseFocused()) {
 				aa.backgroundColorA = glm::vec4(0.0f, 1.0, 0.0, 1.0);
-				aa.backgroundColorB = glm::vec4(0.0f, 1.0, 0.0, 1.0);
+				aa.backgroundColorB = glm::vec4(0.5f, 1.0, 1.0, 1.0);
 			} else {
 				aa.backgroundColorA = cc;
 				aa.backgroundColorB = cc;	
 			}
 
+			aa.borderColor = glm::vec4(1.0f);
+			aa.shadowColor = {0.5f, 0.25f, 1.0f, 0.5f};
+			aa.shadowOffset = {10.0f, 10.0f};
+			aa.gradientAngle = 60.0f;
+			aa.shadowSoftness = 50.0f;
+			aa.shadowSpread = 10.0f;
+			aa.borderThickness = 5.0f;
 			renderer.add(aa);
 		}
 
@@ -125,7 +134,7 @@ int main() {
   s.setSize({200.0f, 200.0f});
   s.setColumns({px(100.f), px(100.0f)});
   s.setRows({px(50.0f), px(50.0f)});
-  s.setAbsolutePosition({10.0f, 10.0f});
+  s.setAbsolutePosition({100.0f, 50.0f});
   s.setRowGap(10.0f).setColumnGap(20.0f); 
   /*StackView s;
   s.setPosition({200, 200});
