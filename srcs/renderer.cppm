@@ -27,194 +27,202 @@ export import mka.graphic.opengl.rectangle; //TODO rm export
 import mka.graphic.opengl.shader;
 import mka.graphic.sanitize;
 
-const auto vs = R"(
-				#version 460 core
-				#extension GL_ARB_bindless_texture : require
+namespace {
+	// Shader sources stay in C++ to keep module self-contained.
+	// The GLSL code is organized with helper functions so future effects can be added
+	// without turning `main()` into a monolith.
+	constexpr const char* kRendererVertexShader = R"(
+		#version 460 core
+		#extension GL_ARB_bindless_texture : require
 
-				struct Rect {
-					vec4 geometry; // xy = pos, zw = size
-					vec4 radius;
-					vec4 backgroundColorA;
-					vec4 backgroundColorB;
-					vec4 borderColor;
-					vec4 shadowColor;
-					vec2 shadowOffset;
-					float gradientAngle;
-					float shadowSoftness;
-					float shadowSpread;
-					float borderThickness;
-					uvec2 texture;
-					uint flags;
-					uint _pad;
-				};
+		const uint FLAG_TEXT = 1u << 0;
+		const float MIN_RECT_SIZE = 0.0001;
 
-				layout(std430, binding = 0) buffer Rects {
-					Rect rects[];
-				};
+		struct Rect {
+			vec4 geometry; // xy = pos, zw = size
+			vec4 radius;
+			vec4 backgroundColorA;
+			vec4 backgroundColorB;
+			vec4 borderColor;
+			vec4 shadowColor;
+			vec2 shadowOffset;
+			float gradientAngle;
+			float shadowSoftness;
+			float shadowSpread;
+			float borderThickness;
+			uvec2 texture;
+			uint flags;
+			uint _pad;
+		};
 
-				out vec2 localPoint;
-				out vec4 backgroundColorA;
-				out vec4 backgroundColorB;
-				out float gradientAngle;
-				out vec4 radius;
-				out vec2 rectSize;
-				out vec4 borderColor;
-				out float borderThickness;
-				out vec4 shadowColor;
-				out vec2 shadowOffset;
-				out float shadowSoftness;
-				out float shadowSpread;
-				out vec2 texCoord;
-				flat out uvec2 textureHandle;
+		layout(std430, binding = 0) buffer Rects {
+			Rect rects[];
+		};
 
-				uniform mat4 uProjection;
-				
-				void main() {
+		out vec2 localPoint;
+		out vec4 backgroundColorA;
+		out vec4 backgroundColorB;
+		out float gradientAngle;
+		out vec4 radius;
+		out vec2 rectSize;
+		out vec4 borderColor;
+		out float borderThickness;
+		out vec4 shadowColor;
+		out vec2 shadowOffset;
+		out float shadowSoftness;
+		out float shadowSpread;
+		out vec2 texCoord;
+		flat out uvec2 textureHandle;
 
-					vec2 quad[6] = vec2[](
-						vec2(0.0, 0.0),
-						vec2(1.0, 0.0),
-						vec2(1.0, 1.0),
+		uniform mat4 uProjection;
 
-						vec2(0.0, 0.0),
-						vec2(1.0, 1.0),
-						vec2(0.0, 1.0)
-					);
+		vec2 unitQuadVertex(const int vertexId) {
+			vec2 quad[6] = vec2[](
+				vec2(0.0, 0.0),
+				vec2(1.0, 0.0),
+				vec2(1.0, 1.0),
+				vec2(0.0, 0.0),
+				vec2(1.0, 1.0),
+				vec2(0.0, 1.0)
+			);
+			return quad[vertexId];
+		}
 
-					vec2 aPos = quad[gl_VertexID];
-					Rect r = rects[gl_InstanceID];
-					textureHandle = r.texture;
+		vec2 computeShadowPadding(const Rect r) {
+			float shadowExtent = max(r.shadowSoftness, 0.0) + max(r.shadowSpread, 0.0);
+			return abs(r.shadowOffset) + vec2(shadowExtent + 1.0);
+		}
 
-					backgroundColorA = r.backgroundColorA;
-					backgroundColorB = r.backgroundColorB;
-					gradientAngle = r.gradientAngle;
-					radius = r.radius;
-					rectSize = r.geometry.zw;
+		vec2 computeTexCoord(const Rect r, vec2 aPos, vec2 localPosition) {
+			if ((r.flags & FLAG_TEXT) != 0u) {
+				return aPos;
+			}
+			// Build UVs from the original rectangle space so shadow padding never
+			// changes texture scale when softness/spread animate in real time.
+			vec2 rectSpacePoint = localPosition + (0.5 * r.geometry.zw);
+			vec2 safeRectSize = max(r.geometry.zw, vec2(MIN_RECT_SIZE));
+			return rectSpacePoint / safeRectSize;
+		}
 
-					// Expand the instance quad so the shadow can be drawn outside the rectangle bounds.
-					float shadowExtent = max(r.shadowSoftness, 0.0) + max(r.shadowSpread, 0.0);
-					vec2 pad = abs(r.shadowOffset) + vec2(shadowExtent + 1.0);
-					vec2 expandedSize = r.geometry.zw + 2.0 * pad;
-					vec2 expandedPos = r.geometry.xy - pad;
+		void main() {
+			Rect r = rects[gl_InstanceID];
+			vec2 aPos = unitQuadVertex(gl_VertexID);
+			vec2 pad = computeShadowPadding(r);
+			vec2 expandedSize = r.geometry.zw + 2.0 * pad;
+			vec2 expandedPos = r.geometry.xy - pad;
 
-					vec2 pos = expandedPos + aPos * expandedSize;
-					localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
-					if((r.flags & (1u << 0)) != 0u) {
-						texCoord = aPos;
-					} else {
-						// Build UVs from the *original* rectangle space so shadow padding
-						// never changes the apparent texture scale when softness varies.
-						vec2 rectSpacePoint = localPoint + (0.5 * r.geometry.zw);
-						vec2 safeRectSize = max(r.geometry.zw, vec2(0.0001));
-						texCoord = rectSpacePoint / safeRectSize;
-					}	
-					gl_Position = uProjection * vec4(pos, 0.0, 1.0);
-					borderColor = r.borderColor;
-					borderThickness = r.borderThickness;
-					shadowColor = r.shadowColor;
-					shadowOffset = r.shadowOffset;
-					shadowSoftness = r.shadowSoftness;
-					shadowSpread = r.shadowSpread;
-				}
-				)";
+			vec2 worldPos = expandedPos + aPos * expandedSize;
+			localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
 
-const auto fs = R"(
-				#version 460 core
-				#extension GL_ARB_bindless_texture : require
+			textureHandle = r.texture;
+			backgroundColorA = r.backgroundColorA;
+			backgroundColorB = r.backgroundColorB;
+			gradientAngle = r.gradientAngle;
+			radius = r.radius;
+			rectSize = r.geometry.zw;
+			borderColor = r.borderColor;
+			borderThickness = r.borderThickness;
+			shadowColor = r.shadowColor;
+			shadowOffset = r.shadowOffset;
+			shadowSoftness = r.shadowSoftness;
+			shadowSpread = r.shadowSpread;
+			texCoord = computeTexCoord(r, aPos, localPoint);
 
-				in vec2 localPoint;
-				in vec4 backgroundColorA;
-				in vec4 backgroundColorB;
-				in float gradientAngle;
-				in vec4 radius;          // xy = top-left, zw = bottom-right
-				in vec2 rectSize;
-				in vec2 texCoord;
-				
-				in vec4 borderColor;
-				in float borderThickness;
-				in vec4 shadowColor;
-				in vec2 shadowOffset;
-				in float shadowSoftness;
-				in float shadowSpread;
-				flat in uvec2 textureHandle;
+			gl_Position = uProjection * vec4(worldPos, 0.0, 1.0);
+		}
+	)";
 
-				out vec4 FragColor;
+	constexpr const char* kRendererFragmentShader = R"(
+		#version 460 core
+		#extension GL_ARB_bindless_texture : require
 
-				float sdRoundedBox( in vec2 p, in vec2 b, in vec4 r ) {
-					r.xy = (p.x>0.0)?r.xy : r.zw;
-					r.x  = (p.y>0.0)?r.x  : r.y;
-					vec2 q = abs(p)-b+r.x;
-					return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
-				}
+		const float AA_WIDTH = 0.5;
+		const float MIN_GRADIENT_EXTENT = 0.0001;
+		const float MIN_SHADOW_SOFTNESS = 0.001;
 
-				void main() {
-					vec2 p = localPoint;
-					float angleRad = radians(gradientAngle);
-					vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
-					// Project fragment position onto the gradient direction.
-					// The denominator is the max projection at rectangle edges so `t` stays stable
-					// regardless of the rectangle aspect ratio.
-					float gradientExtent = max(dot(abs(gradientDir), rectSize * 0.5), 0.0001);
-					float t = clamp((dot(p, gradientDir) / gradientExtent) * 0.5 + 0.5, 0.0, 1.0);
-					vec4 gradientFill = mix(backgroundColorA, backgroundColorB, t);
-					float dist = sdRoundedBox(p, rectSize * 0.5, radius);
-					bool hasTexture = any(notEqual(textureHandle, uvec2(0u)));
-					bool hasRoundedCorners = any(greaterThan(radius, vec4(0.0)));
-					bool hasBorder = borderThickness > 0.0;
-					// Text glyph rectangles are textured quads with zero radius and zero border.
-					// In that case we bypass SDF clipping to avoid trimming edge pixels.
-					bool useShapeMask = hasRoundedCorners || hasBorder || !hasTexture;
-					
-					float aa = 0.5;
-					float shapeAlpha = smoothstep(aa, -aa, dist); 
+		in vec2 localPoint;
+		in vec4 backgroundColorA;
+		in vec4 backgroundColorB;
+		in float gradientAngle;
+		in vec4 radius;
+		in vec2 rectSize;
+		in vec2 texCoord;
+		in vec4 borderColor;
+		in float borderThickness;
+		in vec4 shadowColor;
+		in vec2 shadowOffset;
+		in float shadowSoftness;
+		in float shadowSpread;
+		flat in uvec2 textureHandle;
 
-					float borderInner = smoothstep(aa, -aa, dist + borderThickness);
-				    float borderOuter = shapeAlpha;
-					float borderMask = useShapeMask ? clamp(borderOuter - borderInner, 0.0, 1.0) : 0.0;
+		out vec4 FragColor;
 
-					// Signed distance of the shadow comes from the same rounded box SDF,
-					// but translated and expanded to produce a soft halo behind the shape.
-					vec2 shadowPoint = p - shadowOffset;
-					float shadowDist = sdRoundedBox(
-						shadowPoint,
-						(rectSize * 0.5) + vec2(shadowSpread),
-						radius
-					);
+		float sdRoundedBox(vec2 p, vec2 halfExtents, vec4 cornerRadius) {
+			cornerRadius.xy = (p.x > 0.0) ? cornerRadius.xy : cornerRadius.zw;
+			cornerRadius.x = (p.y > 0.0) ? cornerRadius.x : cornerRadius.y;
+			vec2 q = abs(p) - halfExtents + cornerRadius.x;
+			return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - cornerRadius.x;
+		}
 
-					// Softness controls the falloff width around the shadow edge.
-					float safeShadowSoftness = max(shadowSoftness, 0.001);
-					float shadowAlpha = 1.0 - smoothstep(-safeShadowSoftness, safeShadowSoftness, shadowDist);
-					shadowAlpha = clamp(shadowAlpha, 0.0, 1.0);
+		vec4 computeGradientFill(vec2 p) {
+			float angleRad = radians(gradientAngle);
+			vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
+			float gradientExtent = max(dot(abs(gradientDir), rectSize * 0.5), MIN_GRADIENT_EXTENT);
+			float t = clamp((dot(p, gradientDir) / gradientExtent) * 0.5 + 0.5, 0.0, 1.0);
+			return mix(backgroundColorA, backgroundColorB, t);
+		}
 
-					// Use bindless texture only when a non-null GPU handle is available.
-					// This keeps untextured rectangles on the fast path.
-					vec4 baseFill = gradientFill;
-					if (hasTexture) {
-						sampler2D rectTexture = sampler2D(textureHandle);
-						vec4 sampled = texture(rectTexture, texCoord);
-						// Glyph textures are uploaded in premultiplied alpha to avoid edge fringes
-						// during linear filtering; convert back to straight alpha for this shader path.
-						if (sampled.a > 0.0) {
-							sampled.rgb /= sampled.a;
-						}
-						// Preserve glyph coverage from the texture alpha and only blend color channels.
-						baseFill = vec4(mix(sampled.rgb, gradientFill.rgb, gradientFill.a), sampled.a);
-					}
+		float computeShadowAlpha(vec2 p) {
+			vec2 shadowPoint = p - shadowOffset;
+			float shadowDist = sdRoundedBox(shadowPoint, (rectSize * 0.5) + vec2(shadowSpread), radius);
+			float safeSoftness = max(shadowSoftness, MIN_SHADOW_SOFTNESS);
+			return clamp(1.0 - smoothstep(-safeSoftness, safeSoftness, shadowDist), 0.0, 1.0);
+		}
 
-					vec4 shapeColor = mix(baseFill, borderColor, borderMask);
-					float shapeCoverage = useShapeMask ? max(shapeAlpha, borderMask) : 1.0;
-					float shapeAlphaCombined = clamp(shapeColor.a * shapeCoverage, 0.0, 1.0);
+		vec4 resolveBaseFill(vec4 gradientFill, bool hasTexture) {
+			if (!hasTexture) {
+				return gradientFill;
+			}
 
-					// Keep the shadow behind the visible shape and composite in straight alpha.
-					float shadowCombinedAlpha = clamp(shadowColor.a * shadowAlpha, 0.0, 1.0);
-					float visibleShadow = shadowCombinedAlpha * (1.0 - shapeAlphaCombined);
-					float outAlpha = shapeAlphaCombined + visibleShadow;
+			sampler2D rectTexture = sampler2D(textureHandle);
+			vec4 sampled = texture(rectTexture, texCoord);
+			if (sampled.a > 0.0) {
+				// Glyph textures are premultiplied on upload to avoid filtering fringes.
+				sampled.rgb /= sampled.a;
+			}
+			return vec4(mix(sampled.rgb, gradientFill.rgb, gradientFill.a), sampled.a);
+		}
 
-					vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (shadowColor.rgb * visibleShadow);
-					vec3 outRgb = (outAlpha > 0.0) ? (premulRgb / outAlpha) : vec3(0.0);
-					FragColor = vec4(outRgb, outAlpha);
-				}
-			)";
+		void main() {
+			vec2 p = localPoint;
+			vec4 gradientFill = computeGradientFill(p);
+			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
+
+			bool hasTexture = any(notEqual(textureHandle, uvec2(0u)));
+			bool hasRoundedCorners = any(greaterThan(radius, vec4(0.0)));
+			bool hasBorder = borderThickness > 0.0;
+			bool useShapeMask = hasRoundedCorners || hasBorder || !hasTexture;
+
+			float shapeAlpha = smoothstep(AA_WIDTH, -AA_WIDTH, dist);
+			float borderInner = smoothstep(AA_WIDTH, -AA_WIDTH, dist + borderThickness);
+			float borderMask = useShapeMask ? clamp(shapeAlpha - borderInner, 0.0, 1.0) : 0.0;
+
+			vec4 baseFill = resolveBaseFill(gradientFill, hasTexture);
+			vec4 shapeColor = mix(baseFill, borderColor, borderMask);
+			float shapeCoverage = useShapeMask ? max(shapeAlpha, borderMask) : 1.0;
+			float shapeAlphaCombined = clamp(shapeColor.a * shapeCoverage, 0.0, 1.0);
+
+			float shadowAlpha = computeShadowAlpha(p);
+			float shadowCombinedAlpha = clamp(shadowColor.a * shadowAlpha, 0.0, 1.0);
+			float visibleShadow = shadowCombinedAlpha * (1.0 - shapeAlphaCombined);
+			float outAlpha = shapeAlphaCombined + visibleShadow;
+
+			vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (shadowColor.rgb * visibleShadow);
+			vec3 outRgb = (outAlpha > 0.0) ? (premulRgb / outAlpha) : vec3(0.0);
+			FragColor = vec4(outRgb, outAlpha);
+		}
+	)";
+}
 
 //OpenGL
 namespace mka::graphic {
@@ -259,8 +267,8 @@ namespace mka::graphic {
 
 			Renderer() {
 				DEBUG_LOG("Renderer init started.");
-				DEBUG_LOG(shader.addScript(vs, ShaderType::Vertex)); 
-				DEBUG_LOG(shader.addScript(fs, ShaderType::Fragment)); 
+				DEBUG_LOG(shader.addScript(kRendererVertexShader, ShaderType::Vertex)); 
+				DEBUG_LOG(shader.addScript(kRendererFragmentShader, ShaderType::Fragment)); 
 				shader.link();
 				
 				// empty vao (without it doesn't work...)
