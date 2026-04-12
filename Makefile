@@ -9,7 +9,7 @@ MODULES := \
 	$(SRC_DIR)/primitives/rectangle.cppm \
 	$(SRC_DIR)/sanitize.cppm \
 	$(SRC_DIR)/primitives/text.cppm \
-	$(SRC_DIR)/primitives/text_rasterizer.cppm \
+	$(SRC_DIR)/text_rasterizer.cppm \
 	$(SRC_DIR)/opengl/uniform.cppm \
 	$(SRC_DIR)/opengl/shader.cppm \
 	$(SRC_DIR)/renderer.cppm \
