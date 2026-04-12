@@ -117,9 +117,17 @@ public:
     return *this;
   }
 
-  const float &getGap() { return gap; }
-  const Align &getAlign() { return align; }
-  const Orientation &getOrientation() { return orientation; }
+  const float &getGap() { 
+	  return gap; 
+  }
+
+  const Align &getAlign() { 
+	  return align; 
+  }
+
+  const Orientation &getOrientation() { 
+	  return orientation; 
+  }
   const bool &isReversed() { return reverseOrder; }
 
 private:
@@ -189,7 +197,7 @@ private:
     geometry.z = offset;
   }
 
-  virtual void layout() final {
+  virtual void layout() override {
 
     switch (orientation) {
     case Orientation::Vertical:

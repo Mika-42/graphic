@@ -32,11 +32,12 @@ public:
   //   ┗━━ Child1
   //           ┗━━ Child2
   //                   ┗━━ Child3
-
+	
   template <typename T> T &addChild(std::unique_ptr<T> child) {
     T *ptr = child.get();
     children.push_back(std::move(child));
     ptr->parent = this;
+	markDirty();
     return *ptr; // Magic !
   }
 
@@ -46,7 +47,8 @@ public:
                                     return c.get() == child;
                                   }),
                    children.end());
-    return *this;
+	markDirty();
+	return *this;
   }
 
   const std::vector<std::unique_ptr<View>> &getChildren() const {
@@ -57,30 +59,38 @@ public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  glm::vec2 getAbsolutePosition() const { return glm::vec2{geometry.x, geometry.y}; }
-  glm::vec2 getRelativePosition() const { return relativePosition; } 
+  glm::vec2 getAbsolutePosition() { 
+	  update();
+	  return glm::vec2{geometry.x, geometry.y}; 
+  }
 
-  glm::vec2 getSize() { 
-		layout();
+  glm::vec2 getRelativePosition() { 
+	update();
+	  return relativePosition; 
+  } 
+
+  glm::vec2 getSize() {
+	  update();
 	  return glm::vec2{geometry.z, geometry.w}; 
   }
 
   View &setAbsolutePosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
-	layout();
+	markDirty();
     return *this;
   }
 
   View &setRelativePosition(const glm::vec2 &p) {
 	relativePosition = p;
-	layout();
+	markDirty();
     return *this;
   }
 
   View &setSize(const glm::vec2 &s) {
     geometry.z = s.x;
     geometry.w = s.y;
+	markDirty();
     return *this;
   }
 
@@ -116,15 +126,27 @@ protected:
 
   glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  glm::vec2 relativePosition = {0, 0};
+  glm::vec2 relativePosition = {0.0f, 0.0f};
 
   std::vector<std::unique_ptr<View>> children;
+
+  void markDirty() {dirty = true; }
+  void unmarkDirty() {dirty = false; }
+  const bool& isDirty() const { return dirty; }
+  
+  void update() {
+	if(dirty) {
+		layout();
+		dirty = false;
+	}
+  }
 
 private:
   View *parent = nullptr;
   bool visible = true;
   bool keyboardFocus = false;
   bool mouseFocus = false;
+  bool dirty = true;
 };
 
 } // namespace mka::graphic

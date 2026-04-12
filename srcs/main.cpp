@@ -122,11 +122,11 @@ int main() {
   s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.25f, 0.5f}), 0, 1, 0, 1);
   s.addChild( std::make_unique<A>(glm::vec4{1.0f, 1.0f, 0.0f, 0.5f}), 1, 1, 0, 2);
  
-  s.setSize({200, 200});
-  s.setColumns({px(100), px(100)});
-  s.setRows({px(50), px(50)});
-  s.setAbsolutePosition({10, 10});
-  s.setRowGap(10).setColumnGap(20); 
+  s.setSize({200.0f, 200.0f});
+  s.setColumns({px(100.f), px(100.0f)});
+  s.setRows({px(50.0f), px(50.0f)});
+  s.setAbsolutePosition({10.0f, 10.0f});
+  s.setRowGap(10.0f).setColumnGap(20.0f); 
   /*StackView s;
   s.setPosition({200, 200});
 	s.setOrientation(Orientation::Horizontal);
