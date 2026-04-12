@@ -104,6 +104,12 @@ class A : public View {
 			aa.shadowSoftness = 50.0f;
 			aa.shadowSpread = 10.0f;
 			aa.borderThickness = 5.0f;
+
+			Text t = {
+				.content = "Hello World !",
+				.font = "/home/mika/Downloads/Winter Draw.ttf",
+				.
+			};
 			renderer.add(aa);
 		}
 

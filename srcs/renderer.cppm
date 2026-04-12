@@ -7,15 +7,12 @@ module;
 #include "stb_image.h"
 
 #include "glad.h"
-#include <ft2build.h>
-#include FT_FREETYPE_H
 #include <glm/glm.hpp>
 #include <array>
 #include <cmath>
 #include <cstdint>
 #include <limits>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 #include <algorithm>
@@ -24,6 +21,8 @@ module;
 
 export module mka.graphic.opengl.renderer;
 export import mka.graphic.opengl.rectangle; //TODO rm export
+export import mka.graphic.opengl.text;
+import mka.graphic.opengl.text.rasterizer;
 import mka.graphic.opengl.shader;
 import mka.graphic.sanitize;
 
@@ -228,22 +227,6 @@ namespace {
 namespace mka::graphic {
 	
 	constexpr uint32_t TEXT = 1u << 0;
-
-	/// @brief Sanitize text command values prior to glyph generation.
-	void sanitizeText(Text &t) {
-		sanitizeColor(t.color);	
-		sanitizeColor(t.gradientColorA);
-		sanitizeColor(t.gradientColorB);
-		t.gradientAngle = std::fmod(t.gradientAngle, 360.0f);
-		if (t.gradientAngle < 0.0f) {
-			t.gradientAngle += 360.0f;
-		}
-		t.fontSize = sanitizeFloat(t.fontSize, 0.0f);
-		t.letterSpacing = sanitizeFloat(t.letterSpacing, 0.0f);
-
-		if (!std::isfinite(t.position.x)) t.position.x = 0.0f;
-		if (!std::isfinite(t.position.y)) t.position.y = 0.0f;
-	}
 	
 	/**
 	 * @brief Instanced rectangle renderer with optional text support.
@@ -275,25 +258,10 @@ namespace mka::graphic {
 					DEBUG_LOG("Initial SSBO allocation failed.");
 				}
 
-				if (FT_Init_FreeType(&ftLibrary) != 0) {
-					DEBUG_LOG("FreeType init failed");
-					ftLibrary = nullptr;
-				}
 				DEBUG_LOG("Renderer init completed.");
 			}
 			
 			~Renderer() {
-				for (auto& [_, cache] : fontCaches) {
-					if (cache.face != nullptr) {
-						FT_Done_Face(cache.face);
-						cache.face = nullptr;
-					}
-				}
-				if (ftLibrary != nullptr) {
-					FT_Done_FreeType(ftLibrary);
-					ftLibrary = nullptr;
-				}
-
 				if (ssbo != 0) {
 					glDeleteBuffers(1, &ssbo);
 				}
@@ -316,11 +284,13 @@ namespace mka::graphic {
 			size_t add(const Text& text) {
 				Text sanitizedText = text;
 				sanitizeText(sanitizedText);
-				const bool useExplicitGradient = glm::length(
-					sanitizedText.gradientColorA - sanitizedText.gradientColorB
-				) > 0.0001f;
-				const glm::vec4 textGradientA = useExplicitGradient ? sanitizedText.gradientColorA : sanitizedText.color;
-				const glm::vec4 textGradientB = useExplicitGradient ? sanitizedText.gradientColorB : sanitizedText.color;
+				// Text now has no separate `color` field:
+				// - solid mode uses gradientColorA on both ends
+				// - gradient mode uses gradientColorA -> gradientColorB
+				const glm::vec4 textGradientA = sanitizedText.gradientColorA;
+				const glm::vec4 textGradientB = sanitizedText.useGradient
+					? sanitizedText.gradientColorB
+					: sanitizedText.gradientColorA;
 
 				if (sanitizedText.content.empty()) {
 					DEBUG_LOG("Empty text content.");
@@ -345,29 +315,19 @@ namespace mka::graphic {
 				std::vector<Rectangle> glyphRects;
 				glyphRects.reserve(sanitizedText.content.size());
 
-				FontCache* fontCache = getOrCreateFontCache(sanitizedText.font);
-				if (fontCache == nullptr) {
-					DEBUG_LOG("Failed to get font cache for font: " + sanitizedText.font);
-					return 0;
-				}
-				if (FT_Set_Pixel_Sizes(fontCache->face, 0, pixelSize) != 0) {
-					DEBUG_LOG(
-						"FT_Set_Pixel_Sizes failed for font: " + sanitizedText.font +
-						", pixel size: " + std::to_string(pixelSize)
-					);
+				TextLineMetrics lineMetrics {};
+				if (!textRasterizer.getLineMetrics(sanitizedText.font, pixelSize, lineMetrics)) {
+					DEBUG_LOG("Failed to get text line metrics for font: " + sanitizedText.font);
 					return 0;
 				}
 
 				// `position` remains the top-left anchor of the text block.
 				// We derive a single bottom line from font metrics so every glyph ends on the same Y.
-				const float ascender = static_cast<float>(fontCache->face->size->metrics.ascender >> 6);
-				const float descender = static_cast<float>(fontCache->face->size->metrics.descender >> 6);
-				const float lineHeight = ascender - descender;
-				const float lineBottomY = sanitizedText.position.y + lineHeight;
+				const float lineBottomY = sanitizedText.position.y + lineMetrics.lineHeight;
 
 				for (char c : sanitizedText.content) {
-					const CachedGlyph* glyph = getOrCreateGlyph(
-						*fontCache,
+					const TextGlyph* glyph = textRasterizer.getOrCreateGlyph(
+						sanitizedText.font,
 						static_cast<unsigned char>(c),
 						pixelSize
 					);
@@ -545,150 +505,8 @@ namespace mka::graphic {
 				return true;
 			}
 
-			struct CachedGlyph {
-				uint64_t texture {};
-				glm::vec2 size {};
-				glm::vec2 bearing {};
-				float advance {};
-			};
-
-			struct FontCache {
-				FT_Face face {};
-				std::unordered_map<uint64_t, CachedGlyph> glyphs;
-			};
-
-			[[nodiscard]] uint64_t createGlyphTextureRGBA(
-				const unsigned char* rgbaPixels,
-				int width,
-				int height
-			) const {
-				if (rgbaPixels == nullptr || width <= 0 || height <= 0) {
-					DEBUG_LOG("createGlyphTextureRGBA received invalid input (null pixels or invalid dimensions).");
-					return 0;
-				}
-
-				GLuint tex = 0;
-				glCreateTextures(GL_TEXTURE_2D, 1, &tex);
-				if (tex == 0) {
-					DEBUG_LOG("glCreateTextures failed for glyph texture.");
-					return 0;
-				}
-				glTextureStorage2D(tex, 1, GL_RGBA8, width, height);
-				glTextureSubImage2D(tex, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
-				glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-				uint64_t handle = glGetTextureHandleARB(tex);
-				if (handle == 0) {
-					DEBUG_LOG("glGetTextureHandleARB returned null glyph handle.");
-					glDeleteTextures(1, &tex);
-					return 0;
-				}
-				glMakeTextureHandleResidentARB(handle);
-				return handle;
-			}
-
-			/// @brief Get cached font face or load it on first use.
-			FontCache* getOrCreateFontCache(const std::string& fontPath) {
-				if (ftLibrary == nullptr || fontPath.empty()) {
-					if (ftLibrary == nullptr) {
-						DEBUG_LOG("Font cache request failed: FreeType library is null.");
-					}
-					if (fontPath.empty()) {
-						DEBUG_LOG("Font cache request failed: empty font path.");
-					}
-					return nullptr;
-				}
-
-				if (const auto it = fontCaches.find(fontPath); it != fontCaches.end()) {
-					return &it->second;
-				}
-
-				FT_Face face = nullptr;
-				if (FT_New_Face(ftLibrary, fontPath.c_str(), 0, &face) != 0) {
-					DEBUG_LOG("Failed to load TTF font: " + fontPath);
-					return nullptr;
-				}
-				if (face == nullptr) {
-					DEBUG_LOG("FT_New_Face returned success but face is null: " + fontPath);
-					return nullptr;
-				}
-
-				FontCache cache {};
-				cache.face = face;
-				return &fontCaches.emplace(fontPath, std::move(cache)).first->second;
-			}
-
-			/// @brief Get cached glyph texture/metrics or rasterize and cache them.
-			const CachedGlyph* getOrCreateGlyph(
-				FontCache& fontCache,
-				unsigned int codepoint,
-				unsigned int pixelSize
-			) {
-				const uint64_t glyphKey = (static_cast<uint64_t>(pixelSize) << 32u) | codepoint;
-				if (const auto it = fontCache.glyphs.find(glyphKey); it != fontCache.glyphs.end()) {
-					return &it->second;
-				}
-
-				if (FT_Set_Pixel_Sizes(fontCache.face, 0, pixelSize) != 0) {
-					DEBUG_LOG("FT_Set_Pixel_Sizes failed for glyph generation.");
-					return nullptr;
-				}
-				if (FT_Load_Char(fontCache.face, codepoint, FT_LOAD_RENDER) != 0) {
-					DEBUG_LOG("FT_Load_Char failed for codepoint: " + std::to_string(codepoint));
-					return nullptr;
-				}
-
-				const FT_GlyphSlot glyph = fontCache.face->glyph;
-				if (glyph == nullptr) {
-					DEBUG_LOG("FreeType returned null glyph slot.");
-					return nullptr;
-				}
-				const FT_Bitmap& bitmap = glyph->bitmap;
-				const size_t pixelCount = static_cast<size_t>(bitmap.width) * bitmap.rows;
-				if (bitmap.width > 0 && bitmap.rows > 0 && pixelCount / bitmap.width != bitmap.rows) {
-					DEBUG_LOG("Glyph bitmap size overflow detected.");
-					return nullptr;
-				}
-				if (bitmap.buffer == nullptr && pixelCount > 0) {
-					DEBUG_LOG("Glyph bitmap buffer is null while pixel count is non-zero.");
-					return nullptr;
-				}
-
-				std::vector<unsigned char> rgba(pixelCount * 4u, 0u);
-				for (int y = 0; y < static_cast<int>(bitmap.rows); ++y) {
-					for (int x = 0; x < static_cast<int>(bitmap.width); ++x) {
-						const size_t srcIndex = static_cast<size_t>(y) * bitmap.pitch + static_cast<size_t>(x);
-						const size_t dstIndex = (static_cast<size_t>(y) * bitmap.width + static_cast<size_t>(x)) * 4u;
-						const unsigned int coverage = static_cast<unsigned int>(bitmap.buffer[srcIndex]);
-						// Keep white premultiplied RGB so the fragment shader can tint
-						// glyph coverage with per-glyph gradient colors without re-rasterizing.
-						rgba[dstIndex + 0u] = static_cast<unsigned char>(coverage);
-						rgba[dstIndex + 1u] = static_cast<unsigned char>(coverage);
-						rgba[dstIndex + 2u] = static_cast<unsigned char>(coverage);
-						// Alpha from glyph coverage keeps antialiasing from FreeType rasterization.
-						rgba[dstIndex + 3u] = static_cast<unsigned char>(coverage);
-					}
-				}
-
-				CachedGlyph cached {};
-				cached.texture = createGlyphTextureRGBA(
-					rgba.empty() ? nullptr : rgba.data(),
-					static_cast<int>(bitmap.width),
-					static_cast<int>(bitmap.rows)
-				);
-				cached.size = glm::vec2(static_cast<float>(bitmap.width), static_cast<float>(bitmap.rows));
-				cached.bearing = glm::vec2(static_cast<float>(glyph->bitmap_left), static_cast<float>(glyph->bitmap_top));
-				cached.advance = static_cast<float>(glyph->advance.x >> 6);
-
-				return &fontCache.glyphs.emplace(glyphKey, std::move(cached)).first->second;
-			}
-
 			std::vector<Rectangle> rectangles;
-			FT_Library ftLibrary {};
-			std::unordered_map<std::string, FontCache> fontCaches;
+			TextRasterizer textRasterizer {};
 
 			glm::vec4 bgColor = glm::vec4{1.0f};
 			Shader shader;
