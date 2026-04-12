@@ -3,6 +3,8 @@
 #include <glm/gtc/random.hpp>
 #include <iostream>
 #include <memory>
+#include <string>
+#include "debug.hpp"
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
@@ -10,6 +12,7 @@ import mka.graphic.renderlist;
 import mka.graphic.view;
 import mka.graphic.view.stackview;
 import mka.graphic.view.floatview;
+import mka.graphic.view.gridview;
 import mka.graphic.sanitize;
 
 using namespace mka::graphic;
@@ -114,24 +117,16 @@ int main() {
 
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
-  FloatView s;
-  auto a1 = std::make_unique<A>(glm::vec4{1.0, 0.0, 0.0, 0.5});
-  auto a2 = std::make_unique<A>(glm::vec4{1.0, 1.0, 0.0, 0.5});
-
-  s.setPosition({400, 100});
-  
-  a1->setPosition({0, 0});
-  a1->setSize({100, 200});
-  
-  a2->setPosition({50, 50});
-  a2->setSize({100, 200});
-  
-  a1->zIndex = 1;
-  a2->zIndex = 1000;
-
-  s.addChild(std::move(a1));
-  s.addChild(std::move(a2));
-
+  GridView s;
+  s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.0f, 0.0f, 0.5f}), 0, 0, 0, 1);
+  s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.25f, 0.5f}), 0, 1, 0, 1);
+  s.addChild( std::make_unique<A>(glm::vec4{1.0f, 1.0f, 0.0f, 0.5f}), 1, 1, 0, 2);
+ 
+  s.setSize({200, 200});
+  s.setColumns({px(100), px(100)});
+  s.setRows({px(50), px(50)});
+  s.setAbsolutePosition({10, 10});
+  s.setRowGap(10).setColumnGap(20); 
   /*StackView s;
   s.setPosition({200, 200});
 	s.setOrientation(Orientation::Horizontal);

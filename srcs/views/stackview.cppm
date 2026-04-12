@@ -20,7 +20,7 @@ import mka.graphic.opengl.renderer;
  * |     A       |
  * +-------------+
  *
- * reverse: 
+ * reverse:
  *
  * +-------------+
  * |     A       |
@@ -30,12 +30,12 @@ import mka.graphic.opengl.renderer;
  * |     C       |
  * +-------------+
  *
- * direction: 
+ * direction:
  * +-------------+-------------+-------------+
  * |     A       |      B      |      C      |
  * +-------------+-------------+-------------+
  *
- * reverse-direction: 
+ * reverse-direction:
  * +-------------+-------------+-------------+
  * |     C       |      B      |      A      |
  * +-------------+-------------+-------------+
@@ -64,12 +64,12 @@ import mka.graphic.opengl.renderer;
  * align-center
  *
  *      +-------+
- *      |  B    |  
+ *      |  B    |
  * +----+-------+----+
  * |       A         |
  * +-----------------+
- * 
- * gap: 
+ *
+ * gap:
  * +-------------+
  * |     C       |
  * +-------------+
@@ -90,27 +90,32 @@ enum class Align { Left, Right, Center, Top, Bottom };
 enum class Orientation { Vertical, Horizontal };
 
 class StackView : public View {
+	private:
+		
+		using View::setSize;
 public:
-  void setSize(const glm::vec2 &s) = delete;
 
-  virtual void draw(Renderer& /*renderer*/) override {
-	layout();
+  virtual void draw(Renderer & /*renderer*/) override { layout(); }
+
+  StackView &setGap(float v) {
+    gap = sanitizeFloat(v, 0.0f);
+    return *this;
   }
 
-  glm::vec2 getSize() override {
-	layout();
-	return View::getSize();
+  StackView &setAlign(Align a) {
+    align = a;
+    return *this;
   }
 
+  StackView &setOrientation(Orientation o) {
+    orientation = o;
+    return *this;
+  }
 
-  
-  void setGap(float v) { gap = sanitizeFloat(v, 0.0f); }
-
-  void setAlign(Align a) { align = a; }
-
-  void setOrientation(Orientation o) { orientation = o; }
-
-  void reverse(bool r) { reverseOrder = r; }
+  StackView &reverse(bool r) {
+    reverseOrder = r;
+    return *this;
+  }
 
   const float &getGap() { return gap; }
   const Align &getAlign() { return align; }
@@ -149,7 +154,7 @@ private:
     auto process = [&](std::unique_ptr<View> &child) {
       geometry.z = glm::max(geometry.z, child->getSize().x);
 
-      child->setPosition(
+      child->setAbsolutePosition(
           {alignOffset(child) + geometry.x, geometry.y + offset});
       offset += child->getSize().y + gap;
     };
@@ -170,7 +175,7 @@ private:
     auto process = [&](std::unique_ptr<View> &child) {
       geometry.w = glm::max(geometry.w, child->getSize().y);
 
-      child->setPosition(
+      child->setAbsolutePosition(
           {geometry.x + offset, geometry.y + alignOffset(child)});
       offset += child->getSize().x + gap;
     };
@@ -197,6 +202,7 @@ private:
       vlayout();
     }
   }
+
 private:
   Align align = Align::Left;
   Orientation orientation = Orientation::Vertical;
