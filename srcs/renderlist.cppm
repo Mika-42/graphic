@@ -17,6 +17,10 @@ struct RenderItem {
 void collect(mka::graphic::View *view, std::vector<RenderItem> &out,
              uint64_t parentZ = 0, uint8_t depth = 0) {
 
+  if (!view->isVisible()) {
+    return;
+  }
+
   if (depth >= 4) return;
 
   uint64_t zPath64 = (parentZ << 16) | static_cast<uint32_t>(view->zIndex);

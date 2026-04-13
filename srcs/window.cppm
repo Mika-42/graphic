@@ -80,6 +80,7 @@ public:
       break;
     }
 
+	glfwWindowHint(GLFW_STENCIL_BITS, 8);
     window =
         glfwCreateWindow(size.x, size.y, this->name.c_str(), nullptr, nullptr);
 

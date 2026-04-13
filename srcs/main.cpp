@@ -105,18 +105,6 @@ class A : public View {
 			aa.shadowSpread = 10.0f;
 			aa.borderThickness = 5.0f;
 
-			Text t = {
-				.content = "Hello World !",
-				.font = "/home/mika/Downloads/Winter Draw.ttf",
-				.gradientColorA = {1.0f, 0.5f, 0.25f, 1.0f},
-				.gradientColorB = {0.25f, 0.5f, 1.0f, 1.0f},
-				.gradientAngle = 0.0f,
-				.position = this->getAbsolutePosition(),
-				.fontSize = 30.0f,
-				.letterSpacing = 20.0f,
-			};
-
-			renderer.add(t);
 			renderer.add(aa);
 		}
 
@@ -139,23 +127,22 @@ int main() {
 
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
-  GridView s;
-  s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.0f, 0.0f, 0.5f}), 0, 0, 0, 1);
-  //s.addChild( std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.25f, 0.5f}), 0, 1, 0, 1);
-  //s.addChild( std::make_unique<A>(glm::vec4{1.0f, 1.0f, 0.0f, 0.5f}), 1, 1, 0, 2);
- 
-  s.setSize({200.0f, 200.0f});
-  s.setColumns({px(100.f), px(100.0f)});
-  s.setRows({px(50.0f), px(50.0f)});
-  s.setAbsolutePosition({100.0f, 50.0f});
-  s.setRowGap(10.0f).setColumnGap(20.0f); 
-  /*StackView s;
-  s.setPosition({200, 200});
-	s.setOrientation(Orientation::Horizontal);
-	s.setAlign(Align::Center);
-	s.setGap(5);
-	s.reverse(false);
+  StackView s;
+  s.setAbsolutePosition({200, 200});
+s.setOrientation(Orientation::Vertical);
+s.setAlign(Align::Center);
+s.setGap(5);
 
+auto& a = s.addChild(std::make_unique<A>(glm::vec4{0.0f, 1.0f, 0.75f, 1.0f}));
+auto& b = s.addChild(std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.5f, 1.0f}));
+auto& c = s.addChild(std::make_unique<A>(glm::vec4{0.0f, 0.5f, 0.5f, 1.0f}));
+auto& d = s.addChild(std::make_unique<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f}));
+a.setSize({200.0f, 100.0f});
+b.setSize({200.0f, 100.0f});
+c.setSize({200.0f, 100.0f});
+d.setSize({200.0f, 100.0f});
+c.setVisible(false);
+/*
     for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
       auto octave = std::make_unique<PianoOctave>();
 		
