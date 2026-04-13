@@ -262,16 +262,11 @@ namespace {
 }
 
 //OpenGL
-namespace mka::graphic {
-	
-	constexpr uint32_t TEXT				= 1u << 0;
-	constexpr uint32_t CLIP_VIEW		= 1u << 1;
-	constexpr uint32_t STENCIL_RESET	= 1u << 2;
-	
+export namespace mka::graphic {	
 	/**
 	 * @brief Instanced rectangle renderer with optional text support.
 	 */
-	export class Renderer {
+	class Renderer {
 		
 		public:
 
@@ -453,6 +448,7 @@ namespace mka::graphic {
 				return addedCount;
 			}
 
+			/// TODO Make it unusable by user
 			/// @brief Flush batched rectangles to GPU and issue one instanced draw.
 			void draw(const glm::mat4 projection) {
 			

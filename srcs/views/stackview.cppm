@@ -90,11 +90,10 @@ enum class Align { Left, Right, Center, Top, Bottom };
 enum class Orientation { Vertical, Horizontal };
 
 class StackView : public View {
-	private:
-		
-		using View::setSize;
-public:
+private:
+  using View::setSize;
 
+public:
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
 
   StackView &setGap(float v) {
@@ -117,21 +116,18 @@ public:
     return *this;
   }
 
-  const float &getGap() { 
-	  return gap; 
-  }
+  const float &getGap() { return gap; }
 
-  const Align &getAlign() { 
-	  return align; 
-  }
+  const Align &getAlign() { return align; }
 
-  const Orientation &getOrientation() { 
-	  return orientation; 
-  }
+  const Orientation &getOrientation() { return orientation; }
   const bool &isReversed() { return reverseOrder; }
 
 private:
   float alignOffset(const std::unique_ptr<View> &view) const {
+    if (!view) {
+      return 0.0f;
+    }
 
     const float dw = geometry.z - view->getSize().x;
     const float dh = geometry.w - view->getSize().y;
@@ -160,6 +156,10 @@ private:
     float offset = 0.0f;
 
     auto process = [&](std::unique_ptr<View> &child) {
+      if (!child) {
+        return;
+      }
+
       geometry.z = glm::max(geometry.z, child->getSize().x);
 
       child->setAbsolutePosition(

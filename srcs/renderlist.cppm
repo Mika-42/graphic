@@ -17,7 +17,7 @@ struct RenderItem {
 void collect(mka::graphic::View *view, std::vector<RenderItem> &out,
              uint64_t parentZ = 0, uint8_t depth = 0) {
 
-  if (!view->isVisible()) {
+  if (!view || !view->isVisible()) {
     return;
   }
 

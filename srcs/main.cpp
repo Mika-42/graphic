@@ -13,6 +13,7 @@ import mka.graphic.view;
 import mka.graphic.view.stackview;
 import mka.graphic.view.floatview;
 import mka.graphic.view.gridview;
+import mka.graphic.view.clipview;
 import mka.graphic.sanitize;
 
 using namespace mka::graphic;
@@ -127,21 +128,26 @@ int main() {
 
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
-  StackView s;
-  s.setAbsolutePosition({200, 200});
-s.setOrientation(Orientation::Vertical);
-s.setAlign(Align::Center);
-s.setGap(5);
+  auto s = std::make_unique<StackView>();
+s->setAbsolutePosition({200.0f, 200.0f});
+s->setOrientation(Orientation::Vertical);
+s->setAlign(Align::Center);
+s->setGap(5);
 
-auto& a = s.addChild(std::make_unique<A>(glm::vec4{0.0f, 1.0f, 0.75f, 1.0f}));
-auto& b = s.addChild(std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.5f, 1.0f}));
-auto& c = s.addChild(std::make_unique<A>(glm::vec4{0.0f, 0.5f, 0.5f, 1.0f}));
-auto& d = s.addChild(std::make_unique<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f}));
+auto& a = s->addChild(std::make_unique<A>(glm::vec4{0.0f, 1.0f, 0.75f, 1.0f}));
+auto& b = s->addChild(std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.5f, 1.0f}));
+auto& c = s->addChild(std::make_unique<A>(glm::vec4{0.0f, 0.5f, 0.5f, 1.0f}));
+auto& d = s->addChild(std::make_unique<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f}));
 a.setSize({200.0f, 100.0f});
 b.setSize({200.0f, 100.0f});
 c.setSize({200.0f, 100.0f});
 d.setSize({200.0f, 100.0f});
-c.setVisible(false);
+
+auto f = std::make_unique<ClipView>();
+f->setAbsolutePosition({200.0f, 200.0f});
+f->setSize({200.0f, 200.0f});
+f->addChild(std::move(s));
+
 /*
     for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
       auto octave = std::make_unique<PianoOctave>();
@@ -155,7 +161,7 @@ c.setVisible(false);
     }*/
 
 	app.setBackgroundColor({0.25, 0.25, 0.25, 1.0});
-	app.setRoot(s);
+	app.setRoot(std::move(f));
 
   return app.run();
 }

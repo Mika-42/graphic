@@ -68,12 +68,16 @@ public:
 
   GridView &extendRows(const Size &s) {
     rows.emplace_back(s);
-	markDirty();
+    markDirty();
     return *this;
   }
 
   GridView &addChild(std::unique_ptr<View> child, size_t row, size_t col,
                      size_t rspan = 1, size_t cspan = 1) {
+    if (!child) {
+      return *this;
+    }
+
     if (!rspan) {
       rspan = 1;
     }
@@ -87,6 +91,10 @@ public:
 
   GridView &move(View *child, size_t row, size_t col, size_t rspan = 1,
                  size_t cspan = 1) {
+
+    if (!child) {
+      return *this;
+    }
     if (childCell.contains(child)) {
       if (!rspan) {
         rspan = 1;
@@ -100,7 +108,12 @@ public:
     return *this;
   }
 
-  View &removeChild(View *child) override {
+  GridView &removeChild(View *child) {
+
+    if (!child) {
+      return *this;
+    }
+
     childCell.erase(child);
     View::removeChild(child);
     markDirty();
@@ -121,14 +134,14 @@ public:
   void draw(Renderer &) override { layout(); }
 
   glm::vec2 getOverflows() {
-	  update();
-	  return {colCache.overflow, rowCache.overflow};
+    update();
+    return {colCache.overflow, rowCache.overflow};
   }
 
 private:
   void layout() override {
     if (columns.empty() || rows.empty() || childCell.empty()) {
-      colCache = rowCache = {}; 
+      colCache = rowCache = {};
       return;
     }
 
@@ -139,16 +152,17 @@ private:
   void updateCaches() {
     if (!isDirty()) {
       return;
-	}
+    }
     colCache = computeTrackCache(columns, geometry.z, gaps.y);
     rowCache = computeTrackCache(rows, geometry.w, gaps.x);
-	unmarkDirty();
+    unmarkDirty();
   }
 
   void positionChildren() {
     for (auto &[child, cell] : childCell) {
-      if (!child)
+      if (!child) {
         continue;
+      }
 
       glm::vec4 rect = {
           colCache.positions[cell.col],                       // X O(1)

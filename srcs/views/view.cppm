@@ -42,6 +42,10 @@ public:
   }
 
   virtual View &removeChild(View *child) {
+	  if(!child) {
+		  return *this; 
+	  }
+
     children.erase(std::remove_if(children.begin(), children.end(),
                                   [&](const std::unique_ptr<View> &c) {
                                     return c.get() == child;

@@ -4,18 +4,19 @@
  */
 module;
 
+#include "debug.hpp"
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iterator>
 #include <memory>
-#include <algorithm>
 #include <ranges>
-#include "debug.hpp"
 
 export module mka.graphic.window;
 
-export import mka.graphic.context; //TODO check if usefull to export
-export import mka.graphic.mouseview;//TODO check if usefull to export
+export import mka.graphic.context;   // TODO check if usefull to export
+export import mka.graphic.mouseview; // TODO check if usefull to export
 export import mka.graphic.keyboardview;
 
 import mka.graphic.keyboard;
@@ -80,7 +81,7 @@ public:
       break;
     }
 
-	glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    glfwWindowHint(GLFW_STENCIL_BITS, 8);
     window =
         glfwCreateWindow(size.x, size.y, this->name.c_str(), nullptr, nullptr);
 
@@ -149,9 +150,8 @@ public:
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	renderer = std::make_unique<Renderer>();
+    renderer = std::make_unique<Renderer>();
   }
-
 
   /// @brief Run the blocking frame loop until close.
   int run() {
@@ -191,58 +191,71 @@ public:
 
   const State &getState() const { return state; }
 
-  void setBackgroundColor(const glm::vec4& color) { bgColor = color; }
- 
-  void setRoot(View& root) { rootView = &root; }
+  void setBackgroundColor(const glm::vec4 &color) { bgColor = color; }
+
+  void setRoot(std::unique_ptr<View> root) { rootView = std::move(root); }
 
 private:
-
   void render(const glm::vec2 & /*size*/, const MouseEventView &mouse,
-                      const KeyboardEventView &keyboard, const Time& /*time*/) {
-	
+              const KeyboardEventView &keyboard, const Time & /*time*/) {
+
+    if (!renderer) {
+      DEBUG_LOG("renderer is not initialized.");
+      return;
+    }
+
     renderer->setBackgroundColor(bgColor);
-	items.clear();
+    items.clear();
 
-	if(!rootView) {
-		DEBUG_LOG("root view is not set.");
-		return;
-	}
+    if (!rootView) {
+      DEBUG_LOG("root view is not set.");
+      return;
+    }
 
-    collect(rootView, items);
+    collect(rootView.get(), items);
 
     std::ranges::sort(items, {}, &RenderItem::zPath64);
 
-	for (auto& item : items | std::views::reverse) {
-
-		if(item.view->contain(mouse.position())) {
-			item.view->setMouseFocus(true);
-			item.view->onMouseEvent(mouse);
-			break;
-		}
-	}
-
-    for (auto& item : items) {
-		if(item.view->isKeyboardFocused()) {
-			item.view->onKeyboardEvent(keyboard);
-		}
-
-        if(item.view->isVisible()) {
-			item.view->draw(*renderer);
-		}
+    for (auto &item : items | std::views::reverse) {
+      if (!item.view) {
+        continue;
+      }
+      if (item.view->contain(mouse.position())) {
+        item.view->setMouseFocus(true);
+        item.view->onMouseEvent(mouse);
+        break;
+      }
     }
 
-    for (auto& item : items) {
-		item.view->setMouseFocus(false);
-	}
+    for (auto &item : items) {
+      if (!item.view) {
+        continue;
+      }
+      if (item.view->isKeyboardFocused()) {
+        item.view->onKeyboardEvent(keyboard);
+      }
+
+      if (item.view->isVisible()) {
+        item.view->draw(*renderer);
+      }
+    }
+
+    for (auto &item : items) {
+      if (!item.view) {
+        continue;
+      }
+      item.view->setMouseFocus(false);
+    }
 
     renderer->draw(orthographicProjection);
   }
+
 private:
   glm::vec2 size = {0.0, 0.0};
   glm::mat4 orthographicProjection;
   glm::vec4 bgColor = glm::vec4(1.0f);
   std::string name;
-  std::unique_ptr<Context> ctx;
+  std::unique_ptr<Context> ctx = nullptr;
   State state = State::Terminated;
   GLFWwindow *window = nullptr;
   MouseEvent mouseEvent;
@@ -256,8 +269,8 @@ private:
 
   std::unique_ptr<Renderer> renderer;
 
-  View* rootView = nullptr;
-  
+  std::unique_ptr<View> rootView = nullptr;
+
   std::vector<RenderItem> items;
 
 private:

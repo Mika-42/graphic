@@ -47,8 +47,9 @@ private:
     float maxY = 0.0f;
 
     for (auto &child : children) {
-      if (!child)
+      if (!child) {
         continue;
+      }
 
       const glm::vec2 relPos = child->getRelativePosition();
       const glm::vec2 childSize = child->getSize();
@@ -58,7 +59,7 @@ private:
       maxX = glm::max(maxX, relPos.x + childSize.x);
       maxY = glm::max(maxY, relPos.y + childSize.y);
 
-      glm::vec2 absPos = getAbsolutePosition() + relPos;
+      const glm::vec2 absPos = getAbsolutePosition() + relPos;
       child->setAbsolutePosition(absPos);
     }
 

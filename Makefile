@@ -22,6 +22,7 @@ MODULES := \
 	$(SRC_DIR)/views/stackview.cppm \
 	$(SRC_DIR)/views/floatview.cppm \
 	$(SRC_DIR)/views/gridview.cppm \
+	$(SRC_DIR)/views/clipview.cppm \
 	$(SRC_DIR)/context.cppm \
 	$(SRC_DIR)/window.cppm \
 
@@ -35,7 +36,7 @@ C_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CS:.c=.o))
 
 OBJS := $(MODULE_OBJS) $(CPP_OBJS) $(C_OBJS)
 
-FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG
+FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG -Og
 LINK_FLAGS := -lglfw -lGL -lfreetype
 INCLUDES := -I$(SRC_DIR) -Iglad -I/usr/include/freetype2
 
