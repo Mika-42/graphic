@@ -22,7 +22,6 @@ export import mka.graphic.keyboardview;
 import mka.graphic.keyboard;
 import mka.graphic.mouse;
 import mka.graphic.opengl.renderer;
-import mka.graphic.renderlist;
 import mka.graphic.view;
 
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
@@ -31,12 +30,53 @@ void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
 }
 
 namespace mka::graphic {
-	template<Derived>
-	class RootView : public View<RootView<Derived>> {
-		public:
-	  void draw(Renderer & /*renderer*/) override {}
-	};
-}
+class RootView : public View {
+private:
+	using View::addChild;
+
+public:
+
+  RootView() : View() {}
+
+  void draw(Renderer & /*renderer*/) override {}
+
+    void addChild(std::shared_ptr<View> child) override {
+		View::addChild(child);
+		//child->parent = nullptr;
+	}
+
+  // Nouvelle méthode publique : trie TOUS les enfants visibles
+  void topoZSort() noexcept {
+    sortedViews.clear();
+    for (auto& child : children) {
+      if (child && child->isVisible()) {
+        topoZSortRecursive(child.get());
+      }
+    }
+  }
+
+private:
+  // Méthode récursive privée
+  void topoZSortRecursive(View* view) noexcept {
+    if (!view || !view->isVisible()) return;
+    
+    // Trier les enfants par zIndex
+    auto ch = view->getChildren();
+    std::stable_sort(ch.begin(), ch.end(), [](auto a, auto b) { return a->zIndex < b->zIndex; });
+    
+    // Parcours récursif des enfants
+    for (auto child : ch) {
+      topoZSortRecursive(child.get());
+    }
+    
+    // Ajouter le noeud courant (post-order)
+    sortedViews.push_back(view);
+  }
+
+public:
+  std::vector<View*> sortedViews;  // public pour accès externe si besoin
+};
+} // namespace mka::graphic
 
 export namespace mka::graphic {
 
@@ -181,7 +221,7 @@ public:
 
       ctx->makeCurrent();
 
-      render(size, mouseEventView, keyboardEventView, time);
+      render(mouseEventView, keyboardEventView, time);
 
       ctx->swapBuffers();
     }
@@ -201,15 +241,15 @@ public:
 
   void setBackgroundColor(const glm::vec4 &color) { bgColor = color; }
 
-  template<typename Derived>
-  void setRoot(std::shared_ptr<View<Derived>> root) { 
-	  rootView = std::make_shared<RootWrapper<Derived>>();
-	  rootWrapper->addChild(root);
+  void setRoot(std::shared_ptr<View> root) {
+	if(!root) { return; }
+    rootView = std::make_shared<RootView>(); // TODO check if .reset() should be better
+    rootView->addChild(root);
   }
 
 private:
-  void render(const glm::vec2 & /*size*/, const MouseEventView &mouse,
-              const KeyboardEventView &keyboard, const Time & /*time*/) {
+  void render(const MouseEventView &mouse, const KeyboardEventView &keyboard,
+              const Time & /*time*/) {
 
     if (!renderer) {
       DEBUG_LOG("renderer is not initialized.");
@@ -217,49 +257,46 @@ private:
     }
 
     renderer->setBackgroundColor(bgColor);
-    items.clear();
 
     if (!rootView) {
       DEBUG_LOG("root view is not set.");
       return;
     }
 
-	rootView->setAbsolutePosition({0.0f, 0.0f});
-	rootView->setSize(size);
+    rootView->setAbsolutePosition({0.0f, 0.0f});
+    rootView->setSize(size);
 
-    collect(rootView.get(), items);
+    rootView->topoZSort();
 
-    std::ranges::sort(items, {}, &RenderItem::zPath64);
-
-    for (auto &item : items | std::views::reverse) {
-      if (!item.view) {
+    for (auto &view : rootView->sortedViews | std::views::reverse) {
+      if (!view) {
         continue;
       }
-      if (item.view->contain(mouse.position())) {
-        item.view->setMouseFocus(true);
-        item.view->onMouseEvent(mouse);
+      if (view->contain(mouse.position())) {
+        view->setMouseFocus(true);
+        view->onMouseEvent(mouse);
         break;
       }
     }
 
-    for (auto &item : items) {
-      if (!item.view) {
+    for (auto &view : rootView->sortedViews) {
+      if (!view) {
         continue;
       }
-      if (item.view->isKeyboardFocused()) {
-        item.view->onKeyboardEvent(keyboard);
+      if (view->isKeyboardFocused()) {
+        view->onKeyboardEvent(keyboard);
       }
 
-      if (item.view->isVisible()) {
-        item.view->draw(*renderer);
+      if (view->isVisible()) {
+        view->draw(*renderer);
       }
     }
 
-    for (auto &item : items) {
-      if (!item.view) {
+    for (auto &view : rootView->sortedViews) {
+      if (!view) {
         continue;
       }
-      item.view->setMouseFocus(false);
+      view->setMouseFocus(false);
     }
 
     renderer->draw(orthographicProjection);
@@ -285,8 +322,6 @@ private:
   std::unique_ptr<Renderer> renderer;
 
   std::shared_ptr<RootView> rootView = nullptr;
-
-  std::vector<RenderItem> items;
 
 private:
   void handleKeyboard() {

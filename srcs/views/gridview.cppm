@@ -40,7 +40,7 @@ struct Size {
 const Size px(float v) { return {Unit::Px, sanitizeFloat(v, 0.0f)}; }
 const Size fr(float v) { return {Unit::Fr, sanitizeFloat(v, 0.0f)}; }
 
-class GridView : public View<GridView> {
+class GridView : public View {
 
 private:
   using View::addChild;
@@ -53,33 +53,34 @@ private:
 public:
   GridView() : View() {}
 
-  GridView &setColumns(const std::vector<Size> &c) {
+  void setColumns(const std::vector<Size> &c) {
     columns = c;
     markDirty();
-    return self();
+    return ;
   }
-  GridView &setRows(const std::vector<Size> &r) {
+  
+  void setRows(const std::vector<Size> &r) {
     rows = r;
     markDirty();
-    return self();
+    return ;
   }
 
-  GridView &extendColumns(const Size &s) {
+  void extendColumns(const Size &s) {
     columns.emplace_back(s);
     markDirty();
-    return self();
+    return ;
   }
 
-  GridView &extendRows(const Size &s) {
+  void extendRows(const Size &s) {
     rows.emplace_back(s);
     markDirty();
-    return self();
+    return;
   }
 
-  GridView &addChild(std::shared_ptr<View> child, size_t row, size_t col,
+  void addChild(std::shared_ptr<View> child, size_t row, size_t col,
                      size_t rspan = 1, size_t cspan = 1) {
     if (!child) {
-      return self();
+      return;
     }
 
     if (!rspan) {
@@ -90,14 +91,13 @@ public:
     }
     childCell[child.get()] = {row, col, rspan, cspan};
     View::addChild(child);
-    return self();
   }
 
-  GridView &move(View *child, size_t row, size_t col, size_t rspan = 1,
+  void move(View *child, size_t row, size_t col, size_t rspan = 1,
                  size_t cspan = 1) {
 
     if (!child) {
-      return self();
+      return ;
     }
     if (childCell.contains(child)) {
       if (!rspan) {
@@ -109,30 +109,29 @@ public:
       childCell[child] = {row, col, rspan, cspan};
       markDirty();
     }
-    return self();
   }
 
-  GridView &removeChild(View *child) {
+  void removeChild(View *child) {
 
     if (!child) {
-      return self();
+      return;
     }
 
     childCell.erase(child);
     View::removeChild(child);
     markDirty();
-    return self();
   }
 
-  GridView &setRowGap(float v) {
+  void setRowGap(float v) {
     gaps.x = sanitizeFloat(v, 0.0f);
     markDirty();
-    return self();
+    return ;
   }
-  GridView &setColumnGap(float v) {
+  
+  void setColumnGap(float v) {
     gaps.y = sanitizeFloat(v, 0.0f);
     markDirty();
-    return self();
+    return ;
   }
 
   void draw(Renderer &) override { layout(); }

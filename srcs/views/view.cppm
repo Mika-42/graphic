@@ -11,7 +11,6 @@ import mka.graphic.mouseview;
 
 export namespace mka::graphic {
 
-template<typename Derived>
 class View {
 public:
   // Constructeur / Destructeur
@@ -23,27 +22,27 @@ public:
 
   // --- Gestion des enfants ---
 	
-  Derived& addChild(std::shared_ptr<View> child) {
+  virtual void addChild(std::shared_ptr<View> child) {
 	  if(child) {
-		  child->parent = this;
+
+		child->parent = this;
 		children.emplace_back(child);
 	  markDirty();
 	  }
-	  return self();
   }
 
-  Derived& removeChild(View *child) {
+  void removeChild(View *child) {
 	  if(!child) {
-		  return self(); 
+		  return; 
 	  }
 
-    children.erase(std::remove_if(children.begin(), children.end(),
-                                  [&](const std::shared_ptr<View> &c) {
-                                    return c.get() == child;
-                                  }),
-                   children.end());
+    children.erase(std::remove_if(
+				children.begin(), children.end(),
+                [&](const std::shared_ptr<View> &c) {
+                    return c.get() == child;
+				}), children.end());
+
 	markDirty();
-	return self();
   }
 
   [[nodiscard]] const std::vector<std::shared_ptr<View>> &getChildren() const noexcept {
@@ -54,55 +53,43 @@ public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  glm::vec2 getAbsolutePosition() { 
+  virtual glm::vec2 getAbsolutePosition() { 
 	  update();
 	  return glm::vec2{geometry.x, geometry.y}; 
   }
 
-  glm::vec2 getRelativePosition() { 
+  virtual glm::vec2 getRelativePosition() { 
 	update();
 	  return relativePosition; 
   } 
 
-  glm::vec2 getSize() {
+  virtual glm::vec2 getSize() {
 	  update();
 	  return glm::vec2{geometry.z, geometry.w}; 
   }
 
-  Derived &setAbsolutePosition(const glm::vec2 &p) {
+  void setAbsolutePosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
 	markDirty();
-    return self();
   }
 
-  Derived &setRelativePosition(const glm::vec2 &p) {
+  void setRelativePosition(const glm::vec2 &p) {
 	relativePosition = p;
 	markDirty();
-    return self();
   }
 
-  Derived &setSize(const glm::vec2 &s) {
-    geometry.z = s.x;
+  void setSize(const glm::vec2 &s) {
+	    geometry.z = s.x;
     geometry.w = s.y;
 	markDirty();
-    return self();
   }
 
-  Derived &setVisible(bool v) {
-    visible = v;
-    return self();
-  }
+  void setVisible(bool v) { visible = v; }
 
-  Derived &setKeyboardFocus(bool v) {
-    keyboardFocus = v;
-    return self();
-  }
+  void setKeyboardFocus(bool v) { keyboardFocus = v; }
 
-  Derived &setMouseFocus(bool v) {
-    mouseFocus = v;
-    return self();
-  }
+  void setMouseFocus(bool v) { mouseFocus = v; }
 
   const bool &isVisible() const { return visible; }
 
@@ -136,9 +123,6 @@ protected:
     updateDepth--;
     dirty = false;
   }
-
-  Derived& self() { return static_cast<Derived&>(*this); }
-  const Derived& self() const { return static_cast<const Derived&>(*this); }
 
 private:
   View *parent = nullptr;

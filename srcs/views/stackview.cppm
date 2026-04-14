@@ -89,7 +89,7 @@ enum class Align { Left, Right, Center, Top, Bottom };
 
 enum class Orientation { Vertical, Horizontal };
 
-class StackView : public View<StackView> {
+class StackView : public View {
 private:
   using View::setSize;
 

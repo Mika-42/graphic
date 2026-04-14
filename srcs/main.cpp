@@ -8,7 +8,6 @@
 
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
-import mka.graphic.renderlist;
 import mka.graphic.view;
 import mka.graphic.view.stackview;
 import mka.graphic.view.floatview;
@@ -77,13 +76,12 @@ class PianoOctave : public View {
 };
 */
 
-class A : public View<A> {
+class A : public View {
 	public:
 		A() = default;
 		A(glm::vec4 c) : cc(c) {
 				aa.backgroundColorA = cc;
-				aa.backgroundColorB = cc;
-				
+				aa.backgroundColorB = cc;	
 		}
 	
 		void draw(Renderer &renderer) override {

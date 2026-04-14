@@ -25,7 +25,7 @@ export namespace mka::graphic {
 /*
  * Place your children using relative position
  */
-class FloatView : public View<FloatView> {
+class FloatView : public View {
 private:
   using View::setSize;
 

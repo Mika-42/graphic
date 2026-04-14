@@ -18,7 +18,6 @@ MODULES := \
 	$(SRC_DIR)/inputs/mouse.cppm \
 	$(SRC_DIR)/inputs/mouseview.cppm \
 	$(SRC_DIR)/views/view.cppm \
-	$(SRC_DIR)/renderlist.cppm \
 	$(SRC_DIR)/views/stackview.cppm \
 	$(SRC_DIR)/views/floatview.cppm \
 	$(SRC_DIR)/views/gridview.cppm \
@@ -36,7 +35,7 @@ C_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CS:.c=.o))
 
 OBJS := $(MODULE_OBJS) $(CPP_OBJS) $(C_OBJS)
 
-FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG -Og -fconcepts-diagnostics-depth=2 -fdiagnostics-all-candidates
+FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG -Og
 LINK_FLAGS := -lglfw -lGL -lfreetype
 INCLUDES := -I$(SRC_DIR) -Iglad -I/usr/include/freetype2
 
