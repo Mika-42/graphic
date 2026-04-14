@@ -15,9 +15,9 @@ module;
 
 export module mka.graphic.window;
 
-export import mka.graphic.context;   // TODO check if usefull to export
-export import mka.graphic.mouseview; // TODO check if usefull to export
-export import mka.graphic.keyboardview;
+export import mka.graphic.context;      // TODO check if usefull to export
+export import mka.graphic.mouseview;    // TODO check if usefull to export
+export import mka.graphic.keyboardview; // TODO check if usefull to export
 
 import mka.graphic.keyboard;
 import mka.graphic.mouse;

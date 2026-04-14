@@ -23,7 +23,7 @@ public:
   // --- Gestion des enfants ---
 
   virtual void addChild(std::shared_ptr<View> child) {
-    if (child) {
+    if (child && child->parent == nullptr) {
       child->parent = this;
       children.emplace_back(child);
       markDirty();
