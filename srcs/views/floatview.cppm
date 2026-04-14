@@ -25,13 +25,12 @@ export namespace mka::graphic {
 /*
  * Place your children using relative position
  */
-class FloatView : public View {
+class FloatView : public View<FloatView> {
 private:
-using View::setSize;
+  using View::setSize;
 
 public:
-
-FloatView() : View() {}
+  FloatView() : View() {}
 
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
 
@@ -53,7 +52,7 @@ private:
       if (!child) {
         continue;
       }
-	
+
       const glm::vec2 relPos = child->getRelativePosition();
       const glm::vec2 childSize = child->getSize();
 

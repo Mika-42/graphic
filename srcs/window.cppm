@@ -30,6 +30,14 @@ void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
+namespace mka::graphic {
+	template<Derived>
+	class RootView : public View<RootView<Derived>> {
+		public:
+	  void draw(Renderer & /*renderer*/) override {}
+	};
+}
+
 export namespace mka::graphic {
 
 /// @brief High-level runtime state of a window instance.
@@ -193,7 +201,11 @@ public:
 
   void setBackgroundColor(const glm::vec4 &color) { bgColor = color; }
 
-  void setRoot(std::shared_ptr<View> root) { rootView = root; }
+  template<typename Derived>
+  void setRoot(std::shared_ptr<View<Derived>> root) { 
+	  rootView = std::make_shared<RootWrapper<Derived>>();
+	  rootWrapper->addChild(root);
+  }
 
 private:
   void render(const glm::vec2 & /*size*/, const MouseEventView &mouse,
@@ -211,6 +223,9 @@ private:
       DEBUG_LOG("root view is not set.");
       return;
     }
+
+	rootView->setAbsolutePosition({0.0f, 0.0f});
+	rootView->setSize(size);
 
     collect(rootView.get(), items);
 
@@ -252,7 +267,7 @@ private:
 
 private:
   glm::vec2 size = {0.0, 0.0};
-  glm::mat4 orthographicProjection;
+  glm::mat4 orthographicProjection = glm::mat4(1.0f);
   glm::vec4 bgColor = glm::vec4(1.0f);
   std::string name;
   std::unique_ptr<Context> ctx = nullptr;
@@ -269,7 +284,7 @@ private:
 
   std::unique_ptr<Renderer> renderer;
 
-  std::shared_ptr<View> rootView = nullptr;
+  std::shared_ptr<RootView> rootView = nullptr;
 
   std::vector<RenderItem> items;
 

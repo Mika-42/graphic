@@ -40,7 +40,7 @@ struct Size {
 const Size px(float v) { return {Unit::Px, sanitizeFloat(v, 0.0f)}; }
 const Size fr(float v) { return {Unit::Fr, sanitizeFloat(v, 0.0f)}; }
 
-class GridView : public View {
+class GridView : public View<GridView> {
 
 private:
   using View::addChild;
@@ -56,30 +56,30 @@ public:
   GridView &setColumns(const std::vector<Size> &c) {
     columns = c;
     markDirty();
-    return *this;
+    return self();
   }
   GridView &setRows(const std::vector<Size> &r) {
     rows = r;
     markDirty();
-    return *this;
+    return self();
   }
 
   GridView &extendColumns(const Size &s) {
     columns.emplace_back(s);
     markDirty();
-    return *this;
+    return self();
   }
 
   GridView &extendRows(const Size &s) {
     rows.emplace_back(s);
     markDirty();
-    return *this;
+    return self();
   }
 
   GridView &addChild(std::shared_ptr<View> child, size_t row, size_t col,
                      size_t rspan = 1, size_t cspan = 1) {
     if (!child) {
-      return *this;
+      return self();
     }
 
     if (!rspan) {
@@ -90,14 +90,14 @@ public:
     }
     childCell[child.get()] = {row, col, rspan, cspan};
     View::addChild(child);
-	return *this;
+    return self();
   }
 
   GridView &move(View *child, size_t row, size_t col, size_t rspan = 1,
                  size_t cspan = 1) {
 
     if (!child) {
-      return *this;
+      return self();
     }
     if (childCell.contains(child)) {
       if (!rspan) {
@@ -109,30 +109,30 @@ public:
       childCell[child] = {row, col, rspan, cspan};
       markDirty();
     }
-    return *this;
+    return self();
   }
 
   GridView &removeChild(View *child) {
 
     if (!child) {
-      return *this;
+      return self();
     }
 
     childCell.erase(child);
     View::removeChild(child);
     markDirty();
-    return *this;
+    return self();
   }
 
   GridView &setRowGap(float v) {
     gaps.x = sanitizeFloat(v, 0.0f);
     markDirty();
-    return *this;
+    return self();
   }
   GridView &setColumnGap(float v) {
     gaps.y = sanitizeFloat(v, 0.0f);
     markDirty();
-    return *this;
+    return self();
   }
 
   void draw(Renderer &) override { layout(); }
@@ -149,7 +149,9 @@ private:
       return;
     }
 
-	if (cacheDirty) {updateCaches(); }
+    if (cacheDirty) {
+      updateCaches();
+    }
     positionChildren();
   }
 
@@ -238,8 +240,8 @@ private:
   void invalidateCache() const { colCache = rowCache = {}; }
 
   void markDirty() override {
-    View::markDirty();        // Hérite
-    cacheDirty = true;        // ← Propagation automatique !
+    View::markDirty(); // Hérite
+    cacheDirty = true; // ← Propagation automatique !
   }
 
 private:

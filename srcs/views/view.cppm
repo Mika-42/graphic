@@ -11,6 +11,7 @@ import mka.graphic.mouseview;
 
 export namespace mka::graphic {
 
+template<typename Derived>
 class View {
 public:
   // Constructeur / Destructeur
@@ -22,17 +23,18 @@ public:
 
   // --- Gestion des enfants ---
 	
-  void addChild(std::shared_ptr<View> child) {
+  Derived& addChild(std::shared_ptr<View> child) {
 	  if(child) {
 		  child->parent = this;
 		children.emplace_back(child);
 	  markDirty();
 	  }
+	  return self();
   }
 
-  virtual View &removeChild(View *child) {
+  Derived& removeChild(View *child) {
 	  if(!child) {
-		  return *this; 
+		  return self(); 
 	  }
 
     children.erase(std::remove_if(children.begin(), children.end(),
@@ -41,7 +43,7 @@ public:
                                   }),
                    children.end());
 	markDirty();
-	return *this;
+	return self();
   }
 
   [[nodiscard]] const std::vector<std::shared_ptr<View>> &getChildren() const noexcept {
@@ -67,39 +69,39 @@ public:
 	  return glm::vec2{geometry.z, geometry.w}; 
   }
 
-  View &setAbsolutePosition(const glm::vec2 &p) {
+  Derived &setAbsolutePosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
 	markDirty();
-    return *this;
+    return self();
   }
 
-  View &setRelativePosition(const glm::vec2 &p) {
+  Derived &setRelativePosition(const glm::vec2 &p) {
 	relativePosition = p;
 	markDirty();
-    return *this;
+    return self();
   }
 
-  View &setSize(const glm::vec2 &s) {
+  Derived &setSize(const glm::vec2 &s) {
     geometry.z = s.x;
     geometry.w = s.y;
 	markDirty();
-    return *this;
+    return self();
   }
 
-  View &setVisible(bool v) {
+  Derived &setVisible(bool v) {
     visible = v;
-    return *this;
+    return self();
   }
 
-  View &setKeyboardFocus(bool v) {
+  Derived &setKeyboardFocus(bool v) {
     keyboardFocus = v;
-    return *this;
+    return self();
   }
 
-  View &setMouseFocus(bool v) {
+  Derived &setMouseFocus(bool v) {
     mouseFocus = v;
-    return *this;
+    return self();
   }
 
   const bool &isVisible() const { return visible; }
@@ -134,6 +136,9 @@ protected:
     updateDepth--;
     dirty = false;
   }
+
+  Derived& self() { return static_cast<Derived&>(*this); }
+  const Derived& self() const { return static_cast<const Derived&>(*this); }
 
 private:
   View *parent = nullptr;

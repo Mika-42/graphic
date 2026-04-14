@@ -8,14 +8,14 @@ import mka.graphic.opengl.renderer;
 
 export namespace mka::graphic {
 
-class ClipView : public View {
+class ClipView : public View<ClipView> {
 public:
   ClipView() : View() {}
 
   ClipView &setRadius(const glm::vec4 &r) {
     radius = r;
     markDirty();
-    return *this;
+    return self();
   }
 
   const glm::vec4 &getRadius() {

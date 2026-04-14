@@ -77,7 +77,7 @@ class PianoOctave : public View {
 };
 */
 
-class A : public View {
+class A : public View<A> {
 	public:
 		A() = default;
 		A(glm::vec4 c) : cc(c) {
