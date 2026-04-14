@@ -27,9 +27,12 @@ export namespace mka::graphic {
  */
 class FloatView : public View {
 private:
-  using View::setSize;
+using View::setSize;
 
 public:
+
+FloatView() : View() {}
+
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
 
 private:
@@ -50,7 +53,7 @@ private:
       if (!child) {
         continue;
       }
-
+	
       const glm::vec2 relPos = child->getRelativePosition();
       const glm::vec2 childSize = child->getSize();
 

@@ -15,30 +15,19 @@ class View {
 public:
   // Constructeur / Destructeur
   View() = default;
+
   virtual ~View() = default;
 
   const View *getParent() const { return parent; }
 
   // --- Gestion des enfants ---
-  // ! be careful, don't chained this else you'll created child of child :
-  //
-  // expectation :
-  // View
-  //   ┣━━ Child1
-  //   ┣━━ Child2
-  //   ┗━━ Child3
-  // reality :
-  // View
-  //   ┗━━ Child1
-  //           ┗━━ Child2
-  //                   ┗━━ Child3
 	
-  template <typename T> T &addChild(std::unique_ptr<T> child) {
-    T *ptr = child.get();
-    children.push_back(std::move(child));
-    ptr->parent = this;
-	markDirty();
-    return *ptr; // Magic !
+  void addChild(std::shared_ptr<View> child) {
+	  if(child) {
+		  child->parent = this;
+		children.emplace_back(child);
+	  markDirty();
+	  }
   }
 
   virtual View &removeChild(View *child) {
@@ -47,7 +36,7 @@ public:
 	  }
 
     children.erase(std::remove_if(children.begin(), children.end(),
-                                  [&](const std::unique_ptr<View> &c) {
+                                  [&](const std::shared_ptr<View> &c) {
                                     return c.get() == child;
                                   }),
                    children.end());
@@ -55,7 +44,7 @@ public:
 	return *this;
   }
 
-  const std::vector<std::unique_ptr<View>> &getChildren() const {
+  [[nodiscard]] const std::vector<std::shared_ptr<View>> &getChildren() const noexcept {
     return children;
   }
 
@@ -132,17 +121,18 @@ protected:
 
   glm::vec2 relativePosition = {0.0f, 0.0f};
 
-  std::vector<std::unique_ptr<View>> children;
+  std::vector<std::shared_ptr<View>> children;
 
-  void markDirty() {dirty = true; }
-  void unmarkDirty() {dirty = false; }
-  const bool& isDirty() const { return dirty; }
+  virtual void markDirty() { 
+    if (updateDepth == 0) dirty = true;
+  }
   
   void update() {
-	if(dirty) {
-		layout();
-		dirty = false;
-	}
+    if (!dirty || updateDepth > 0) return;
+    updateDepth++;
+    layout();
+    updateDepth--;
+    dirty = false;
   }
 
 private:
@@ -151,6 +141,7 @@ private:
   bool keyboardFocus = false;
   bool mouseFocus = false;
   bool dirty = true;
+  int updateDepth = 0;
 };
 
 } // namespace mka::graphic

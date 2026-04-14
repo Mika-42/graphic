@@ -41,14 +41,18 @@ const Size px(float v) { return {Unit::Px, sanitizeFloat(v, 0.0f)}; }
 const Size fr(float v) { return {Unit::Fr, sanitizeFloat(v, 0.0f)}; }
 
 class GridView : public View {
+
 private:
   using View::addChild;
   using View::removeChild;
 
   mutable TrackCache colCache, rowCache;
   std::unordered_map<View *, GridCell> childCell;
+  mutable bool cacheDirty = true;
 
 public:
+  GridView() : View() {}
+
   GridView &setColumns(const std::vector<Size> &c) {
     columns = c;
     markDirty();
@@ -72,7 +76,7 @@ public:
     return *this;
   }
 
-  GridView &addChild(std::unique_ptr<View> child, size_t row, size_t col,
+  GridView &addChild(std::shared_ptr<View> child, size_t row, size_t col,
                      size_t rspan = 1, size_t cspan = 1) {
     if (!child) {
       return *this;
@@ -85,8 +89,8 @@ public:
       cspan = 1;
     }
     childCell[child.get()] = {row, col, rspan, cspan};
-    View::addChild(std::move(child));
-    return *this;
+    View::addChild(child);
+	return *this;
   }
 
   GridView &move(View *child, size_t row, size_t col, size_t rspan = 1,
@@ -145,17 +149,14 @@ private:
       return;
     }
 
-    updateCaches();
+	if (cacheDirty) {updateCaches(); }
     positionChildren();
   }
 
   void updateCaches() {
-    if (!isDirty()) {
-      return;
-    }
     colCache = computeTrackCache(columns, geometry.z, gaps.y);
     rowCache = computeTrackCache(rows, geometry.w, gaps.x);
-    unmarkDirty();
+    cacheDirty = false;
   }
 
   void positionChildren() {
@@ -235,6 +236,11 @@ private:
   }
 
   void invalidateCache() const { colCache = rowCache = {}; }
+
+  void markDirty() override {
+    View::markDirty();        // Hérite
+    cacheDirty = true;        // ← Propagation automatique !
+  }
 
 private:
   std::vector<Size> rows, columns;

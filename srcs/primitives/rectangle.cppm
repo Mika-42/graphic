@@ -10,9 +10,9 @@ export module mka.graphic.opengl.rectangle;
 export namespace mka::graphic {
 	
 	constexpr uint32_t TEXT				= 1u << 0;
-	constexpr uint32_t CLIP_VIEW		= 1u << 1;
-	constexpr uint32_t STENCIL_RESET	= 1u << 2;
-	
+	constexpr uint32_t CLIP_VIEW		= 1u << 1;  // 2
+	constexpr uint32_t RESET_STENCIL	= 1u << 2;  // 4	
+
 	/**
 	 * @brief GPU instance payload for rectangle/text rendering.
 	 *

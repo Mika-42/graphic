@@ -36,7 +36,7 @@ C_OBJS := $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%, $(CS:.c=.o))
 
 OBJS := $(MODULE_OBJS) $(CPP_OBJS) $(C_OBJS)
 
-FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG -Og
+FLAGS := -std=c++26 -fmodules -Wall -Wextra -Werror -Wpedantic -DDEBUG -Og -fconcepts-diagnostics-depth=2 -fdiagnostics-all-candidates
 LINK_FLAGS := -lglfw -lGL -lfreetype
 INCLUDES := -I$(SRC_DIR) -Iglad -I/usr/include/freetype2
 

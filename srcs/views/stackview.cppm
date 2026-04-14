@@ -94,6 +94,8 @@ private:
   using View::setSize;
 
 public:
+  StackView() : View() {}
+
   virtual void draw(Renderer & /*renderer*/) override { layout(); }
 
   StackView &setGap(float v) {
@@ -124,7 +126,7 @@ public:
   const bool &isReversed() { return reverseOrder; }
 
 private:
-  float alignOffset(const std::unique_ptr<View> &view) const {
+  float alignOffset(const std::shared_ptr<View> &view) const {
     if (!view) {
       return 0.0f;
     }
@@ -155,7 +157,7 @@ private:
 
     float offset = 0.0f;
 
-    auto process = [&](std::unique_ptr<View> &child) {
+    auto process = [&](std::shared_ptr<View> &child) {
       if (!child) {
         return;
       }
@@ -180,7 +182,7 @@ private:
 
     float offset = 0.0f;
 
-    auto process = [&](std::unique_ptr<View> &child) {
+    auto process = [&](std::shared_ptr<View> &child) {
       geometry.w = glm::max(geometry.w, child->getSize().y);
 
       child->setAbsolutePosition(

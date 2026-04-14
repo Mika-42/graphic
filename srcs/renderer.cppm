@@ -6,31 +6,31 @@ module;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "debug.hpp"
 #include "glad.h"
-#include <glm/glm.hpp>
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <glm/glm.hpp>
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
-#include <algorithm>
-#include <cstddef>
-#include "debug.hpp"
 
 export module mka.graphic.opengl.renderer;
-export import mka.graphic.opengl.rectangle; //TODO rm export
-export import mka.graphic.opengl.text;
+export import mka.graphic.opengl.rectangle; // TODO rm export
+export import mka.graphic.opengl.text;      // TODO rm export
 import mka.graphic.opengl.text.rasterizer;
 import mka.graphic.opengl.shader;
 import mka.graphic.sanitize;
 
 namespace {
-	// Shader sources stay in C++ to keep module self-contained.
-	// The GLSL code is organized with helper functions so future effects can be added
-	// without turning `main()` into a monolith.
-	constexpr const char* kRendererVertexShader = R"(
+// Shader sources stay in C++ to keep module self-contained.
+// The GLSL code is organized with helper functions so future effects can be
+// added without turning `main()` into a monolith.
+constexpr const char *kRendererVertexShader = R"(
 		#version 460 core
 		#extension GL_ARB_bindless_texture : require
 
@@ -112,10 +112,10 @@ namespace {
 			vec2 aPos = unitQuadVertex(gl_VertexID);
 
 			if ((r.flags & CLIP_VIEW) != 0u || (r.flags & RESET_STENCIL) != 0u) {
-				// Clip/Reset : point unique (invisible, juste pour stencil)
+				// Clip/Reset : utilise la géométrie normale (pas besoin de point unique)
 				vec2 worldPos = r.geometry.xy;
-				gl_Position = uProjection * vec4(worldPos, 0.0, 1.0);
-				localPoint = vec2(0.0);
+				gl_Position = uProjection * vec4(worldPos + aPos * r.geometry.zw, 0.0, 1.0);
+				localPoint = aPos * r.geometry.zw - 0.5 * r.geometry.zw;
 				v_flags = r.flags;
 				return;
 			}
@@ -146,10 +146,14 @@ namespace {
 		}
 	)";
 
-	constexpr const char* kRendererFragmentShader = R"(
+constexpr const char *kRendererFragmentShader = R"(
 		#version 460 core
 		#extension GL_ARB_bindless_texture : require
 		#extension GL_ARB_shader_stencil_export : enable
+
+		const uint FLAG_TEXT = 1u << 0;
+		const uint CLIP_VIEW = 1u << 1;
+		const uint RESET_STENCIL = 1u << 2;
 
 		const float AA_WIDTH = 0.5;
 		const float MIN_GRADIENT_EXTENT = 0.0001;
@@ -211,27 +215,29 @@ namespace {
 		}
 
 		void main() {
-
-			uint currentStencil = uint(gl_FragStencilRefARB);
-			
-			if ((v_flags & 2u) != 0u) {  // CLIP_VIEW = 1<<1 = 2
-				FragColor = vec4(0.0);
-				gl_FragStencilRefARB = 1;  // MARQUE zone
-				return;
-			}
-			
-			if ((v_flags & 4u) != 0u) {  // RESET_STENCIL = 1<<2 = 4
-				FragColor = vec4(0.0);
-				gl_FragStencilRefARB = 0;  // RESET zone
-				return;
-			}
-			
-			if (currentStencil != 0u && currentStencil != 1u) {
-				discard;  // Clippé
-				return;
-			}
-
 			vec2 p = localPoint;
+
+			if ((v_flags & CLIP_VIEW) != 0u) {
+				float clipDist = sdRoundedBox(p, rectSize * 0.5, radius);
+				
+				// Anti-aliasing lisse
+				float inside = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
+				
+				if (inside < 0.01) {
+					discard;
+				}
+				
+				FragColor = vec4(0.0);  // ← Alpha=0 = invisible !
+				gl_FragStencilRefARB = 1;               // Stencil marqué seulement dedans
+				return;
+			}
+			  
+			//if ((v_flags & RESET_STENCIL) != 0u) {
+			//	FragColor = vec4(0.0);
+			//	gl_FragStencilRefARB = 0;
+			//	return;
+			//}
+
 			vec4 gradientFill = computeGradientFill(p);
 			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
 
@@ -259,302 +265,322 @@ namespace {
 			FragColor = vec4(outRgb, outAlpha);
 		}
 	)";
-}
+} // namespace
 
-//OpenGL
-export namespace mka::graphic {	
-	/**
-	 * @brief Instanced rectangle renderer with optional text support.
-	 */
-	class Renderer {
-		
-		public:
+// OpenGL
+export namespace mka::graphic {
+/**
+ * @brief Instanced rectangle renderer with optional text support.
+ */
+class Renderer {
 
-			Renderer() {
-				DEBUG_LOG("Renderer init started.");
-				DEBUG_LOG(shader.addScript(kRendererVertexShader, ShaderType::Vertex)); 
-				DEBUG_LOG(shader.addScript(kRendererFragmentShader, ShaderType::Fragment)); 
-				shader.link();
-				
-				// empty vao (without it doesn't work...)
-				glCreateVertexArrays(1, &vao);
-				if (vao == 0) {
-					DEBUG_LOG("glCreateVertexArrays failed: vao == 0.");
-				}
+public:
+  Renderer() {
+    DEBUG_LOG("Renderer init started.");
+    DEBUG_LOG(shader.addScript(kRendererVertexShader, ShaderType::Vertex));
+    DEBUG_LOG(shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
+    shader.link();
 
-				// create an ssbo
-				glCreateBuffers(1, &ssbo);
-				if (ssbo == 0) {
-					DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
-				}
+    // empty vao (without it doesn't work...)
+    glCreateVertexArrays(1, &vao);
+    if (vao == 0) {
+      DEBUG_LOG("glCreateVertexArrays failed: vao == 0.");
+    }
 
-				rectangles.reserve(initialSsboCapacity);
-				if (!reserveSsboCapacity(initialSsboCapacity)) {
-					DEBUG_LOG("Initial SSBO allocation failed.");
-				}
+    // create an ssbo
+    glCreateBuffers(1, &ssbo);
+    if (ssbo == 0) {
+      DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
+    }
 
-				DEBUG_LOG("Renderer init completed.");
-			}
-			
-			~Renderer() {
-				if (ssbo != 0) {
-					glDeleteBuffers(1, &ssbo);
-				}
-				if (vao != 0) {
-					glDeleteVertexArrays(1, &vao);
-				}
-			}
+    rectangles.reserve(initialSsboCapacity);
+    if (!reserveSsboCapacity(initialSsboCapacity)) {
+      DEBUG_LOG("Initial SSBO allocation failed.");
+    }
 
-			void add(Rectangle&& r) {
-				rectangles.emplace_back(std::move(r));
-			}
+    DEBUG_LOG("Renderer init completed.");
+  }
 
-			void add(Rectangle& r) {
-				rectangles.emplace_back(r);
-			}
-			/**
-			 * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
-			 * @return Number of generated rectangle instances.
-			 */
-			size_t add(const Text& text) {
-				Text sanitizedText = text;
-				sanitizeText(sanitizedText);
+  ~Renderer() {
+    if (ssbo != 0) {
+      glDeleteBuffers(1, &ssbo);
+    }
+    if (vao != 0) {
+      glDeleteVertexArrays(1, &vao);
+    }
+  }
 
-				// Text colors are now fully controlled by gradientColorA/B.
-				// For a solid color, caller can simply set A == B.
-				const glm::vec4 textGradientA = sanitizedText.gradientColorA;
-				const glm::vec4 textGradientB = sanitizedText.gradientColorB;
+  void add(Rectangle &&r) { rectangles.emplace_back(std::move(r)); }
 
-				if (sanitizedText.content.empty()) {
-					DEBUG_LOG("Empty text content.");
-					return 0;
-				}
+  void add(Rectangle &r) { rectangles.emplace_back(r); }
+  /**
+   * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
+   * @return Number of generated rectangle instances.
+   */
+  size_t add(const Text &text) {
+    Text sanitizedText = text;
+    sanitizeText(sanitizedText);
 
-				Rectangle glyphTemplate {};
-				glyphTemplate.geometry = {
-					sanitizedText.position.x,
-					sanitizedText.position.y,
-					sanitizedText.fontSize,
-					sanitizedText.fontSize
-				};
-				glyphTemplate.backgroundColorA = textGradientA;
-				glyphTemplate.backgroundColorB = textGradientB;
-				glyphTemplate.gradientAngle = sanitizedText.gradientAngle;
-				glyphTemplate.flags |= TEXT;
+    // Text colors are now fully controlled by gradientColorA/B.
+    // For a solid color, caller can simply set A == B.
+    const glm::vec4 textGradientA = sanitizedText.gradientColorA;
+    const glm::vec4 textGradientB = sanitizedText.gradientColorB;
 
-				size_t addedCount = 0;
-				float cursorX = sanitizedText.position.x;
-				const unsigned int pixelSize = static_cast<unsigned int>(sanitizedText.fontSize);
-				std::vector<Rectangle> glyphRects;
-				glyphRects.reserve(sanitizedText.content.size());
+    if (sanitizedText.content.empty()) {
+      DEBUG_LOG("Empty text content.");
+      return 0;
+    }
 
-				TextLineMetrics lineMetrics {};
-				if (!textRasterizer.getLineMetrics(sanitizedText.font, pixelSize, lineMetrics)) {
-					DEBUG_LOG("Failed to get text line metrics for font: " + sanitizedText.font);
-					return 0;
-				}
+    Rectangle glyphTemplate{};
+    glyphTemplate.geometry = {sanitizedText.position.x,
+                              sanitizedText.position.y, sanitizedText.fontSize,
+                              sanitizedText.fontSize};
+    glyphTemplate.backgroundColorA = textGradientA;
+    glyphTemplate.backgroundColorB = textGradientB;
+    glyphTemplate.gradientAngle = sanitizedText.gradientAngle;
+    glyphTemplate.flags |= TEXT;
 
-				// `position` remains the top-left anchor of the text block.
-				// We derive a single bottom line from font metrics so every glyph ends on the same Y.
-				const float lineBottomY = sanitizedText.position.y + lineMetrics.lineHeight;
+    size_t addedCount = 0;
+    float cursorX = sanitizedText.position.x;
+    const unsigned int pixelSize =
+        static_cast<unsigned int>(sanitizedText.fontSize);
+    std::vector<Rectangle> glyphRects;
+    glyphRects.reserve(sanitizedText.content.size());
 
-				for (char c : sanitizedText.content) {
-					const TextGlyph* glyph = textRasterizer.getOrCreateGlyph(
-						sanitizedText.font,
-						static_cast<unsigned char>(c),
-						pixelSize
-					);
-					if (glyph == nullptr) {
-						DEBUG_LOG(
-							"Missing glyph for codepoint: " +
-							std::to_string(static_cast<unsigned int>(static_cast<unsigned char>(c)))
-						);
-						break;
-					}
+    TextLineMetrics lineMetrics{};
+    if (!textRasterizer.getLineMetrics(sanitizedText.font, pixelSize,
+                                       lineMetrics)) {
+      DEBUG_LOG("Failed to get text line metrics for font: " +
+                sanitizedText.font);
+      return 0;
+    }
 
-					Rectangle glyphRect = glyphTemplate;
-					glyphRect.geometry.x = cursorX + glyph->bearing.x;
-					// Keep top-left rectangle placement but align all glyph bottoms on the same line.
-					// This avoids per-glyph vertical drift with symbols/accented characters.
-					glyphRect.geometry.y = lineBottomY - glyph->size.y;
-					glyphRect.geometry.z = glyph->size.x;
-					glyphRect.geometry.w = glyph->size.y;
-					
-					glyphRect.texture = glyph->texture;
-					glyphRect.flags |= TEXT;
-					glyphRects.push_back(std::move(glyphRect));
-					// Advance comes from font metrics to preserve spacing/kerning quality.
-					cursorX += glyph->advance + sanitizedText.letterSpacing;
-				}
+    // `position` remains the top-left anchor of the text block.
+    // We derive a single bottom line from font metrics so every glyph ends on
+    // the same Y.
+    const float lineBottomY = sanitizedText.position.y + lineMetrics.lineHeight;
 
-				if (glyphRects.empty()) {
-					DEBUG_LOG("No glyph rectangle generated for provided text.");
-					return 0;
-				}
+    for (char c : sanitizedText.content) {
+      const TextGlyph *glyph = textRasterizer.getOrCreateGlyph(
+          sanitizedText.font, static_cast<unsigned char>(c), pixelSize);
+      if (glyph == nullptr) {
+        DEBUG_LOG("Missing glyph for codepoint: " +
+                  std::to_string(static_cast<unsigned int>(
+                      static_cast<unsigned char>(c))));
+        break;
+      }
 
-				const float gradientAngleRad = glm::radians(sanitizedText.gradientAngle);
-				const glm::vec2 gradientDir = { std::cos(gradientAngleRad), std::sin(gradientAngleRad) };
+      Rectangle glyphRect = glyphTemplate;
+      glyphRect.geometry.x = cursorX + glyph->bearing.x;
+      // Keep top-left rectangle placement but align all glyph bottoms on the
+      // same line. This avoids per-glyph vertical drift with symbols/accented
+      // characters.
+      glyphRect.geometry.y = lineBottomY - glyph->size.y;
+      glyphRect.geometry.z = glyph->size.x;
+      glyphRect.geometry.w = glyph->size.y;
 
-				float globalMinProjection = std::numeric_limits<float>::max();
-				float globalMaxProjection = std::numeric_limits<float>::lowest();
+      glyphRect.texture = glyph->texture;
+      glyphRect.flags |= TEXT;
+      glyphRects.push_back(std::move(glyphRect));
+      // Advance comes from font metrics to preserve spacing/kerning quality.
+      cursorX += glyph->advance + sanitizedText.letterSpacing;
+    }
 
-				for (const Rectangle& glyphRect : glyphRects) {
-					const glm::vec2 center = {
-						glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
-						glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)
-					};
-					const glm::vec2 halfSize = {
-						glyphRect.geometry.z * 0.5f,
-						glyphRect.geometry.w * 0.5f
-					};
-					// Keep CPU-side gradient projection identical to the fragment shader:
-					// projection range must account for both axis contributions when angle is diagonal.
-					const float projectionExtent = std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
-					const float centerProjection = glm::dot(center, gradientDir);
-					globalMinProjection = std::min(globalMinProjection, centerProjection - projectionExtent);
-					globalMaxProjection = std::max(globalMaxProjection, centerProjection + projectionExtent);
-				}
+    if (glyphRects.empty()) {
+      DEBUG_LOG("No glyph rectangle generated for provided text.");
+      return 0;
+    }
 
-				const float projectionRange = std::max(globalMaxProjection - globalMinProjection, 0.0001f);
-				for (Rectangle& glyphRect : glyphRects) {
-					const glm::vec2 center = {
-						glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
-						glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)
-					};
-					const glm::vec2 halfSize = {
-						glyphRect.geometry.z * 0.5f,
-						glyphRect.geometry.w * 0.5f
-					};
-					const float projectionExtent = std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
-					const float centerProjection = glm::dot(center, gradientDir);
-					const float localMinProjection = centerProjection - projectionExtent;
-					const float localMaxProjection = centerProjection + projectionExtent;
-					const float tA = glm::clamp(
-						(localMinProjection - globalMinProjection) / projectionRange,
-						0.0f,
-						1.0f
-					);
-					const float tB = glm::clamp(
-						(localMaxProjection - globalMinProjection) / projectionRange,
-						0.0f,
-						1.0f
-					);
-					glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
-					glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
-					add(std::move(glyphRect));
-					++addedCount;
-				}
+    const float gradientAngleRad = glm::radians(sanitizedText.gradientAngle);
+    const glm::vec2 gradientDir = {std::cos(gradientAngleRad),
+                                   std::sin(gradientAngleRad)};
 
-				return addedCount;
-			}
+    float globalMinProjection = std::numeric_limits<float>::max();
+    float globalMaxProjection = std::numeric_limits<float>::lowest();
 
-			/// TODO Make it unusable by user
-			/// @brief Flush batched rectangles to GPU and issue one instanced draw.
-			void draw(const glm::mat4 projection) {
-			
-				glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-				glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    for (const Rectangle &glyphRect : glyphRects) {
+      const glm::vec2 center = {
+          glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
+          glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)};
+      const glm::vec2 halfSize = {glyphRect.geometry.z * 0.5f,
+                                  glyphRect.geometry.w * 0.5f};
+      // Keep CPU-side gradient projection identical to the fragment shader:
+      // projection range must account for both axis contributions when angle is
+      // diagonal.
+      const float projectionExtent =
+          std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
+      const float centerProjection = glm::dot(center, gradientDir);
+      globalMinProjection =
+          std::min(globalMinProjection, centerProjection - projectionExtent);
+      globalMaxProjection =
+          std::max(globalMaxProjection, centerProjection + projectionExtent);
+    }
 
-				if (rectangles.empty()) return;
-				if (ssbo == 0 || vao == 0) {
-					DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
-					rectangles.clear();
-					return;
-				}
-				
-				for (auto &rect : rectangles) {
-					sanitizeRectangle(rect);
-				}
+    const float projectionRange =
+        std::max(globalMaxProjection - globalMinProjection, 0.0001f);
+    for (Rectangle &glyphRect : glyphRects) {
+      const glm::vec2 center = {
+          glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
+          glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)};
+      const glm::vec2 halfSize = {glyphRect.geometry.z * 0.5f,
+                                  glyphRect.geometry.w * 0.5f};
+      const float projectionExtent =
+          std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
+      const float centerProjection = glm::dot(center, gradientDir);
+      const float localMinProjection = centerProjection - projectionExtent;
+      const float localMaxProjection = centerProjection + projectionExtent;
+      const float tA = glm::clamp((localMinProjection - globalMinProjection) /
+                                      projectionRange,
+                                  0.0f, 1.0f);
+      const float tB = glm::clamp((localMaxProjection - globalMinProjection) /
+                                      projectionRange,
+                                  0.0f, 1.0f);
+      glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
+      glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
+      add(std::move(glyphRect));
+      ++addedCount;
+    }
 
-				if (!reserveSsboCapacity(rectangles.size())) {
-					DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
-					rectangles.clear();
-					return;
-				}
+    return addedCount;
+  }
 
-				const size_t uploadBytes = rectangles.size() * sizeof(Rectangle);
-				if (uploadBytes / sizeof(Rectangle) != rectangles.size()) {
-					DEBUG_LOG("draw aborted: size_t overflow detected during SSBO upload size calculation.");
-					rectangles.clear();
-					return;
-				}
+  /// TODO Make it unusable by user
+  /// @brief Flush batched rectangles to GPU and issue one instanced draw.
+  void draw(const glm::mat4 projection) {
 
-				glNamedBufferSubData(
-					ssbo,
-					0,
-					uploadBytes,
-					rectangles.data()
-				);
-				
-				// bind ssbo
-				glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+    glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-				glEnable(GL_STENCIL_TEST);           // Juste ça !
-				glStencilFunc(GL_ALWAYS, 1, 0xFF);
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-				glStencilMask(0xFF);
+    if (rectangles.empty())
+      return;
+    if (ssbo == 0 || vao == 0) {
+      DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
+      rectangles.clear();
+      return;
+    }
 
-				// Draw
-				shader.use();
-				shader.set("uProjection", projection);
-				
-				glBindVertexArray(vao);
+    for (auto &rect : rectangles) {
+      sanitizeRectangle(rect);
+    }
 
-				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
-	
-				glDisable(GL_STENCIL_TEST);
-				glStencilMask(0);
+    if (!reserveSsboCapacity(rectangles.size())) {
+      DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
+      rectangles.clear();
+      return;
+    }
 
-				rectangles.clear();
-			}
+    const size_t uploadBytes = rectangles.size() * sizeof(Rectangle);
+    if (uploadBytes / sizeof(Rectangle) != rectangles.size()) {
+      DEBUG_LOG("draw aborted: size_t overflow detected during SSBO upload "
+                "size calculation.");
+      rectangles.clear();
+      return;
+    }
 
-			/// @brief Set clear color used by `draw`.
-			void setBackgroundColor(const glm::vec4& color) {
-				bgColor = color;	
-				sanitizeColor(bgColor);
-			}
+    glNamedBufferSubData(ssbo, 0, uploadBytes, rectangles.data());
 
-		private:
-			static constexpr size_t initialSsboCapacity = 1024u;
+    // bind ssbo
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 
-			[[nodiscard]] bool reserveSsboCapacity(size_t requiredInstances) {
-				if (requiredInstances == 0u) {
-					return true;
-				}
-				if (requiredInstances <= ssboCapacityInstances) {
-					return true;
-				}
+    // Draw
+    shader.use();
+    shader.set("uProjection", projection);
+    glBindVertexArray(vao);
+    glEnable(GL_STENCIL_TEST);
+    glStencilMask(0xFF);
 
-				// Grow with power-of-two strategy to keep reallocations rare in real-time rendering.
-				// This avoids per-frame stalls while still accepting bursty dynamic rectangle counts.
-				size_t newCapacity = std::max(ssboCapacityInstances, initialSsboCapacity);
-				while (newCapacity < requiredInstances) {
-					if (newCapacity > (std::numeric_limits<size_t>::max() / 2u)) {
-						DEBUG_LOG("reserveSsboCapacity overflow while growing capacity.");
-						return false;
-					}
-					newCapacity *= 2u;
-				}
+    // ================================
+    // PHASE 1: CLIPPERS UNIQUEMENT
+    // ================================
+    std::vector<Rectangle> clippers;
+    for (const auto &rect : rectangles) {
+      if (rect.flags & CLIP_VIEW) {
+        clippers.push_back(rect);
+      }
+    }
 
-				const size_t allocationBytes = newCapacity * sizeof(Rectangle);
-				if (allocationBytes / sizeof(Rectangle) != newCapacity) {
-					DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
-					return false;
-				}
+    if (!clippers.empty()) {
+      glNamedBufferSubData(ssbo, 0, clippers.size() * sizeof(Rectangle),
+                           clippers.data());
 
-				glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
-				ssboCapacityInstances = newCapacity;
-				return true;
-			}
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-			std::vector<Rectangle> rectangles;
-			TextRasterizer textRasterizer {};
+      glDrawArraysInstanced(GL_TRIANGLES, 0, 6, clippers.size());
+    }
 
-			glm::vec4 bgColor = glm::vec4{1.0f};
-			Shader shader;
+    // ================================
+    // PHASE 2: CONTENU NORMAL
+    // ================================
+    std::vector<Rectangle> content;
+    for (const auto &rect : rectangles) {
+      if (!(rect.flags & CLIP_VIEW)) { // ← Exclut les clippers
+        content.push_back(rect);
+      }
+    }
 
-			GLuint vao = 0;
-			GLuint ssbo = 0;
-			size_t ssboCapacityInstances = 0;
-	};
-}
+    if (!content.empty()) {
+      glNamedBufferSubData(ssbo, 0, content.size() * sizeof(Rectangle),
+                           content.data());
+
+      glStencilFunc(GL_EQUAL, 1, 0xFF);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+      glDrawArraysInstanced(GL_TRIANGLES, 0, 6, content.size());
+    }
+
+    glDisable(GL_STENCIL_TEST);
+    rectangles.clear();
+  }
+
+  /// @brief Set clear color used by `draw`.
+  void setBackgroundColor(const glm::vec4 &color) {
+    bgColor = color;
+    sanitizeColor(bgColor);
+  }
+
+private:
+  static constexpr size_t initialSsboCapacity = 1024u;
+
+  [[nodiscard]] bool reserveSsboCapacity(size_t requiredInstances) {
+    if (requiredInstances == 0u) {
+      return true;
+    }
+    if (requiredInstances <= ssboCapacityInstances) {
+      return true;
+    }
+
+    // Grow with power-of-two strategy to keep reallocations rare in real-time
+    // rendering. This avoids per-frame stalls while still accepting bursty
+    // dynamic rectangle counts.
+    size_t newCapacity = std::max(ssboCapacityInstances, initialSsboCapacity);
+    while (newCapacity < requiredInstances) {
+      if (newCapacity > (std::numeric_limits<size_t>::max() / 2u)) {
+        DEBUG_LOG("reserveSsboCapacity overflow while growing capacity.");
+        return false;
+      }
+      newCapacity *= 2u;
+    }
+
+    const size_t allocationBytes = newCapacity * sizeof(Rectangle);
+    if (allocationBytes / sizeof(Rectangle) != newCapacity) {
+      DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
+      return false;
+    }
+
+    glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
+    ssboCapacityInstances = newCapacity;
+    return true;
+  }
+
+  std::vector<Rectangle> rectangles;
+  TextRasterizer textRasterizer{};
+
+  glm::vec4 bgColor = glm::vec4{1.0f};
+  Shader shader;
+
+  GLuint vao = 0;
+  GLuint ssbo = 0;
+  size_t ssboCapacityInstances = 0;
+};
+} // namespace mka::graphic

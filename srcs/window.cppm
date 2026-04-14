@@ -193,7 +193,7 @@ public:
 
   void setBackgroundColor(const glm::vec4 &color) { bgColor = color; }
 
-  void setRoot(std::unique_ptr<View> root) { rootView = std::move(root); }
+  void setRoot(std::shared_ptr<View> root) { rootView = root; }
 
 private:
   void render(const glm::vec2 & /*size*/, const MouseEventView &mouse,
@@ -269,7 +269,7 @@ private:
 
   std::unique_ptr<Renderer> renderer;
 
-  std::unique_ptr<View> rootView = nullptr;
+  std::shared_ptr<View> rootView = nullptr;
 
   std::vector<RenderItem> items;
 

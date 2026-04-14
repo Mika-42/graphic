@@ -10,6 +10,8 @@ export namespace mka::graphic {
 
 class ClipView : public View {
 public:
+  ClipView() : View() {}
+
   ClipView &setRadius(const glm::vec4 &r) {
     radius = r;
     markDirty();
@@ -27,6 +29,12 @@ public:
     viewport.radius = radius;
     viewport.flags = CLIP_VIEW;
     renderer.add(viewport);
+
+    for (auto &child : children) {
+      if (child && child->isVisible()) {
+        child->draw(renderer);
+      }
+    }
   }
 
 private:

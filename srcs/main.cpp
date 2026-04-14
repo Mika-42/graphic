@@ -79,6 +79,7 @@ class PianoOctave : public View {
 
 class A : public View {
 	public:
+		A() = default;
 		A(glm::vec4 c) : cc(c) {
 				aa.backgroundColorA = cc;
 				aa.backgroundColorB = cc;
@@ -128,29 +129,58 @@ int main() {
 
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
-  auto s = std::make_unique<StackView>();
+
+auto r = std::make_shared<FloatView>();
+auto f = std::make_shared<ClipView>();
+
+f->setRelativePosition({200.0f, 200.0f});
+f->setSize({800.0f, 500.0f});
+f->setRadius({100.0f, 50.0f, 30.0f, 50.0f});
+
+auto s = std::make_shared<StackView>();
+ 
 s->setAbsolutePosition({200.0f, 200.0f});
 s->setOrientation(Orientation::Vertical);
 s->setAlign(Align::Center);
 s->setGap(5);
 
-auto& a = s->addChild(std::make_unique<A>(glm::vec4{0.0f, 1.0f, 0.75f, 1.0f}));
-auto& b = s->addChild(std::make_unique<A>(glm::vec4{1.0f, 0.5f, 0.5f, 1.0f}));
-auto& c = s->addChild(std::make_unique<A>(glm::vec4{0.0f, 0.5f, 0.5f, 1.0f}));
-auto& d = s->addChild(std::make_unique<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f}));
-a.setSize({200.0f, 100.0f});
-b.setSize({200.0f, 100.0f});
-c.setSize({200.0f, 100.0f});
-d.setSize({200.0f, 100.0f});
+auto a = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
+a->setSize({200.0f, 100.0f}); 
 
-auto f = std::make_unique<ClipView>();
-f->setAbsolutePosition({200.0f, 200.0f});
-f->setSize({200.0f, 200.0f});
-f->addChild(std::move(s));
+auto b = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
+b->setSize({200.0f, 100.0f});
 
-/*
+auto c = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
+c->setSize({200.0f, 100.0f}); 
+
+auto d = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
+d->setSize({200.0f, 100.0f});
+
+auto e = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
+e->setSize({200.0f, 100.0f}); 
+
+s->addChild(a);
+s->addChild(b);
+s->addChild(c);
+s->addChild(d);
+s->addChild(e);
+
+f->addChild(s);
+
+r->addChild(f);
+
+
+
+//	auto pp = std::make_shared<A>(glm::vec4{1.0f});
+//	auto p = r->addChild(std::move(pp));
+
+
+//	r->addChild(std::move(f));
+//	p.setRelativePosition({250.0f, 250.0f});
+//	p.setSize({200.0f, 200.0f});
+	/*
     for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
-      auto octave = std::make_unique<PianoOctave>();
+      auto octave = std::make_shared<PianoOctave>();
 		
 	  octave->octave = o;
       octave->setPosition({0, o * 200});
@@ -161,7 +191,7 @@ f->addChild(std::move(s));
     }*/
 
 	app.setBackgroundColor({0.25, 0.25, 0.25, 1.0});
-	app.setRoot(std::move(f));
+	app.setRoot(r);
 
   return app.run();
 }
