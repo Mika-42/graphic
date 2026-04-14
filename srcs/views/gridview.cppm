@@ -89,8 +89,9 @@ public:
     if (!cspan) {
       cspan = 1;
     }
-    childCell[child.get()] = {row, col, rspan, cspan};
+  
     View::addChild(child);
+	if(isDirty()) childCell[child.get()] = {row, col, rspan, cspan};
   }
 
   void move(View *child, size_t row, size_t col, size_t rspan = 1,

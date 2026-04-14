@@ -41,10 +41,12 @@ public:
   void draw(Renderer & /*renderer*/) override {}
 
     void addChild(std::shared_ptr<View> child) override {
-		if (child) {
+	/*	if (child) {
 		  children.emplace_back(child);
 		  markDirty();
-		}
+		}*/
+
+		View::addChild(child);
 	}
 
   // Nouvelle méthode publique : trie TOUS les enfants visibles

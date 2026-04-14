@@ -128,12 +128,12 @@ int main() {
 
 //  static constexpr size_t OCTAVE_COUNT = 3;
 
-auto r = std::make_shared<FloatView>();
-auto f = std::make_shared<ClipView>();
+//auto r = std::make_shared<FloatView>();
+//auto f = std::make_shared<ClipView>();
 
-f->setRelativePosition({200.0f, 200.0f});
-f->setSize({800.0f, 500.0f});
-f->setRadius({100.0f, 100.0f, 100.0f, 50.0f});
+//f->setRelativePosition({200.0f, 200.0f});
+//f->setSize({800.0f, 500.0f});
+//f->setRadius({100.0f, 100.0f, 100.0f, 50.0f});
 
 auto s = std::make_shared<StackView>();
  
@@ -163,10 +163,10 @@ s->addChild(b);
 s->addChild(c);
 s->addChild(d);
 
-f->addChild(s);
+//f->addChild(s);
 
-r->addChild(f);
-r->addChild(e);
+//r->addChild(f);
+//r->addChild(e);
 /*
  * FloatView
  *		ClipView
@@ -199,7 +199,7 @@ r->addChild(e);
     }*/
 
 	app.setBackgroundColor({0.25, 0.25, 0.25, 1.0});
-	app.setRoot(r);
+	app.setRoot(s);
 
   return app.run();
 }

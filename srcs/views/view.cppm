@@ -118,6 +118,8 @@ protected:
       dirty = true;
   }
 
+  bool isDirty() { return dirty; }
+
   void update() {
     if (!dirty || updateDepth > 0)
       return;
