@@ -133,7 +133,7 @@ auto f = std::make_shared<ClipView>();
 
 f->setRelativePosition({200.0f, 200.0f});
 f->setSize({800.0f, 500.0f});
-f->setRadius({100.0f, 50.0f, 30.0f, 50.0f});
+f->setRadius({100.0f, 100.0f, 100.0f, 50.0f});
 
 auto s = std::make_shared<StackView>();
  
@@ -156,17 +156,27 @@ d->setSize({200.0f, 100.0f});
 
 auto e = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
 e->setSize({200.0f, 100.0f}); 
+e->setRelativePosition({200.0f, 100.0f}); 
 
 s->addChild(a);
 s->addChild(b);
 s->addChild(c);
 s->addChild(d);
-s->addChild(e);
 
 f->addChild(s);
 
 r->addChild(f);
-
+r->addChild(e);
+/*
+ * FloatView
+ *		ClipView
+ *			StackView
+ *				A
+ *				A
+ *				A
+ *				A
+ *		A
+ */
 
 
 //	auto pp = std::make_shared<A>(glm::vec4{1.0f});

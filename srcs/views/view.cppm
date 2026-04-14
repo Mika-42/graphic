@@ -21,31 +21,32 @@ public:
   const View *getParent() const { return parent; }
 
   // --- Gestion des enfants ---
-	
-  virtual void addChild(std::shared_ptr<View> child) {
-	  if(child) {
 
-		child->parent = this;
-		children.emplace_back(child);
-	  markDirty();
-	  }
+  virtual void addChild(std::shared_ptr<View> child) {
+    if (child) {
+      child->parent = this;
+      children.emplace_back(child);
+      markDirty();
+    }
   }
 
   void removeChild(View *child) {
-	  if(!child) {
-		  return; 
-	  }
+    if (!child) {
+      return;
+    }
+    auto it = std::ranges::find_if(children,
+        [&](const std::shared_ptr<View> &c) { return c.get() == child; });
 
-    children.erase(std::remove_if(
-				children.begin(), children.end(),
-                [&](const std::shared_ptr<View> &c) {
-                    return c.get() == child;
-				}), children.end());
+    if (it != children.end()) {
+      (*it)->parent = nullptr;
+      children.erase(it);
 
-	markDirty();
+      markDirty();
+    }
   }
 
-  [[nodiscard]] const std::vector<std::shared_ptr<View>> &getChildren() const noexcept {
+  [[nodiscard]] const std::vector<std::shared_ptr<View>> &
+  getChildren() const noexcept {
     return children;
   }
 
@@ -53,36 +54,36 @@ public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  virtual glm::vec2 getAbsolutePosition() { 
-	  update();
-	  return glm::vec2{geometry.x, geometry.y}; 
+  virtual glm::vec2 getAbsolutePosition() {
+    update();
+    return glm::vec2{geometry.x, geometry.y};
   }
 
-  virtual glm::vec2 getRelativePosition() { 
-	update();
-	  return relativePosition; 
-  } 
+  virtual glm::vec2 getRelativePosition() {
+    update();
+    return relativePosition;
+  }
 
   virtual glm::vec2 getSize() {
-	  update();
-	  return glm::vec2{geometry.z, geometry.w}; 
+    update();
+    return glm::vec2{geometry.z, geometry.w};
   }
 
   void setAbsolutePosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
-	markDirty();
+    markDirty();
   }
 
   void setRelativePosition(const glm::vec2 &p) {
-	relativePosition = p;
-	markDirty();
+    relativePosition = p;
+    markDirty();
   }
 
   void setSize(const glm::vec2 &s) {
-	    geometry.z = s.x;
+    geometry.z = s.x;
     geometry.w = s.y;
-	markDirty();
+    markDirty();
   }
 
   void setVisible(bool v) { visible = v; }
@@ -112,12 +113,14 @@ protected:
 
   std::vector<std::shared_ptr<View>> children;
 
-  virtual void markDirty() { 
-    if (updateDepth == 0) dirty = true;
+  virtual void markDirty() {
+    if (updateDepth == 0)
+      dirty = true;
   }
-  
+
   void update() {
-    if (!dirty || updateDepth > 0) return;
+    if (!dirty || updateDepth > 0)
+      return;
     updateDepth++;
     layout();
     updateDepth--;
