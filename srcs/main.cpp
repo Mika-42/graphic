@@ -85,7 +85,8 @@ class A : public View {
 		}
 	
 		void draw(Renderer &renderer) override {
-			
+			View::draw(renderer);
+
 			aa.geometry = this->geometry;
 			aa.radius = glm::vec4(90.0f);
 
@@ -123,83 +124,87 @@ class A : public View {
 int main() {
   auto ctx = mka::graphic::createContext(mka::graphic::API::OpenGL,
                                          mka::graphic::Loader::Glad);
-  Window app(800, 600, "Example", std::move(ctx));
+  Window app(1200, 800, "ClipView Nesting Test", std::move(ctx));
 
+  // 🟦 ROOT FloatView - Conteneur flottant principal
+  auto root = std::make_shared<FloatView>();
+  
+  // 🔴 CLIP 1 - ClipView principal (grand cercle rouge)
+  auto clip1 = std::make_shared<ClipView>();
+  clip1->setRelativePosition({50.0f, 50.0f});
+  clip1->setSize({400.0f, 400.0f});
+  clip1->setRadius(glm::vec4{200.0f}); // Grand cercle rouge
 
-//  static constexpr size_t OCTAVE_COUNT = 3;
+  // 🟨 CLIP 2 - ClipView imbriqué (carré jaune avec coins arrondis)
+  auto clip2 = std::make_shared<ClipView>();
+  clip2->setRelativePosition({100.0f, 100.0f});
+  clip2->setSize({250.0f, 250.0f});
+  clip2->setRadius({50.0f, 50.0f, 80.0f, 80.0f}); // Coins différents
 
-//auto r = std::make_shared<FloatView>();
-//auto f = std::make_shared<ClipView>();
+  // 🟢 CLIP 3 - ClipView le plus imbriqué (petit cercle vert)
+  auto clip3 = std::make_shared<ClipView>();
+  clip3->setRelativePosition({80.0f, 80.0f});
+  clip3->setSize({120.0f, 120.0f});
+  clip3->setRadius(glm::vec4{60.0f}); // Petit cercle parfait
 
-//f->setRelativePosition({200.0f, 200.0f});
-//f->setSize({800.0f, 500.0f});
-//f->setRadius({100.0f, 100.0f, 100.0f, 50.0f});
+  // Contenu TEST 1 - Rectangle A (doit être COMPLETEMENT coupé par clip3)
+  auto rectA = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}); // Rouge
+  rectA->setRelativePosition({-20.0f, -20.0f});
+  rectA->setSize({80.0f, 80.0f});
 
-auto s = std::make_shared<StackView>();
- 
-s->setAbsolutePosition({200.0f, 200.0f});
-s->setOrientation(Orientation::Vertical);
-s->setAlign(Align::Center);
-s->setGap(5);
+  // Contenu TEST 2 - Rectangle B (partiellement visible dans clip3)
+  auto rectB = std::make_shared<A>(glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}); // Vert
+  rectB->setRelativePosition({20.0f, 20.0f});
+  rectB->setSize({100.0f, 100.0f});
 
-auto a = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
-a->setSize({200.0f, 100.0f}); 
+  // Contenu TEST 3 - Rectangle C (visible dans clip2 mais pas clip3)
+  auto rectC = std::make_shared<A>(glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}); // Bleu
+  rectC->setRelativePosition({100.0f, 50.0f});
+  rectC->setSize({120.0f, 80.0f});
 
-auto b = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
-b->setSize({200.0f, 100.0f});
+  // Contenu TEST 4 - Rectangle D (visible dans clip1 mais pas clip2)
+  auto rectD = std::make_shared<A>(glm::vec4{1.0f, 1.0f, 0.0f, 1.0f}); // Jaune
+  rectD->setRelativePosition({-50.0f, 150.0f});
+  rectD->setSize({150.0f, 100.0f});
 
-auto c = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
-c->setSize({200.0f, 100.0f}); 
+  // Contenu TEST 5 - Rectangle E (visible partout - référence)
+  auto rectE = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}); // Magenta
+  rectE->setRelativePosition({300.0f, 100.0f});
+  rectE->setSize({80.0f, 80.0f});
 
-auto d = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
-d->setSize({200.0f, 100.0f});
+  // 🔧 ASSEMBLAGE IMBRIQUÉ (ORDRE IMPORTANT)
+  // clip3 contient A et B
+  clip3->addChild(rectA);
+  clip3->addChild(rectB);
+  
+  // clip2 contient clip3 et C  
+  clip2->addChild(clip3);
+  clip2->addChild(rectC);
+  
+  // clip1 contient clip2 et D
+  clip1->addChild(clip2);
+  clip1->addChild(rectD);
+  
+  // root contient clip1 et E
+  root->addChild(clip1);
+  root->addChild(rectE);
 
-auto e = std::make_shared<A>(glm::vec4{0.45f, 0.55f, 0.75f, 1.0f});
-e->setSize({200.0f, 100.0f}); 
-e->setRelativePosition({200.0f, 100.0f}); 
+  /*
+  HIERARCHIE FINALE:
+  
+  FloatView (root)
+  ├── ClipView1 🔴 (grand cercle 400x400)
+  │   ├── ClipView2 🟨 (carré 250x250)
+  │   │   ├── ClipView3 🟢 (petit cercle 120x120)
+  │   │   │   ├── Rect A 🔴 (COMPLÈTEMENT coupé)
+  │   │   │   └── Rect B 🟢 (partiellement visible)
+  │   │   └── Rect C 🔵 (visible dans clip2)
+  │   └── Rect D 🟡 (visible dans clip1)
+  └── Rect E 🟣 (visible partout)
+  */
 
-s->addChild(a);
-s->addChild(b);
-s->addChild(c);
-s->addChild(d);
-
-//f->addChild(s);
-
-//r->addChild(f);
-//r->addChild(e);
-/*
- * FloatView
- *		ClipView
- *			StackView
- *				A
- *				A
- *				A
- *				A
- *		A
- */
-
-
-//	auto pp = std::make_shared<A>(glm::vec4{1.0f});
-//	auto p = r->addChild(std::move(pp));
-
-
-//	r->addChild(std::move(f));
-//	p.setRelativePosition({250.0f, 250.0f});
-//	p.setSize({200.0f, 200.0f});
-	/*
-    for (size_t o = 0; o < OCTAVE_COUNT; ++o) {
-      auto octave = std::make_shared<PianoOctave>();
-		
-	  octave->octave = o;
-      octave->setPosition({0, o * 200});
-	  octave->setSize({50 + 50 * o, 200 + 10 * o});
-      octave->whiteKeyColor = {1.0, 1.0, 1.0, 1.0};
-      octave->blackKeyColor = {0.0, 0.0, 0.0, 1.0};
-	  s.addChild(std::move(octave));
-    }*/
-
-	app.setBackgroundColor({0.25, 0.25, 0.25, 1.0});
-	app.setRoot(s);
+  app.setBackgroundColor({0.1f, 0.1f, 0.15f, 1.0f});
+  app.setRoot(root);
 
   return app.run();
 }

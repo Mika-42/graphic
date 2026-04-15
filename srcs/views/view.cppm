@@ -50,7 +50,23 @@ public:
     return children;
   }
 
-  virtual void draw(Renderer &renderer) = 0;
+  virtual void draw(Renderer &renderer) {
+	  layout();
+
+  	std::vector<std::shared_ptr<View>> sorted = children;
+    std::stable_sort(sorted.begin(), sorted.end(),
+        [](const auto& a, const auto& b) {
+            return a->zIndex < b->zIndex;
+        });
+    
+    // Dessine dans l'ordre
+    for (auto& child : sorted) {
+        if (child && child->isVisible()) {
+            child->draw(renderer);
+        }
+    }
+  }
+
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 

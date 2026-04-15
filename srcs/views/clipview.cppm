@@ -24,17 +24,19 @@ public:
   }
 
   void draw(Renderer &renderer) override {
-    layout();
-    viewport.geometry = geometry;
+    
+	viewport.geometry = geometry;
     viewport.radius = radius;
     viewport.flags = CLIP_VIEW;
     renderer.add(viewport);
 
-    for (auto &child : children) {
-      if (child && child->isVisible()) {
-        child->draw(renderer);
-      }
-    }
+	View::draw(renderer);
+	
+	// RM	Rectangle reset{};
+	// RM	Rreset.geometry = geometry;
+	// RM	Rreset.radius = radius;
+    // RM	Rreset.flags = RESET_STENCIL;
+   // RM	R renderer.add(reset);
   }
 
 private:

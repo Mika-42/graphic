@@ -32,7 +32,9 @@ private:
 public:
   FloatView() : View() {}
 
-  virtual void draw(Renderer & /*renderer*/) override { layout(); }
+  virtual void draw(Renderer & renderer) override {
+	  View::draw(renderer);
+  }
 
 private:
   virtual void layout() override {

@@ -96,7 +96,9 @@ private:
 public:
   StackView() : View() {}
 
-  virtual void draw(Renderer & /*renderer*/) override { layout(); }
+  virtual void draw(Renderer &renderer) override {
+	  View::draw(renderer);
+  }
 
   StackView &setGap(float v) {
     gap = sanitizeFloat(v, 0.0f);

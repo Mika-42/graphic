@@ -38,8 +38,6 @@ public:
 
   RootView() : View() {}
 
-  void draw(Renderer & /*renderer*/) override {}
-
     void addChild(std::shared_ptr<View> child) override {
 	/*	if (child) {
 		  children.emplace_back(child);
@@ -65,11 +63,10 @@ private:
     if (!view || !view->isVisible()) return;
     
     // Trier les enfants par zIndex
-    auto ch = view->getChildren();
-    std::stable_sort(ch.begin(), ch.end(), [](auto a, auto b) { return a->zIndex < b->zIndex; });
+    auto& ch = view->getChildren();
     
     // Parcours récursif des enfants
-    for (auto child : ch) {
+    for (auto& child : ch) {
       topoZSortRecursive(child.get());
     }
     
@@ -290,11 +287,9 @@ private:
       if (view->isKeyboardFocused()) {
         view->onKeyboardEvent(keyboard);
       }
-
-      if (view->isVisible()) {
-        view->draw(*renderer);
-      }
     }
+
+	rootView->draw(*renderer);
 
     for (auto &view : rootView->sortedViews) {
       if (!view) {

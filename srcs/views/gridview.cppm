@@ -135,7 +135,9 @@ public:
     return ;
   }
 
-  void draw(Renderer &) override { layout(); }
+  void draw(Renderer &renderer) override {
+	  View::draw(renderer);
+  }
 
   glm::vec2 getOverflows() {
     update();

@@ -223,20 +223,16 @@ constexpr const char *kRendererFragmentShader = R"(
 				// Anti-aliasing lisse
 				float inside = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
 				
-				if (inside < 0.01) {
-					discard;
-				}
-				
-				FragColor = vec4(0.0);  // ← Alpha=0 = invisible !
-				gl_FragStencilRefARB = 1;               // Stencil marqué seulement dedans
+				gl_FragStencilRefARB = inside > 0.5 ? 1 : 0; 	
+				FragColor = vec4(0.0);
 				return;
 			}
 			  
-			//if ((v_flags & RESET_STENCIL) != 0u) {
-			//	FragColor = vec4(0.0);
-			//	gl_FragStencilRefARB = 0;
-			//	return;
-			//}
+			if ((v_flags & RESET_STENCIL) != 0u) {
+				FragColor = vec4(0.0);
+				gl_FragStencilRefARB = 0;
+				return;
+			}
 
 			vec4 gradientFill = computeGradientFill(p);
 			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
@@ -451,8 +447,10 @@ public:
     glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    if (rectangles.empty())
+    if (rectangles.empty()) {
       return;
+	}
+
     if (ssbo == 0 || vao == 0) {
       DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
       rectangles.clear();
@@ -470,66 +468,39 @@ public:
     }
 
     const size_t uploadBytes = rectangles.size() * sizeof(Rectangle);
-    if (uploadBytes / sizeof(Rectangle) != rectangles.size()) {
-      DEBUG_LOG("draw aborted: size_t overflow detected during SSBO upload "
-                "size calculation.");
-      rectangles.clear();
-      return;
-    }
-
     glNamedBufferSubData(ssbo, 0, uploadBytes, rectangles.data());
-
-    // bind ssbo
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
 
     // Draw
     shader.use();
     shader.set("uProjection", projection);
-    glBindVertexArray(vao);
+
+    // bind ssbo
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+	
+	glBindVertexArray(vao);
+
     glEnable(GL_STENCIL_TEST);
-    glStencilMask(0xFF);
 
-    // ================================
-    // PHASE 1: CLIPPERS UNIQUEMENT
-    // ================================
-    std::vector<Rectangle> clippers;
-    for (const auto &rect : rectangles) {
-      if (rect.flags & CLIP_VIEW) {
-        clippers.push_back(rect);
-      }
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);           // Toujours passer, écrire 1
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);   // Remplacer stencil par 1
+    glStencilMask(0xFF);                         // Autoriser l'écriture
+// Dessiner UNIQUEMENT les clippers
+for (size_t i = 0; i < rectangles.size(); ++i) {
+        if (rectangles[i].flags & CLIP_VIEW) {
+            glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, 1, i);
+        }
     }
 
-    if (!clippers.empty()) {
-      glNamedBufferSubData(ssbo, 0, clippers.size() * sizeof(Rectangle),
-                           clippers.data());
+    // Phase 2: Dessiner le contenu (test stencil)
+    glStencilFunc(GL_NOTEQUAL, 0, 0xFF);            // Passer seulement si stencil == 1
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);      // Ne pas modifier stencil
+    glStencilMask(0x00);                         // Interdire l'écriture
+    
+    // Dessiner TOUT le contenu (normal + reset)
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
 
-      glStencilFunc(GL_ALWAYS, 1, 0xFF);
-      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  glDisable(GL_STENCIL_TEST);
 
-      glDrawArraysInstanced(GL_TRIANGLES, 0, 6, clippers.size());
-    }
-
-    // ================================
-    // PHASE 2: CONTENU NORMAL
-    // ================================
-    std::vector<Rectangle> content;
-    for (const auto &rect : rectangles) {
-      if (!(rect.flags & CLIP_VIEW)) { // ← Exclut les clippers
-        content.push_back(rect);
-      }
-    }
-
-    if (!content.empty()) {
-      glNamedBufferSubData(ssbo, 0, content.size() * sizeof(Rectangle),
-                           content.data());
-
-      glStencilFunc(GL_EQUAL, 1, 0xFF);
-      glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-      glDrawArraysInstanced(GL_TRIANGLES, 0, 6, content.size());
-    }
-
-    glDisable(GL_STENCIL_TEST);
     rectangles.clear();
   }
 
