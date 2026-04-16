@@ -1,7 +1,7 @@
 module;
-
 #include <algorithm>
 #include <glm/glm.hpp>
+#include <limits>
 #include <memory>
 #include <vector>
 export module mka.graphic.view;
@@ -89,9 +89,7 @@ public:
     markDirty();
   }
 
-  glm::vec2 getOverflows() {
-	return {};
-  }
+  const glm::vec2 &getOverflows() { return overflows; }
 
   // TODO sanitize data
   void setSize(const glm::vec2 &s) {
@@ -124,6 +122,7 @@ protected:
 
     geometry.x = apos.x;
     geometry.y = apos.y;
+    computeOverflow();
   }
 
   // TODO make private
@@ -147,7 +146,44 @@ protected:
     dirty = false;
   }
 
-  virtual glm::vec2 getAbsolutePosition() final {
+
+private:
+  void computeOverflow() {
+    if (children.empty() || geometry.z <= 0 || geometry.w <= 0) {
+      overflows = glm::vec2(0.0f);
+      return;
+    }
+
+    float minX = std::numeric_limits<float>::max();
+    float minY = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float maxY = std::numeric_limits<float>::lowest();
+
+    for (const auto &child : children) {
+      if (child->geometry.z <= 0 || child->geometry.w <= 0)
+        continue;
+
+      minX = glm::min(minX, child->geometry.x);
+      minY = glm::min(minY, child->geometry.y);
+      maxX = glm::max(maxX, child->geometry.x + child->geometry.z);
+      maxY = glm::max(maxY, child->geometry.y + child->geometry.w);
+    }
+
+    if (maxX <= minX) {
+      overflows = glm::vec2(0.0f);
+      return;
+    }
+
+    const float contRight = geometry.x + geometry.z;
+    const float contBottom = geometry.y + geometry.w;
+
+    // Overflow total (gauche + droite, haut + bas)
+    overflows = {
+        std::max(0.0f, minX - geometry.x) + std::max(0.0f, maxX - contRight),
+        std::max(0.0f, minY - geometry.y) + std::max(0.0f, maxY - contBottom)};
+  }
+
+  glm::vec2 getAbsolutePosition() {
     update();
 
     glm::vec2 pos(relativePosition);
@@ -159,7 +195,6 @@ protected:
 
     return pos;
   }
-
 private:
   View *parent = nullptr;
   bool visible = true;
@@ -168,7 +203,9 @@ private:
   bool dirty = true;
   int updateDepth = 0;
 
-  glm::vec2 relativePosition = {0.0f, 0.0f};
+  glm::vec2 relativePosition = glm::vec2(0.0f);
+  glm::vec2 overflows = glm::vec2(0.0f);
+  glm::vec4 clipRect = glm::vec4(0.0f);
 };
 
 } // namespace mka::graphic
