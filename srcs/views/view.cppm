@@ -19,9 +19,8 @@ public:
 
   virtual ~View() = default;
 
-  const View *getParent() const { return parent; }
-
-  // --- Gestion des enfants ---
+public: // parent/children management
+  virtual const View *getParent() const final { return parent; }
 
   virtual void addChild(std::shared_ptr<View> child) {
     if (child && child->parent == nullptr) {
@@ -31,7 +30,7 @@ public:
     }
   }
 
-  void removeChild(View *child) {
+  virtual void removeChild(View *child) {
     if (!child) {
       return;
     }
@@ -53,6 +52,75 @@ public:
     return children;
   }
 
+public: // getters
+	
+  enum class PositionType : uint8_t { Relative, Absolute };
+
+  glm::vec2 getPosition(PositionType type = PositionType::Relative) {
+    update();
+
+	if(type == PositionType::Relative) {
+		return relativePosition;
+	}
+
+	glm::vec2 pos(relativePosition);
+    View *p = parent;
+    while (p != nullptr) {
+      pos += p->relativePosition;
+      p = p->parent;
+    }
+
+    return pos;
+  }
+
+  glm::vec2 getSize() {
+    update();
+    return glm::vec2{geometry.z, geometry.w};
+  }
+  const glm::vec2 &getOverflows() { 
+	  computeOverflow();
+	  return overflows; 
+  }
+
+  const glm::vec4 &getClipRadius() { return clipRadius; }
+  const glm::vec4 &getGeometry() { return geometry; }
+  const bool &isVisible() const { return visible; }
+  const bool &isKeyboardFocused() const { return keyboardFocus; }
+  const bool &isMouseFocused() const { return mouseFocus; }
+  const bool &isClipped() const { return clipEnable; }
+
+public: //setters
+
+  void setPosition(const glm::vec2 &p) {
+    relativePosition = p;
+
+    markDirty();
+  }
+
+  // TODO sanitize data
+  void setSize(const glm::vec2 &s) {
+    geometry.z = s.x;
+    geometry.w = s.y;
+    markDirty();
+  }
+
+  void setVisible(bool v) { visible = v; }
+
+  void setKeyboardFocus(bool v) { keyboardFocus = v; }
+
+  void setMouseFocus(bool v) { mouseFocus = v; }
+
+  void setClip(bool enabled) {
+	clipEnable = enabled;
+	markDirty();
+  }
+
+  void setClipRadius(const glm::vec4& radius) {
+	clipRadius = radius;
+	markDirty();
+  }
+
+public:
   virtual void draw(Renderer &renderer) {
 
     layout();
@@ -73,52 +141,16 @@ public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  virtual glm::vec2 getPosition() {
-    update();
-    return relativePosition;
-  }
-
-  virtual glm::vec2 getSize() {
-    update();
-    return glm::vec2{geometry.z, geometry.w};
-  }
-
-  void setPosition(const glm::vec2 &p) {
-    relativePosition = p;
-
-    markDirty();
-  }
-
-  const glm::vec2 &getOverflows() { return overflows; }
-
-  // TODO sanitize data
-  void setSize(const glm::vec2 &s) {
-    geometry.z = s.x;
-    geometry.w = s.y;
-    markDirty();
-  }
-
-  void setVisible(bool v) { visible = v; }
-
-  void setKeyboardFocus(bool v) { keyboardFocus = v; }
-
-  void setMouseFocus(bool v) { mouseFocus = v; }
-
-  const bool &isVisible() const { return visible; }
-
   virtual bool contain(const glm::vec2 &mouse) const {
     return mouse.x >= geometry.x && mouse.x <= geometry.x + geometry.z &&
            mouse.y >= geometry.y && mouse.y <= geometry.y + geometry.w;
   }
 
-  const bool &isKeyboardFocused() const { return keyboardFocus; }
-  const bool &isMouseFocused() const { return mouseFocus; }
-
   int zIndex = 0;
 
 protected:
   virtual void layout() {
-    const glm::vec2 apos = getAbsolutePosition();
+    const glm::vec2 apos = getPosition(PositionType::Absolute);
 
     geometry.x = apos.x;
     geometry.y = apos.y;
@@ -183,18 +215,6 @@ private:
         std::max(0.0f, minY - geometry.y) + std::max(0.0f, maxY - contBottom)};
   }
 
-  glm::vec2 getAbsolutePosition() {
-    update();
-
-    glm::vec2 pos(relativePosition);
-    View *p = parent;
-    while (p != nullptr) {
-      pos += p->relativePosition;
-      p = p->parent;
-    }
-
-    return pos;
-  }
 private:
   View *parent = nullptr;
   bool visible = true;
@@ -203,9 +223,11 @@ private:
   bool dirty = true;
   int updateDepth = 0;
 
+  glm::vec4 clipRadius = glm::vec4(0.0f);
+  bool clipEnable = false;
+
   glm::vec2 relativePosition = glm::vec2(0.0f);
   glm::vec2 overflows = glm::vec2(0.0f);
-  glm::vec4 clipRect = glm::vec4(0.0f);
 };
 
 } // namespace mka::graphic

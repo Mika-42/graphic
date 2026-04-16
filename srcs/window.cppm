@@ -23,7 +23,6 @@ import mka.graphic.keyboard;
 import mka.graphic.mouse;
 import mka.graphic.opengl.renderer;
 import mka.graphic.view;
-import mka.graphic.view.clipview;
 
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
@@ -48,7 +47,6 @@ public:
 		View::addChild(child);
 	}
 
-	
   // Nouvelle méthode publique : trie TOUS les enfants visibles
   void topoZSort() noexcept {
     sortedViews.clear();
@@ -292,7 +290,7 @@ private:
         view->onKeyboardEvent(keyboard);
       }
 	}
-
+	
 	rootView->draw(*renderer);
 
     for (auto &view : rootView->sortedViews) {

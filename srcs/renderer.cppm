@@ -216,6 +216,19 @@ constexpr const char *kRendererFragmentShader = R"(
 		void main() {
 			vec2 p = localPoint;
 
+			float clipAlpha = 1.0;
+		  
+			for (int i = 0; i < uClipStackSize; ++i) {
+				ClipStack clip = clips[i];
+				vec2 clipSpace = rectWorldPos - clip.geometry.xy;
+				float clipDist = sdRoundedBox(clipSpace, clip.halfSize, clip.radius);
+				clipAlpha = min(clipAlpha, smoothstep(AA_WIDTH, -AA_WIDTH, clipDist));
+			}
+		  
+			if (clipAlpha < 0.01) {
+				discard;
+			}
+
 			vec4 gradientFill = computeGradientFill(p);
 			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
 
@@ -241,6 +254,7 @@ constexpr const char *kRendererFragmentShader = R"(
 			vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (shadowColor.rgb * visibleShadow);
 			vec3 outRgb = (outAlpha > 0.0) ? (premulRgb / outAlpha) : vec3(0.0);
 			FragColor = vec4(outRgb, outAlpha);
+			FragColor.a *= clipAlpha;
 		}
 	)";
 } // namespace
@@ -251,7 +265,7 @@ export namespace mka::graphic {
  * @brief Instanced rectangle renderer with optional text support.
  */
 class Renderer {
-private:
+public:
   struct alignas(16) ClipStack {
     glm::vec4 geometry {};
     glm::vec4 radius {};
@@ -259,6 +273,7 @@ private:
     glm::vec2 halfSize {};
   };
 
+private:
   std::vector<ClipStack> clipStack;
 
 public:
