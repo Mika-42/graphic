@@ -14,36 +14,6 @@ export namespace mka::graphic {
 class View {
 
 public:
-  
-  // TODO sanitize data
-  void setClipGeometry(const glm::vec4& geo) {
-    clipGeometry = geo;
-    markDirty();
-  }
-
-  // TODO sanitize data
-  void setClipRadius(const glm::vec4& rad) {
-    clipRadius = rad;
-    markDirty();
-  }
-
-  // 🔥 Logique automatique : clip si geometry valide
-  bool shouldClip() const {
-    return clipGeometry.z > 0.0f && clipGeometry.w > 0.0f;
-  }
-
-  bool isClipActive() const { 
-    return shouldClip(); 
-  }
-
-  const glm::vec4& getClipGeometry() const { 
-    return clipGeometry; 
-  }
-  const glm::vec4& getClipRadius() const { 
-    return clipRadius; 
-  }
-
-public:
   // Constructeur / Destructeur
   View() = default;
 
@@ -65,8 +35,10 @@ public:
     if (!child) {
       return;
     }
-    auto it = std::ranges::find_if(children,
-        [&](const std::shared_ptr<View> &c) { return c.get() == child; });
+    auto it =
+        std::ranges::find_if(children, [&](const std::shared_ptr<View> &c) {
+          return c.get() == child;
+        });
 
     if (it != children.end()) {
       (*it)->parent = nullptr;
@@ -82,35 +54,26 @@ public:
   }
 
   virtual void draw(Renderer &renderer) {
-			
-	  layout();
 
-	std::vector<std::shared_ptr<View>> sorted = children;
-    std::stable_sort(sorted.begin(), sorted.end(),
-        [](const auto& a, const auto& b) {
-            return a->zIndex < b->zIndex;
-        });
-    
+    layout();
+
+    std::vector<std::shared_ptr<View>> sorted = children;
+    std::stable_sort(
+        sorted.begin(), sorted.end(),
+        [](const auto &a, const auto &b) { return a->zIndex < b->zIndex; });
+
     // Dessine dans l'ordre
-    for (auto& child : sorted) {
-        if (child && child->isVisible()) {
-            child->draw(renderer);
-        }
+    for (auto &child : sorted) {
+      if (child && child->isVisible()) {
+        child->draw(renderer);
+      }
     }
-	  if(shouldClip()) {
-		renderer.pushClip(clipGeometry, clipRadius);
-	  }
   }
 
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  virtual glm::vec2 getAbsolutePosition() {
-    update();
-    return glm::vec2{geometry.x, geometry.y};
-  }
-
-  virtual glm::vec2 getRelativePosition() {
+  virtual glm::vec2 getPosition() {
     update();
     return relativePosition;
   }
@@ -120,23 +83,14 @@ public:
     return glm::vec2{geometry.z, geometry.w};
   }
 
-  // TODO sanitize data
-  void setAbsolutePosition(const glm::vec2 &p) {
-    geometry.x = p.x;
-    geometry.y = p.y;
-    markDirty();
-  }
-
-  // TODO sanitize data
-  void setRelativePosition(const glm::vec2 &p) {
+  void setPosition(const glm::vec2 &p) {
     relativePosition = p;
+
     markDirty();
   }
 
-  // TODO sanitize data
-  void setGeometry(const glm::vec4& g) {
-    geometry = g;
-    markDirty();
+  glm::vec2 getOverflows() {
+	return {};
   }
 
   // TODO sanitize data
@@ -165,14 +119,15 @@ public:
   int zIndex = 0;
 
 protected:
-  virtual void layout() {}
+  virtual void layout() {
+    const glm::vec2 apos = getAbsolutePosition();
+
+    geometry.x = apos.x;
+    geometry.y = apos.y;
+  }
 
   // TODO make private
   glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
-
-
-  // TODO make private
-  glm::vec2 relativePosition = {0.0f, 0.0f};
 
   std::vector<std::shared_ptr<View>> children;
 
@@ -181,7 +136,7 @@ protected:
       dirty = true;
   }
 
-  const bool& isDirty() const { return dirty; }
+  const bool &isDirty() const { return dirty; }
 
   void update() {
     if (!dirty || updateDepth > 0)
@@ -192,15 +147,28 @@ protected:
     dirty = false;
   }
 
+  virtual glm::vec2 getAbsolutePosition() final {
+    update();
+
+    glm::vec2 pos(relativePosition);
+    View *p = parent;
+    while (p != nullptr) {
+      pos += p->relativePosition;
+      p = p->parent;
+    }
+
+    return pos;
+  }
+
 private:
   View *parent = nullptr;
-  glm::vec4 clipGeometry = glm::vec4(0.0f); 
-  glm::vec4 clipRadius = glm::vec4(0.0f); 
   bool visible = true;
   bool keyboardFocus = false;
   bool mouseFocus = false;
   bool dirty = true;
   int updateDepth = 0;
+
+  glm::vec2 relativePosition = {0.0f, 0.0f};
 };
 
 } // namespace mka::graphic

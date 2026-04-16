@@ -176,8 +176,7 @@ private:
           spanSize(rowCache, cell.row, cell.rowSpan, gaps.x)  // H O(S)
       };
 
-      child->setAbsolutePosition(glm::vec2{geometry.x, geometry.y} +
-                                 glm::vec2{rect.x, rect.y});
+      child->setPosition({rect.x, rect.y});
       child->setSize({rect.z, rect.w});
     }
   }

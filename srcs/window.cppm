@@ -48,6 +48,7 @@ public:
 		View::addChild(child);
 	}
 
+	
   // Nouvelle méthode publique : trie TOUS les enfants visibles
   void topoZSort() noexcept {
     sortedViews.clear();
@@ -265,7 +266,7 @@ private:
       return;
     }
 
-    rootView->setAbsolutePosition({0.0f, 0.0f});
+    rootView->setPosition({0.0f, 0.0f});
     rootView->setSize(size);
 
     rootView->topoZSort();

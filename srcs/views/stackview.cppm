@@ -166,8 +166,7 @@ private:
 
       geometry.z = glm::max(geometry.z, child->getSize().x);
 
-      child->setAbsolutePosition(
-          {alignOffset(child) + geometry.x, geometry.y + offset});
+      child->setPosition({alignOffset(child), offset});
       offset += child->getSize().y + gap;
     };
 
@@ -187,8 +186,7 @@ private:
     auto process = [&](std::shared_ptr<View> &child) {
       geometry.w = glm::max(geometry.w, child->getSize().y);
 
-      child->setAbsolutePosition(
-          {geometry.x + offset, geometry.y + alignOffset(child)});
+      child->setPosition({offset, alignOffset(child)});
       offset += child->getSize().x + gap;
     };
 

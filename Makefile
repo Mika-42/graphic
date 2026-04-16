@@ -19,7 +19,6 @@ MODULES := \
 	$(SRC_DIR)/inputs/mouseview.cppm \
 	$(SRC_DIR)/views/view.cppm \
 	$(SRC_DIR)/views/stackview.cppm \
-	$(SRC_DIR)/views/floatview.cppm \
 	$(SRC_DIR)/views/gridview.cppm \
 	$(SRC_DIR)/views/clipview.cppm \
 	$(SRC_DIR)/context.cppm \
