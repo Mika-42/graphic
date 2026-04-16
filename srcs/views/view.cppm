@@ -12,6 +12,37 @@ import mka.graphic.mouseview;
 export namespace mka::graphic {
 
 class View {
+
+public:
+  
+  // TODO sanitize data
+  void setClipGeometry(const glm::vec4& geo) {
+    clipGeometry = geo;
+    markDirty();
+  }
+
+  // TODO sanitize data
+  void setClipRadius(const glm::vec4& rad) {
+    clipRadius = rad;
+    markDirty();
+  }
+
+  // 🔥 Logique automatique : clip si geometry valide
+  bool shouldClip() const {
+    return clipGeometry.z > 0.0f && clipGeometry.w > 0.0f;
+  }
+
+  bool isClipActive() const { 
+    return shouldClip(); 
+  }
+
+  const glm::vec4& getClipGeometry() const { 
+    return clipGeometry; 
+  }
+  const glm::vec4& getClipRadius() const { 
+    return clipRadius; 
+  }
+
 public:
   // Constructeur / Destructeur
   View() = default;
@@ -51,9 +82,10 @@ public:
   }
 
   virtual void draw(Renderer &renderer) {
+			
 	  layout();
 
-  	std::vector<std::shared_ptr<View>> sorted = children;
+	std::vector<std::shared_ptr<View>> sorted = children;
     std::stable_sort(sorted.begin(), sorted.end(),
         [](const auto& a, const auto& b) {
             return a->zIndex < b->zIndex;
@@ -65,6 +97,9 @@ public:
             child->draw(renderer);
         }
     }
+	  if(shouldClip()) {
+		renderer.pushClip(clipGeometry, clipRadius);
+	  }
   }
 
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
@@ -85,17 +120,26 @@ public:
     return glm::vec2{geometry.z, geometry.w};
   }
 
+  // TODO sanitize data
   void setAbsolutePosition(const glm::vec2 &p) {
     geometry.x = p.x;
     geometry.y = p.y;
     markDirty();
   }
 
+  // TODO sanitize data
   void setRelativePosition(const glm::vec2 &p) {
     relativePosition = p;
     markDirty();
   }
 
+  // TODO sanitize data
+  void setGeometry(const glm::vec4& g) {
+    geometry = g;
+    markDirty();
+  }
+
+  // TODO sanitize data
   void setSize(const glm::vec2 &s) {
     geometry.z = s.x;
     geometry.w = s.y;
@@ -123,8 +167,11 @@ public:
 protected:
   virtual void layout() {}
 
+  // TODO make private
   glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
 
+
+  // TODO make private
   glm::vec2 relativePosition = {0.0f, 0.0f};
 
   std::vector<std::shared_ptr<View>> children;
@@ -134,7 +181,7 @@ protected:
       dirty = true;
   }
 
-  bool isDirty() { return dirty; }
+  const bool& isDirty() const { return dirty; }
 
   void update() {
     if (!dirty || updateDepth > 0)
@@ -147,6 +194,8 @@ protected:
 
 private:
   View *parent = nullptr;
+  glm::vec4 clipGeometry = glm::vec4(0.0f); 
+  glm::vec4 clipRadius = glm::vec4(0.0f); 
   bool visible = true;
   bool keyboardFocus = false;
   bool mouseFocus = false;

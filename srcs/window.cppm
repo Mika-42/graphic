@@ -23,6 +23,7 @@ import mka.graphic.keyboard;
 import mka.graphic.mouse;
 import mka.graphic.opengl.renderer;
 import mka.graphic.view;
+import mka.graphic.view.clipview;
 
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
@@ -43,7 +44,7 @@ public:
 		  children.emplace_back(child);
 		  markDirty();
 		}*/
-
+		//TODO set child->parent = nullptr
 		View::addChild(child);
 	}
 
@@ -256,7 +257,7 @@ private:
       DEBUG_LOG("renderer is not initialized.");
       return;
     }
-
+	
     renderer->setBackgroundColor(bgColor);
 
     if (!rootView) {
@@ -273,6 +274,7 @@ private:
       if (!view) {
         continue;
       }
+
       if (view->contain(mouse.position())) {
         view->setMouseFocus(true);
         view->onMouseEvent(mouse);
@@ -284,10 +286,11 @@ private:
       if (!view) {
         continue;
       }
-      if (view->isKeyboardFocused()) {
+      
+	  if (view->isKeyboardFocused()) {
         view->onKeyboardEvent(keyboard);
       }
-    }
+	}
 
 	rootView->draw(*renderer);
 
@@ -295,7 +298,8 @@ private:
       if (!view) {
         continue;
       }
-      view->setMouseFocus(false);
+      	
+	  view->setMouseFocus(false);
     }
 
     renderer->draw(orthographicProjection);

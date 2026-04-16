@@ -1,5 +1,6 @@
 module;
 #include <glm/glm.hpp>
+#include "debug.hpp"
 
 export module mka.graphic.view.clipview;
 import mka.graphic.view;
@@ -12,48 +13,45 @@ class ClipView : public View {
 public:
   ClipView() : View() {}
 
-  void setRadius(const glm::vec4 &r) {
-    radius = r;
+  // 🔥 Une seule méthode : met à jour geometry ET clip en même temps
+  void setClip(const glm::vec4& geometry, const glm::vec4& radius) {
+//	setRelativePosition({geometry.x, geometry.y});
+//	setAbsolutePosition({geometry.x, geometry.y});
+//	setSize({geometry.z, geometry.w});  // Met à jour View::geometry
+    this->geometry = geometry;
+	setClipGeometry(geometry);  // Active clip avec même géométrie
+    setClipRadius(radius);
     markDirty();
-    return ;
-  }
-
-  const glm::vec4 &getRadius() {
-    update();
-    return radius;
   }
 
   void draw(Renderer &renderer) override {
+    // Debug visuel si clip actif
+    if (shouldClip()) {
+      Rectangle clipDebug{
+        .geometry = geometry,
+        .radius = getClipRadius(),
+        .backgroundColorA = {1.0f, 0.0f, 0.0f, 0.1f},
+        .borderColor = {1.0f, 0.0f, 0.0f, 0.5f},
+        .borderThickness = 2.0f
+      };
+      renderer.add(clipDebug);
+    }
     
-	viewport.geometry = geometry;
-    viewport.radius = radius;
-    viewport.flags = CLIP_VIEW;
-    renderer.add(viewport);
-
-	View::draw(renderer);
-	
-	// RM	Rectangle reset{};
-	// RM	Rreset.geometry = geometry;
-	// RM	Rreset.radius = radius;
-    // RM	Rreset.flags = RESET_STENCIL;
-   // RM	R renderer.add(reset);
+    View::draw(renderer);  // ClipScope gère tout !
   }
 
 private:
   void layout() override {
+    // Positionne les enfants (comme FloatView)
     for (auto &child : children) {
-
-      if (!child) {
-        continue;
+      if (child) {
+        const glm::vec2 relPos = child->getRelativePosition();
+        const glm::vec2 absPos = getAbsolutePosition() + relPos;
+        child->setAbsolutePosition(absPos);
       }
-      const glm::vec2 relPos = child->getRelativePosition();
-      const glm::vec2 absPos = getAbsolutePosition() + relPos;
-      child->setAbsolutePosition(absPos);
     }
-  }
 
-private:
-  Rectangle viewport{};
-  glm::vec4 radius = glm::vec4(0.0f);
+  }
+ 
 };
 } // namespace mka::graphic

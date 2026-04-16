@@ -131,21 +131,18 @@ int main() {
   
   // 🔴 CLIP 1 - ClipView principal (grand cercle rouge)
   auto clip1 = std::make_shared<ClipView>();
-  clip1->setRelativePosition({50.0f, 50.0f});
-  clip1->setSize({400.0f, 400.0f});
-  clip1->setRadius(glm::vec4{200.0f}); // Grand cercle rouge
+  //clip1->setRelativePosition({50.0f, 50.0f});
+  clip1->setClip({0.0f, 0.0f, 400.0f, 400.0f},glm::vec4{200.0f}); // Grand cercle rouge
 
   // 🟨 CLIP 2 - ClipView imbriqué (carré jaune avec coins arrondis)
   auto clip2 = std::make_shared<ClipView>();
-  clip2->setRelativePosition({100.0f, 100.0f});
-  clip2->setSize({250.0f, 250.0f});
-  clip2->setRadius({50.0f, 50.0f, 80.0f, 80.0f}); // Coins différents
+  //clip2->setRelativePosition({100.0f, 100.0f});
+  clip2->setClip({0.0f, 0.0f, 250.0f, 250.0f}, {50.0f, 50.0f, 80.0f, 80.0f}); // Coins différents
 
   // 🟢 CLIP 3 - ClipView le plus imbriqué (petit cercle vert)
   auto clip3 = std::make_shared<ClipView>();
-  clip3->setRelativePosition({80.0f, 80.0f});
-  clip3->setSize({120.0f, 120.0f});
-  clip3->setRadius(glm::vec4{60.0f}); // Petit cercle parfait
+  //clip3->setRelativePosition({80.0f, 80.0f});
+  clip3->setClip({0.0f, 0.0f, 120.0f, 120.0f}, glm::vec4{60.0f}); // Petit cercle parfait
 
   // Contenu TEST 1 - Rectangle A (doit être COMPLETEMENT coupé par clip3)
   auto rectA = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}); // Rouge
@@ -169,7 +166,7 @@ int main() {
 
   // Contenu TEST 5 - Rectangle E (visible partout - référence)
   auto rectE = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}); // Magenta
-  rectE->setRelativePosition({300.0f, 100.0f});
+  rectE->setRelativePosition({400.0f, 100.0f});
   rectE->setSize({80.0f, 80.0f});
 
   // 🔧 ASSEMBLAGE IMBRIQUÉ (ORDRE IMPORTANT)
@@ -177,11 +174,11 @@ int main() {
   clip3->addChild(rectA);
   clip3->addChild(rectB);
   
-  // clip2 contient clip3 et C  
+ // clip2 contient clip3 et C  
   clip2->addChild(clip3);
   clip2->addChild(rectC);
   
-  // clip1 contient clip2 et D
+//  clip1 contient clip2 et D
   clip1->addChild(clip2);
   clip1->addChild(rectD);
   

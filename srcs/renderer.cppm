@@ -35,8 +35,6 @@ constexpr const char *kRendererVertexShader = R"(
 		#extension GL_ARB_bindless_texture : require
 
 		const uint FLAG_TEXT = 1u << 0;
-		const uint CLIP_VIEW = 1u << 1;
-		const uint RESET_STENCIL = 1u << 2;
 
 		const float MIN_RECT_SIZE = 0.0001;
 
@@ -75,8 +73,7 @@ constexpr const char *kRendererVertexShader = R"(
 		out float shadowSpread;
 		out vec2 texCoord;
 		flat out uvec2 textureHandle;
-		flat out uint v_flags;
-
+		out vec2 rectWorldPos;
 		uniform mat4 uProjection;
 
 		vec2 unitQuadVertex(const int vertexId) {
@@ -110,22 +107,15 @@ constexpr const char *kRendererVertexShader = R"(
 		void main() {
 			Rect r = rects[gl_InstanceID];
 			vec2 aPos = unitQuadVertex(gl_VertexID);
-
-			if ((r.flags & CLIP_VIEW) != 0u || (r.flags & RESET_STENCIL) != 0u) {
-				// Clip/Reset : utilise la géométrie normale (pas besoin de point unique)
-				vec2 worldPos = r.geometry.xy;
-				gl_Position = uProjection * vec4(worldPos + aPos * r.geometry.zw, 0.0, 1.0);
-				localPoint = aPos * r.geometry.zw - 0.5 * r.geometry.zw;
-				v_flags = r.flags;
-				return;
-			}
-    
+ 
 			vec2 pad = computeShadowPadding(r);
 			vec2 expandedSize = r.geometry.zw + 2.0 * pad;
 			vec2 expandedPos = r.geometry.xy - pad;
 
 			vec2 worldPos = expandedPos + aPos * expandedSize;
 			localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
+			
+			rectWorldPos = r.geometry.xy + 0.5 * r.geometry.zw;
 
 			textureHandle = r.texture;
 			backgroundColorA = r.backgroundColorA;
@@ -140,7 +130,6 @@ constexpr const char *kRendererVertexShader = R"(
 			shadowSoftness = r.shadowSoftness;
 			shadowSpread = r.shadowSpread;
 			texCoord = computeTexCoord(r, aPos, localPoint);
-			v_flags = r.flags;
 
 			gl_Position = uProjection * vec4(worldPos, 0.0, 1.0);
 		}
@@ -152,13 +141,12 @@ constexpr const char *kRendererFragmentShader = R"(
 		#extension GL_ARB_shader_stencil_export : enable
 
 		const uint FLAG_TEXT = 1u << 0;
-		const uint CLIP_VIEW = 1u << 1;
-		const uint RESET_STENCIL = 1u << 2;
 
 		const float AA_WIDTH = 0.5;
 		const float MIN_GRADIENT_EXTENT = 0.0001;
 		const float MIN_SHADOW_SOFTNESS = 0.001;
 
+		in vec2 rectWorldPos;
 		in vec2 localPoint;
 		in vec4 backgroundColorA;
 		in vec4 backgroundColorB;
@@ -172,11 +160,22 @@ constexpr const char *kRendererFragmentShader = R"(
 		in vec2 shadowOffset;
 		in float shadowSoftness;
 		in float shadowSpread;
-		flat in uvec2 textureHandle;
+		flat in uvec2 textureHandle;	
 		
-		flat in uint v_flags;
-
 		out vec4 FragColor;
+		
+		uniform int uClipStackSize;
+	
+		struct ClipStack {
+			vec4 geometry;
+			vec4 radius;
+			vec2 center;
+			vec2 halfSize;
+		};
+
+		layout(std430, binding = 1) buffer Clip {
+			ClipStack clips[];
+		};
 
 		float sdRoundedBox(vec2 p, vec2 halfExtents, vec4 cornerRadius) {
 			cornerRadius.xy = (p.x > 0.0) ? cornerRadius.xy : cornerRadius.zw;
@@ -217,23 +216,6 @@ constexpr const char *kRendererFragmentShader = R"(
 		void main() {
 			vec2 p = localPoint;
 
-			if ((v_flags & CLIP_VIEW) != 0u) {
-				float clipDist = sdRoundedBox(p, rectSize * 0.5, radius);
-				
-				// Anti-aliasing lisse
-				float inside = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
-				
-				gl_FragStencilRefARB = inside > 0.5 ? 1 : 0; 	
-				FragColor = vec4(0.0);
-				return;
-			}
-			  
-			if ((v_flags & RESET_STENCIL) != 0u) {
-				FragColor = vec4(0.0);
-				gl_FragStencilRefARB = 0;
-				return;
-			}
-
 			vec4 gradientFill = computeGradientFill(p);
 			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
 
@@ -269,6 +251,33 @@ export namespace mka::graphic {
  * @brief Instanced rectangle renderer with optional text support.
  */
 class Renderer {
+private:
+  struct alignas(16) ClipStack {
+    glm::vec4 geometry {};
+    glm::vec4 radius {};
+    glm::vec2 center {};
+    glm::vec2 halfSize {};
+  };
+
+  std::vector<ClipStack> clipStack;
+
+public:
+  void pushClip(const glm::vec4& geometry, const glm::vec4& radius) {
+    const glm::vec2 size(geometry.z, geometry.w);
+	const glm::vec2 pos(geometry.x, geometry.y);
+
+    clipStack.emplace_back(geometry, radius, pos + 0.5f * size, 0.5f * size);
+  }
+ 
+  void popClip() {
+    if (!clipStack.empty()) {
+      clipStack.pop_back();
+    }
+  }
+
+  void clearClip() {
+	clipStack.clear();
+  }
 
 public:
   Renderer() {
@@ -289,6 +298,12 @@ public:
       DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
     }
 
+	// Créer un SSBO pour la stack de clips
+	glCreateBuffers(1, &clipSsbo);
+	if (clipSsbo == 0) {
+	  DEBUG_LOG("glCreateBuffers failed: clipSsbo == 0.");
+	}
+	clipStack.reserve(initialSsboCapacity);
     rectangles.reserve(initialSsboCapacity);
     if (!reserveSsboCapacity(initialSsboCapacity)) {
       DEBUG_LOG("Initial SSBO allocation failed.");
@@ -301,6 +316,11 @@ public:
     if (ssbo != 0) {
       glDeleteBuffers(1, &ssbo);
     }
+
+	if (clipSsbo != 0) {
+	  glDeleteBuffers(1, &clipSsbo);
+	}
+
     if (vao != 0) {
       glDeleteVertexArrays(1, &vao);
     }
@@ -445,11 +465,11 @@ public:
   void draw(const glm::mat4 projection) {
 
     glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    if (rectangles.empty()) {
+    glClear(GL_COLOR_BUFFER_BIT);
+ 
+	if (rectangles.empty()) {
       return;
-	}
+    }
 
     if (ssbo == 0 || vao == 0) {
       DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
@@ -467,39 +487,23 @@ public:
       return;
     }
 
-    const size_t uploadBytes = rectangles.size() * sizeof(Rectangle);
-    glNamedBufferSubData(ssbo, 0, uploadBytes, rectangles.data());
+    const size_t rectBytes = rectangles.size() * sizeof(Rectangle);
+    glNamedBufferSubData(ssbo, 0, rectBytes, rectangles.data());
+
+	const size_t clipBytes = clipStack.size() * sizeof(ClipStack);
+    glNamedBufferSubData(clipSsbo, 0, clipBytes, clipStack.data());
 
     // Draw
     shader.use();
     shader.set("uProjection", projection);
-
-    // bind ssbo
+	shader.set("uClipStackSize", static_cast<int>(clipStack.size()));
+   
+	// bind ssbo
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-	
-	glBindVertexArray(vao);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, clipSsbo);
+    glBindVertexArray(vao);
 
-    glEnable(GL_STENCIL_TEST);
-
-	glStencilFunc(GL_ALWAYS, 1, 0xFF);           // Toujours passer, écrire 1
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);   // Remplacer stencil par 1
-    glStencilMask(0xFF);                         // Autoriser l'écriture
-// Dessiner UNIQUEMENT les clippers
-for (size_t i = 0; i < rectangles.size(); ++i) {
-        if (rectangles[i].flags & CLIP_VIEW) {
-            glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, 1, i);
-        }
-    }
-
-    // Phase 2: Dessiner le contenu (test stencil)
-    glStencilFunc(GL_NOTEQUAL, 0, 0xFF);            // Passer seulement si stencil == 1
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);      // Ne pas modifier stencil
-    glStencilMask(0x00);                         // Interdire l'écriture
-    
-    // Dessiner TOUT le contenu (normal + reset)
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
-
-  glDisable(GL_STENCIL_TEST);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
 
     rectangles.clear();
   }
@@ -539,7 +543,14 @@ private:
       return false;
     }
 
-    glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
+	const size_t allocationBytesClip = newCapacity * sizeof(ClipStack);
+    if (allocationBytesClip / sizeof(ClipStack) != newCapacity) {
+      DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
+      return false;
+    }
+    
+	glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
+	glNamedBufferData(clipSsbo, allocationBytesClip, nullptr, GL_DYNAMIC_DRAW);
     ssboCapacityInstances = newCapacity;
     return true;
   }
@@ -552,6 +563,7 @@ private:
 
   GLuint vao = 0;
   GLuint ssbo = 0;
+  GLuint clipSsbo = 0;
   size_t ssboCapacityInstances = 0;
 };
 } // namespace mka::graphic
