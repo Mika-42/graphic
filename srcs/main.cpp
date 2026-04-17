@@ -126,27 +126,25 @@ int main() {
 
   // 🟦 ROOT FloatView - Conteneur flottant principal
   auto root = std::make_shared<View>();
-  root->setClip(true);
   // 🔴 CLIP 1 - ClipView principal (grand cercle rouge)
   auto clip1 = std::make_shared<View>();
   clip1->setPosition({50.0f, 50.0f});
-  clip1->setSize({400.0f, 400.0f});
- // clip1->setClip({50.0f, 50.0f, 400.0f, 400.0f},glm::vec4{200.0f}); // Grand cercle rouge
-	clip1->setClip(true);
+  clip1->setRadius(glm::vec4{200.0f});
+  clip1->setSize({400.0f, 400.0f}); 
+  clip1->setClip(true);
 
   // 🟨 CLIP 2 - ClipView imbriqué (carré jaune avec coins arrondis)
   auto clip2 = std::make_shared<View>();
   clip2->setPosition({100.0f, 100.0f});
   clip2->setSize({250.0f, 250.0f});
-//  clip2->setClip({100.0f, 100.0f, 250.0f, 250.0f}, {50.0f, 50.0f, 80.0f, 80.0f}); // Coins différents
-
-	clip2->setClip(true);
+  clip2->setRadius(glm::vec4{20.0f, 50.0f, 100.0f, 0.0f});
+  clip2->setClip(true);
+  
   // 🟢 CLIP 3 - ClipView le plus imbriqué (petit cercle vert)
   auto clip3 = std::make_shared<View>();
   clip3->setPosition({80.0f, 80.0f});
   clip3->setSize({120.0f, 120.0f});
-  //clip3->setClip({80.0f, 80.0f, 120.0f, 120.0f}, glm::vec4{60.0f}); // Petit cercle parfait
-	clip3->setClip(true);
+  clip3->setClip(true);
 
   // Contenu TEST 1 - Rectangle A (doit être COMPLETEMENT coupé par clip3)
   auto rectA = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}); // Rouge
@@ -189,10 +187,12 @@ int main() {
   // root contient clip1 et E
   root->addChild(clip1);
   root->addChild(rectE);
-
+ 
   /*
   HIERARCHIE FINALE:
-  
+ 
+  RealRoot
+  │
   FloatView (root)
   ├── ClipView1 🔴 (grand cercle 400x400)
   │   ├── ClipView2 🟨 (carré 250x250)

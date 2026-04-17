@@ -4,15 +4,15 @@ module;
 #include <limits>
 #include <memory>
 #include <vector>
+#include "debug.hpp"
+
 export module mka.graphic.view;
 import mka.graphic.opengl.renderer;
 import mka.graphic.keyboardview;
 import mka.graphic.mouseview;
 
 export namespace mka::graphic {
-
 class View {
-
 public:
   // Constructeur / Destructeur
   View() = default;
@@ -41,6 +41,7 @@ public: // parent/children management
 
     if (it != children.end()) {
       (*it)->parent = nullptr;
+	  (*it)->clipRect.clipIndex = NO_CLIP;
       children.erase(it);
 
       markDirty();
@@ -82,12 +83,13 @@ public: // getters
 	  return overflows; 
   }
 
-  const glm::vec4 &getClipRadius() { return clipRadius; }
+  glm::vec4 getClipRadius() { return clipRect.radius; }
+  uint32_t getClipIndex() { return clipRect.clipIndex; }
   const glm::vec4 &getGeometry() { return geometry; }
   const bool &isVisible() const { return visible; }
   const bool &isKeyboardFocused() const { return keyboardFocus; }
   const bool &isMouseFocused() const { return mouseFocus; }
-  const bool &isClipped() const { return clipEnable; }
+  bool isClipped() const { return (clipRect.flags & CLIP) != 0; }
 
 public: //setters
 
@@ -111,31 +113,47 @@ public: //setters
   void setMouseFocus(bool v) { mouseFocus = v; }
 
   void setClip(bool enabled) {
-	clipEnable = enabled;
-	markDirty();
+	if(enabled) {
+		clipRect.flags |= CLIP;
+	} else {
+		clipRect.flags &= ~CLIP;
+	}
   }
 
-  void setClipRadius(const glm::vec4& radius) {
-	clipRadius = radius;
-	markDirty();
+  void setRadius(const glm::vec4& radius) {
+	clipRect.radius = radius;
   }
 
 public:
-  virtual void draw(Renderer &renderer) {
+ virtual void draw(Renderer &) {}
+
+  void update(Renderer &renderer) {
 
     layout();
 
-    std::vector<std::shared_ptr<View>> sorted = children;
+    computeOverflow();
+ 
+	std::vector<std::shared_ptr<View>> sorted = children;
     std::stable_sort(
         sorted.begin(), sorted.end(),
         [](const auto &a, const auto &b) { return a->zIndex < b->zIndex; });
 
-    // Dessine dans l'ordre
+	uint32_t rectIndex = NO_CLIP;
+	if (isClipped()) {
+		clipRect.geometry = geometry;
+		clipRect.flags |= CLIP;
+		clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 0.2f};
+		rectIndex = renderer.add(clipRect);
+	}
+
     for (auto &child : sorted) {
       if (child && child->isVisible()) {
-        child->draw(renderer);
+		child->clipRect.clipIndex = rectIndex;
+        child->update(renderer);
       }
     }
+
+	draw(renderer);
   }
 
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
@@ -154,7 +172,6 @@ protected:
 
     geometry.x = apos.x;
     geometry.y = apos.y;
-    computeOverflow();
   }
 
   // TODO make private
@@ -223,8 +240,7 @@ private:
   bool dirty = true;
   int updateDepth = 0;
 
-  glm::vec4 clipRadius = glm::vec4(0.0f);
-  bool clipEnable = false;
+  Rectangle clipRect;
 
   glm::vec2 relativePosition = glm::vec2(0.0f);
   glm::vec2 overflows = glm::vec2(0.0f);

@@ -39,10 +39,10 @@ public:
   RootView() : View() {}
 
     void addChild(std::shared_ptr<View> child) override {
-	/*	if (child) {
-		  children.emplace_back(child);
-		  markDirty();
-		}*/
+	//	if (child) {
+	//	  children.emplace_back(child);
+	//	  markDirty();
+	//	}
 		//TODO set child->parent = nullptr
 		View::addChild(child);
 	}
@@ -50,6 +50,7 @@ public:
   // Nouvelle méthode publique : trie TOUS les enfants visibles
   void topoZSort() noexcept {
     sortedViews.clear();
+
     for (auto& child : children) {
       if (child && child->isVisible()) {
         topoZSortRecursive(child.get());
@@ -291,7 +292,7 @@ private:
       }
 	}
 	
-	rootView->draw(*renderer);
+	rootView->update(*renderer);
 
     for (auto &view : rootView->sortedViews) {
       if (!view) {

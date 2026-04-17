@@ -1,6 +1,7 @@
 module;
 
 #include "glad.h"
+#include <glm/ext/vector_uint2.hpp>
 #include <glm/glm.hpp>
 #include "debug.hpp"
 #include "stb_image.h"
@@ -10,6 +11,9 @@ export module mka.graphic.opengl.rectangle;
 export namespace mka::graphic {
 	
 	constexpr uint32_t TEXT				= 1u << 0;
+	constexpr uint32_t CLIP				= 1u << 1;
+		
+	constexpr uint32_t NO_CLIP = 0xFFFFFFFFu;
 
 	/**
 	 * @brief GPU instance payload for rectangle/text rendering.
@@ -28,9 +32,14 @@ export namespace mka::graphic {
 		float shadowSoftness {};
 		float shadowSpread {};
 		float borderThickness {};
-		uint64_t texture {};
+		glm::uvec2 texture {};
 		uint32_t flags {};
-		uint32_t _pad {};
+		uint32_t clipIndex {NO_CLIP};
+	};
+
+	struct alignas(16) Clip {
+		glm::vec4 geometry {};
+		glm::vec4 radius {};
 	};
 
 	float distance(const Rectangle& rect, glm::vec2 point) {
@@ -53,10 +62,10 @@ export namespace mka::graphic {
 	}
 
 	/// @brief Load an RGBA texture and return its bindless texture handle.
-	uint64_t loadTexture(const char* path) {
+	glm::uvec2 loadTexture(const char* path) {
 		if (path == nullptr) {
 			DEBUG_LOG("loadTexture called with null path pointer.");
-			return 0;
+			return glm::uvec2(0);
 		}
 
 		int width, height, channels;
@@ -65,12 +74,12 @@ export namespace mka::graphic {
 		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
 		if (!data) {
 			DEBUG_LOG("Failed to load texture: " + std::string(path));
-			return 0;
+			return glm::uvec2(0);
 		}
 		if (width <= 0 || height <= 0) {
 			DEBUG_LOG("Invalid texture dimensions for: " + std::string(path));
 			stbi_image_free(data);
-			return 0;
+			return glm::uvec2(0);
 		}
 
 		GLuint tex = 0;
@@ -78,7 +87,7 @@ export namespace mka::graphic {
 		if (tex == 0) {
 			DEBUG_LOG("glCreateTextures returned 0 for: " + std::string(path));
 			stbi_image_free(data);
-			return 0;
+			return glm::uvec2(0);
 		}
 
 		glTextureStorage2D(tex, 1, GL_RGBA8, width, height);
@@ -104,11 +113,11 @@ export namespace mka::graphic {
 		if (handle == 0) {
 			DEBUG_LOG("glGetTextureHandleARB returned null handle for: " + std::string(path));
 			glDeleteTextures(1, &tex);
-			return 0;
+			return glm::uvec2(0);
 		}
 		glMakeTextureHandleResidentARB(handle);
 
 		DEBUG_LOG("Texture loaded: " + std::string(path) + " (" + std::to_string(width) + "x" + std::to_string(height) + ")");
-		return handle;
+		return glm::uvec2(handle & 0xFFFFFFFFu, handle >> 32u);
 	}
 }

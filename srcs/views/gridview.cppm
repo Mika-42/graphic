@@ -13,6 +13,7 @@ import mka.graphic.view;
 import mka.graphic.opengl.renderer;
 import mka.graphic.sanitize;
 
+ //TODO check if nothing is broken and fix it
 namespace mka::graphic {
 
 // Pré-calcul des positions cumulées O(1) accès

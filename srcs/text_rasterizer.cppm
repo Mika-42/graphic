@@ -15,7 +15,7 @@ import mka.graphic.opengl.text;
 export namespace mka::graphic {
 
 struct TextGlyph {
-  uint64_t texture{};
+  glm::uvec2 texture{};
   glm::vec2 size{};
   glm::vec2 bearing{};
   float advance{};
@@ -159,7 +159,7 @@ public:
                                   newGlyph.textureId, newGlyph.textureHandle)) {
         return nullptr;
       }
-      newGlyph.payload.texture = newGlyph.textureHandle;
+      newGlyph.payload.texture = glm::uvec2(newGlyph.textureHandle & 0xFFFFFFFFu, newGlyph.textureHandle >> 32u); 
     }
 
     const size_t glyphIndex = cache->glyphs.size();

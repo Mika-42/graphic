@@ -52,7 +52,7 @@ constexpr const char *kRendererVertexShader = R"(
 			float borderThickness;
 			uvec2 texture;
 			uint flags;
-			uint _pad;
+			uint clipIndex;
 		};
 
 		layout(std430, binding = 0) buffer Rects {
@@ -74,6 +74,8 @@ constexpr const char *kRendererVertexShader = R"(
 		out vec2 texCoord;
 		flat out uvec2 textureHandle;
 		out vec2 rectWorldPos;
+		out uint clipIndex;
+		flat out int v_InstanceID;
 		uniform mat4 uProjection;
 
 		vec2 unitQuadVertex(const int vertexId) {
@@ -130,7 +132,8 @@ constexpr const char *kRendererVertexShader = R"(
 			shadowSoftness = r.shadowSoftness;
 			shadowSpread = r.shadowSpread;
 			texCoord = computeTexCoord(r, aPos, localPoint);
-
+			clipIndex = r.clipIndex;
+			v_InstanceID = gl_InstanceID;
 			gl_Position = uProjection * vec4(worldPos, 0.0, 1.0);
 		}
 	)";
@@ -141,10 +144,35 @@ constexpr const char *kRendererFragmentShader = R"(
 		#extension GL_ARB_shader_stencil_export : enable
 
 		const uint FLAG_TEXT = 1u << 0;
+		const uint FLAG_CLIP = 1u << 1;
+
+		const uint MAX_CLIP_DEPTH = 16;
+		const uint NO_CLIP = 0xFFFFFFFFu;
 
 		const float AA_WIDTH = 0.5;
 		const float MIN_GRADIENT_EXTENT = 0.0001;
 		const float MIN_SHADOW_SOFTNESS = 0.001;
+
+		struct Rect {
+			vec4 geometry; // xy = pos, zw = size
+			vec4 radius;
+			vec4 backgroundColorA;
+			vec4 backgroundColorB;
+			vec4 borderColor;
+			vec4 shadowColor;
+			vec2 shadowOffset;
+			float gradientAngle;
+			float shadowSoftness;
+			float shadowSpread;
+			float borderThickness;
+			uvec2 texture;
+			uint flags;
+			uint clipIndex;
+		};
+
+		layout(std430, binding = 0) buffer Rects {
+			Rect rects[];
+		};
 
 		in vec2 rectWorldPos;
 		in vec2 localPoint;
@@ -161,22 +189,10 @@ constexpr const char *kRendererFragmentShader = R"(
 		in float shadowSoftness;
 		in float shadowSpread;
 		flat in uvec2 textureHandle;	
-		
+		flat in int v_InstanceID;
+
 		out vec4 FragColor;
 		
-		uniform int uClipStackSize;
-	
-		struct ClipStack {
-			vec4 geometry;
-			vec4 radius;
-			vec2 center;
-			vec2 halfSize;
-		};
-
-		layout(std430, binding = 1) buffer Clip {
-			ClipStack clips[];
-		};
-
 		float sdRoundedBox(vec2 p, vec2 halfExtents, vec4 cornerRadius) {
 			cornerRadius.xy = (p.x > 0.0) ? cornerRadius.xy : cornerRadius.zw;
 			cornerRadius.x = (p.y > 0.0) ? cornerRadius.x : cornerRadius.y;
@@ -213,21 +229,38 @@ constexpr const char *kRendererFragmentShader = R"(
 			return vec4(mix(sampled.rgb, gradientFill.rgb, gradientFill.a), sampled.a);
 		}
 
+		float clipping() {
+			Rect r = rects[v_InstanceID];
+		    float clipAlpha = 1.0;
+
+			uint currentClip = r.clipIndex;
+		    uint depth = 0;
+			
+			while (currentClip != NO_CLIP && depth < MAX_CLIP_DEPTH) {
+				Rect clipRect = rects[currentClip];
+				
+				if ((clipRect.flags & FLAG_CLIP) == 0u) {  // ← ÇA C'ETAIT LE PROBLÈME !
+					continue;				
+				}
+
+
+				vec2 clipSpace = rectWorldPos - (clipRect.geometry.xy + 0.5 * clipRect.geometry.zw);
+				float clipDist = sdRoundedBox(clipSpace, 0.5 * clipRect.geometry.zw, clipRect.radius);
+				clipAlpha = min(clipAlpha, smoothstep(AA_WIDTH, -AA_WIDTH, clipDist));
+        
+				if (clipAlpha < 0.01) break;
+
+				currentClip = clipRect.clipIndex;
+		        depth++;
+		    }
+			return clipAlpha;
+		}
+
 		void main() {
 			vec2 p = localPoint;
 
-			float clipAlpha = 1.0;
-		  
-			for (int i = 0; i < uClipStackSize; ++i) {
-				ClipStack clip = clips[i];
-				vec2 clipSpace = rectWorldPos - clip.geometry.xy;
-				float clipDist = sdRoundedBox(clipSpace, clip.halfSize, clip.radius);
-				clipAlpha = min(clipAlpha, smoothstep(AA_WIDTH, -AA_WIDTH, clipDist));
-			}
-		  
-			if (clipAlpha < 0.01) {
-				discard;
-			}
+			float clipAlpha = clipping();
+		    if (clipAlpha < 0.01) discard;
 
 			vec4 gradientFill = computeGradientFill(p);
 			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
@@ -254,51 +287,22 @@ constexpr const char *kRendererFragmentShader = R"(
 			vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (shadowColor.rgb * visibleShadow);
 			vec3 outRgb = (outAlpha > 0.0) ? (premulRgb / outAlpha) : vec3(0.0);
 			FragColor = vec4(outRgb, outAlpha);
-			FragColor.a *= clipAlpha;
 		}
 	)";
 } // namespace
 
 // OpenGL
 export namespace mka::graphic {
+
 /**
  * @brief Instanced rectangle renderer with optional text support.
  */
 class Renderer {
 public:
-  struct alignas(16) ClipStack {
-    glm::vec4 geometry {};
-    glm::vec4 radius {};
-    glm::vec2 center {};
-    glm::vec2 halfSize {};
-  };
-
-private:
-  std::vector<ClipStack> clipStack;
-
-public:
-  void pushClip(const glm::vec4& geometry, const glm::vec4& radius) {
-    const glm::vec2 size(geometry.z, geometry.w);
-	const glm::vec2 pos(geometry.x, geometry.y);
-
-    clipStack.emplace_back(geometry, radius, pos + 0.5f * size, 0.5f * size);
-  }
- 
-  void popClip() {
-    if (!clipStack.empty()) {
-      clipStack.pop_back();
-    }
-  }
-
-  void clearClip() {
-	clipStack.clear();
-  }
-
-public:
   Renderer() {
     DEBUG_LOG("Renderer init started.");
-    DEBUG_LOG(shader.addScript(kRendererVertexShader, ShaderType::Vertex));
-    DEBUG_LOG(shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
+    DEBUG_LOG("Vertex:" + shader.addScript(kRendererVertexShader, ShaderType::Vertex));
+    DEBUG_LOG("Fragment:" + shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
     shader.link();
 
     // empty vao (without it doesn't work...)
@@ -313,12 +317,6 @@ public:
       DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
     }
 
-	// Créer un SSBO pour la stack de clips
-	glCreateBuffers(1, &clipSsbo);
-	if (clipSsbo == 0) {
-	  DEBUG_LOG("glCreateBuffers failed: clipSsbo == 0.");
-	}
-	clipStack.reserve(initialSsboCapacity);
     rectangles.reserve(initialSsboCapacity);
     if (!reserveSsboCapacity(initialSsboCapacity)) {
       DEBUG_LOG("Initial SSBO allocation failed.");
@@ -332,18 +330,26 @@ public:
       glDeleteBuffers(1, &ssbo);
     }
 
-	if (clipSsbo != 0) {
-	  glDeleteBuffers(1, &clipSsbo);
-	}
-
     if (vao != 0) {
       glDeleteVertexArrays(1, &vao);
     }
   }
 
-  void add(Rectangle &&r) { rectangles.emplace_back(std::move(r)); }
+  uint32_t add(Rectangle &&r) { 
+	  if(r.flags & CLIP) currentClipIndex = rectangles.size();
+	  r.clipIndex = currentClipIndex;
+	  DEBUG_LOG(r.clipIndex);
+	  rectangles.emplace_back(std::move(r));
+	  return rectangles.size() - 1; //index
+  }
 
-  void add(Rectangle &r) { rectangles.emplace_back(r); }
+  uint32_t add(Rectangle &r) { 
+	  if(r.flags & CLIP) currentClipIndex = rectangles.size();
+	  r.clipIndex = currentClipIndex;
+	  DEBUG_LOG(r.clipIndex);
+	  rectangles.emplace_back(r);
+	  return rectangles.size() - 1; //index
+  }
   /**
    * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
    * @return Number of generated rectangle instances.
@@ -505,17 +511,12 @@ public:
     const size_t rectBytes = rectangles.size() * sizeof(Rectangle);
     glNamedBufferSubData(ssbo, 0, rectBytes, rectangles.data());
 
-	const size_t clipBytes = clipStack.size() * sizeof(ClipStack);
-    glNamedBufferSubData(clipSsbo, 0, clipBytes, clipStack.data());
-
     // Draw
     shader.use();
     shader.set("uProjection", projection);
-	shader.set("uClipStackSize", static_cast<int>(clipStack.size()));
    
 	// bind ssbo
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, clipSsbo);
     glBindVertexArray(vao);
 
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
@@ -557,15 +558,8 @@ private:
       DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
       return false;
     }
-
-	const size_t allocationBytesClip = newCapacity * sizeof(ClipStack);
-    if (allocationBytesClip / sizeof(ClipStack) != newCapacity) {
-      DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
-      return false;
-    }
-    
+ 
 	glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
-	glNamedBufferData(clipSsbo, allocationBytesClip, nullptr, GL_DYNAMIC_DRAW);
     ssboCapacityInstances = newCapacity;
     return true;
   }
@@ -578,7 +572,8 @@ private:
 
   GLuint vao = 0;
   GLuint ssbo = 0;
-  GLuint clipSsbo = 0;
   size_t ssboCapacityInstances = 0;
+
+  uint32_t currentClipIndex = NO_CLIP;
 };
 } // namespace mka::graphic
