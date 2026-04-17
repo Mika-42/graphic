@@ -336,17 +336,11 @@ public:
   }
 
   uint32_t add(Rectangle &&r) { 
-	  if(r.flags & CLIP) currentClipIndex = rectangles.size();
-	  r.clipIndex = currentClipIndex;
-	  DEBUG_LOG(r.clipIndex);
 	  rectangles.emplace_back(std::move(r));
 	  return rectangles.size() - 1; //index
   }
 
   uint32_t add(Rectangle &r) { 
-	  if(r.flags & CLIP) currentClipIndex = rectangles.size();
-	  r.clipIndex = currentClipIndex;
-	  DEBUG_LOG(r.clipIndex);
 	  rectangles.emplace_back(r);
 	  return rectangles.size() - 1; //index
   }

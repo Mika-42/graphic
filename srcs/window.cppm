@@ -292,7 +292,7 @@ private:
       }
 	}
 	
-	rootView->update(*renderer);
+	rootView->draw(*renderer);
 
     for (auto &view : rootView->sortedViews) {
       if (!view) {

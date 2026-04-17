@@ -125,36 +125,31 @@ public: //setters
   }
 
 public:
- virtual void draw(Renderer &) {}
-
-  void update(Renderer &renderer) {
-
+ virtual void draw(Renderer &renderer) {
     layout();
 
     computeOverflow();
- 
+
 	std::vector<std::shared_ptr<View>> sorted = children;
     std::stable_sort(
         sorted.begin(), sorted.end(),
         [](const auto &a, const auto &b) { return a->zIndex < b->zIndex; });
-
-	uint32_t rectIndex = NO_CLIP;
+ 
+	uint32_t clipIndex = NO_CLIP;
 	if (isClipped()) {
 		clipRect.geometry = geometry;
-		clipRect.flags |= CLIP;
 		clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 0.2f};
-		rectIndex = renderer.add(clipRect);
+		clipIndex = renderer.add(clipRect);
 	}
 
-    for (auto &child : sorted) {
-      if (child && child->isVisible()) {
-		child->clipRect.clipIndex = rectIndex;
-        child->update(renderer);
-      }
-    }
+	 for (auto &child : sorted) {
+		  if (child && child->isVisible()) {
+			child->clipRect.clipIndex = clipIndex;
+			child->draw(renderer);
+		}
+	}
 
-	draw(renderer);
-  }
+ }
 
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}

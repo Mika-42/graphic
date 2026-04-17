@@ -189,7 +189,7 @@ int main() {
   root->addChild(rectE);
  
   /*
-  HIERARCHIE FINALE:
+    HIERARCHIE FINALE:
  
   RealRoot
   │
@@ -202,7 +202,35 @@ int main() {
   │   │   └── Rect C 🔵 (visible dans clip2)
   │   └── Rect D 🟡 (visible dans clip1)
   └── Rect E 🟣 (visible partout)
-  */
+  
+----------------------------------------------------------
+	[0] Root (no_clip)
+	 └── [1] Float (no_clip)
+		  ├── [2] Node (no_clip)
+		  └── [3] Clip 1 (no_clip)
+			   ├── [5] D (clip = 3)
+			   └── [4] Clip 2 (clip = 3)
+					├── [6] C (clip = 4)
+					└── [6] Clip 3 (clip = 4)
+						 ├── [8] A (clip = 6)
+						 └── [9] B (clip = 6)
+---------------------------------------------------------	
+	+-------+---------+-------------+
+	| Index | Nom     | Clip Parent |
+	+-------+---------+-------------+
+	| 0     | Root    | no_clip     |
+	| 1     | Float   | no_clip     |
+	| 2     | Node    | no_clip     |
+	| 3     | Clip 1  | no_clip     |
+	| 4     | Clip 2  | 3           |
+	| 5     | D       | 3           |
+	| 6     | C       | 4           |
+	| 7     | Clip 3  | 4           |
+	| 8     | A       | 6           |
+	| 9     | B       | 6           |
+	+-------+---------+-------------+
+
+	*/
 
   app.setBackgroundColor({0.1f, 0.1f, 0.15f, 1.0f});
   app.setRoot(root);
