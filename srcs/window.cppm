@@ -39,12 +39,18 @@ public:
   RootView() : View() {}
 
     void addChild(std::shared_ptr<View> child) override {
-	//	if (child) {
-	//	  children.emplace_back(child);
-	//	  markDirty();
-	//	}
+		if (child) {
+		  children.emplace_back(child);
+		  markDirty();
+		}
 		//TODO set child->parent = nullptr
-		View::addChild(child);
+	//	View::addChild(child);
+	}
+
+	void draw(Renderer &renderer) {
+			for(auto& child : children) {
+				child->draw(renderer);
+			}
 	}
 
   // Nouvelle méthode publique : trie TOUS les enfants visibles

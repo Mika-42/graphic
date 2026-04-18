@@ -236,24 +236,25 @@ constexpr const char *kRendererFragmentShader = R"(
 			uint currentClip = r.clipIndex;
 		    uint depth = 0;
 			
-			while (currentClip != NO_CLIP && depth < MAX_CLIP_DEPTH) {
+			while (depth < MAX_CLIP_DEPTH) {
 				Rect clipRect = rects[currentClip];
 				
-				if ((clipRect.flags & FLAG_CLIP) == 0u) {  // ← ÇA C'ETAIT LE PROBLÈME !
-					break;
+				if ((clipRect.flags & FLAG_CLIP)) {  // ← ÇA C'ETAIT LE PROBLÈME !
+					
+					// Calculer le masque pour ce clip
+					vec2 clipCenter = clipRect.geometry.xy + 0.5 * clipRect.geometry.zw;
+					vec2 pointInClipSpace = rectWorldPos - clipCenter;
+					
+					float clipDist = sdRoundedBox(pointInClipSpace, 
+												 0.5 * clipRect.geometry.zw, 
+												 clipRect.radius);
+					
+					float clipMask = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
+					clipAlpha = min(clipAlpha, clipMask);  // Intersection
+					
+					if (clipAlpha < 0.01) break;
+
 				}
-        // Calculer le masque pour ce clip
-        vec2 clipCenter = clipRect.geometry.xy + 0.5 * clipRect.geometry.zw;
-        vec2 pointInClipSpace = rectWorldPos - clipCenter;
-        
-        float clipDist = sdRoundedBox(pointInClipSpace, 
-                                     0.5 * clipRect.geometry.zw, 
-                                     clipRect.radius);
-        
-        float clipMask = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
-        clipAlpha = min(clipAlpha, clipMask);  // Intersection
-        
-        if (clipAlpha < 0.01) break;
         
         // Suivre la chaîne vers le parent du clip
         currentClip = clipRect.clipIndex;
@@ -341,18 +342,12 @@ public:
     }
   }
 
-  uint32_t add(Rectangle &&r, uint32_t clipIndex = NO_CLIP) {
-	  //if(clipIndex != NO_CLIP) {
-		  r.clipIndex = clipIndex;
-	  //}
+  uint32_t add(Rectangle &&r) {
 	  rectangles.emplace_back(std::move(r));
 	  return rectangles.size() - 1; //index
   }
 
-  uint32_t add(Rectangle &r, uint32_t clipIndex = NO_CLIP) { 
-	  //if(clipIndex != NO_CLIP) {
-		  r.clipIndex = clipIndex;
-	  //}
+  uint32_t add(Rectangle &r) { 
 	  rectangles.emplace_back(r);
 	  return rectangles.size() - 1; //index
   }

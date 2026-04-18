@@ -130,8 +130,6 @@ public:
 
     computeOverflow();
 
-	// static int ccc = 0; //TODO remove, only for debug
-
 	std::vector<std::shared_ptr<View>> sorted = children;
     std::stable_sort(
         sorted.begin(), sorted.end(),
@@ -140,29 +138,24 @@ public:
 	clipRect.geometry = geometry;
 	clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 0.2f};
 
-//	uint32_t parentClipIndex = NO_CLIP;
-	if(isClipped()) {
-		clipRect.clipIndex = renderer.add(clipRect);
-	} 
-	
-	/*
-	 * TODO remove, only for debug
-	 * if(clipRect.clipIndex != NO_CLIP) {
-		DEBUG_LOG(std::string(ccc, ' ') + std::to_string(clipRect.clipIndex));
-	} else {
-		DEBUG_LOG(std::string(ccc, ' ') + "NO_CLIP");
-	}*/
 
-	// ccc++; //TODO remove, only for debug
+	if(!parent) {
+		clipRect.clipIndex = NO_CLIP;
+	}
+	else  {	
+		if(parent->currentClipIndex == NO_CLIP) {
+			parent->currentClipIndex = renderer.add(parent->clipRect);
+		}
+
+		clipRect.clipIndex = parent->currentClipIndex; 
+	}
 
 	 for (auto &child : sorted) {
 		
 		 if (child && child->isVisible()) {
-			 child->clipRect.clipIndex = clipRect.clipIndex;
 			child->draw(renderer);
 		}
 	}
-	// ccc--; //TODO remove, only for debug
 
  }
 
@@ -251,6 +244,7 @@ private:
   int updateDepth = 0;
 
   Rectangle clipRect;
+  uint64_t currentClipIndex = NO_CLIP;
 
   glm::vec2 relativePosition = glm::vec2(0.0f);
   glm::vec2 overflows = glm::vec2(0.0f);
