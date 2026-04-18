@@ -104,7 +104,7 @@ class A : public View {
 			aa.shadowSpread = 10.0f;
 			aa.borderThickness = 5.0f;
 
-			renderer.add(aa);
+			renderer.add(aa, getClipIndex());
 		}
 
 		bool contain(const glm::vec2& mouse) const override {

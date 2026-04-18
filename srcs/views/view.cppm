@@ -130,24 +130,39 @@ public:
 
     computeOverflow();
 
+	// static int ccc = 0; //TODO remove, only for debug
+
 	std::vector<std::shared_ptr<View>> sorted = children;
     std::stable_sort(
         sorted.begin(), sorted.end(),
         [](const auto &a, const auto &b) { return a->zIndex < b->zIndex; });
  
-	uint32_t clipIndex = NO_CLIP;
-	if (isClipped()) {
-		clipRect.geometry = geometry;
-		clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 0.2f};
-		clipIndex = renderer.add(clipRect);
-	}
+	clipRect.geometry = geometry;
+	clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 0.2f};
+
+//	uint32_t parentClipIndex = NO_CLIP;
+	if(isClipped()) {
+		clipRect.clipIndex = renderer.add(clipRect);
+	} 
+	
+	/*
+	 * TODO remove, only for debug
+	 * if(clipRect.clipIndex != NO_CLIP) {
+		DEBUG_LOG(std::string(ccc, ' ') + std::to_string(clipRect.clipIndex));
+	} else {
+		DEBUG_LOG(std::string(ccc, ' ') + "NO_CLIP");
+	}*/
+
+	// ccc++; //TODO remove, only for debug
 
 	 for (auto &child : sorted) {
-		  if (child && child->isVisible()) {
-			child->clipRect.clipIndex = clipIndex;
+		
+		 if (child && child->isVisible()) {
+			 child->clipRect.clipIndex = clipRect.clipIndex;
 			child->draw(renderer);
 		}
 	}
+	// ccc--; //TODO remove, only for debug
 
  }
 

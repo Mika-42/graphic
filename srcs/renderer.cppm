@@ -240,18 +240,24 @@ constexpr const char *kRendererFragmentShader = R"(
 				Rect clipRect = rects[currentClip];
 				
 				if ((clipRect.flags & FLAG_CLIP) == 0u) {  // ← ÇA C'ETAIT LE PROBLÈME !
-					continue;				
+					break;
 				}
-
-
-				vec2 clipSpace = rectWorldPos - (clipRect.geometry.xy + 0.5 * clipRect.geometry.zw);
-				float clipDist = sdRoundedBox(clipSpace, 0.5 * clipRect.geometry.zw, clipRect.radius);
-				clipAlpha = min(clipAlpha, smoothstep(AA_WIDTH, -AA_WIDTH, clipDist));
+        // Calculer le masque pour ce clip
+        vec2 clipCenter = clipRect.geometry.xy + 0.5 * clipRect.geometry.zw;
+        vec2 pointInClipSpace = rectWorldPos - clipCenter;
         
-				if (clipAlpha < 0.01) break;
-
-				currentClip = clipRect.clipIndex;
-		        depth++;
+        float clipDist = sdRoundedBox(pointInClipSpace, 
+                                     0.5 * clipRect.geometry.zw, 
+                                     clipRect.radius);
+        
+        float clipMask = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
+        clipAlpha = min(clipAlpha, clipMask);  // Intersection
+        
+        if (clipAlpha < 0.01) break;
+        
+        // Suivre la chaîne vers le parent du clip
+        currentClip = clipRect.clipIndex;
+        depth++;
 		    }
 			return clipAlpha;
 		}
@@ -335,12 +341,18 @@ public:
     }
   }
 
-  uint32_t add(Rectangle &&r) { 
+  uint32_t add(Rectangle &&r, uint32_t clipIndex = NO_CLIP) {
+	  //if(clipIndex != NO_CLIP) {
+		  r.clipIndex = clipIndex;
+	  //}
 	  rectangles.emplace_back(std::move(r));
 	  return rectangles.size() - 1; //index
   }
 
-  uint32_t add(Rectangle &r) { 
+  uint32_t add(Rectangle &r, uint32_t clipIndex = NO_CLIP) { 
+	  //if(clipIndex != NO_CLIP) {
+		  r.clipIndex = clipIndex;
+	  //}
 	  rectangles.emplace_back(r);
 	  return rectangles.size() - 1; //index
   }
@@ -495,7 +507,7 @@ public:
     for (auto &rect : rectangles) {
       sanitizeRectangle(rect);
     }
-
+	
     if (!reserveSsboCapacity(rectangles.size())) {
       DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
       rectangles.clear();
