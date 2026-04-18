@@ -136,7 +136,7 @@ public:
         [](const auto &a, const auto &b) { return a->zIndex < b->zIndex; });
  
 	clipRect.geometry = geometry;
-	clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 0.2f};
+	clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
 
 
 	if(!parent) {

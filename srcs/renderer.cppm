@@ -60,20 +60,12 @@ constexpr const char *kRendererVertexShader = R"(
 		};
 
 		out vec2 localPoint;
-		out vec4 backgroundColorA;
-		out vec4 backgroundColorB;
-		out float gradientAngle;
-		out vec4 radius;
 		out vec2 rectSize;
-		out vec4 borderColor;
-		out float borderThickness;
 		out vec4 shadowColor;
-		out vec2 shadowOffset;
 		out float shadowSoftness;
 		out float shadowSpread;
 		out vec2 texCoord;
 		flat out uvec2 textureHandle;
-		out vec2 rectWorldPos;
 		out uint clipIndex;
 		flat out int v_InstanceID;
 		uniform mat4 uProjection;
@@ -117,18 +109,9 @@ constexpr const char *kRendererVertexShader = R"(
 			vec2 worldPos = expandedPos + aPos * expandedSize;
 			localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
 			
-			rectWorldPos = r.geometry.xy + 0.5 * r.geometry.zw;
-
 			textureHandle = r.texture;
-			backgroundColorA = r.backgroundColorA;
-			backgroundColorB = r.backgroundColorB;
-			gradientAngle = r.gradientAngle;
-			radius = r.radius;
 			rectSize = r.geometry.zw;
-			borderColor = r.borderColor;
-			borderThickness = r.borderThickness;
 			shadowColor = r.shadowColor;
-			shadowOffset = r.shadowOffset;
 			shadowSoftness = r.shadowSoftness;
 			shadowSpread = r.shadowSpread;
 			texCoord = computeTexCoord(r, aPos, localPoint);
@@ -174,18 +157,10 @@ constexpr const char *kRendererFragmentShader = R"(
 			Rect rects[];
 		};
 
-		in vec2 rectWorldPos;
 		in vec2 localPoint;
-		in vec4 backgroundColorA;
-		in vec4 backgroundColorB;
-		in float gradientAngle;
-		in vec4 radius;
 		in vec2 rectSize;
 		in vec2 texCoord;
-		in vec4 borderColor;
-		in float borderThickness;
 		in vec4 shadowColor;
-		in vec2 shadowOffset;
 		in float shadowSoftness;
 		in float shadowSpread;
 		flat in uvec2 textureHandle;	
@@ -200,15 +175,16 @@ constexpr const char *kRendererFragmentShader = R"(
 			return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - cornerRadius.x;
 		}
 
-		vec4 computeGradientFill(vec2 p) {
+		vec4 computeGradientFill(vec2 p, vec4 A, vec4 B, float gradientAngle) {
+			
 			float angleRad = radians(gradientAngle);
 			vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
 			float gradientExtent = max(dot(abs(gradientDir), rectSize * 0.5), MIN_GRADIENT_EXTENT);
 			float t = clamp((dot(p, gradientDir) / gradientExtent) * 0.5 + 0.5, 0.0, 1.0);
-			return mix(backgroundColorA, backgroundColorB, t);
+			return mix(A, B, t);
 		}
 
-		float computeShadowAlpha(vec2 p) {
+		float computeShadowAlpha(vec2 p, vec4 radius, vec2 shadowOffset) {
 			vec2 shadowPoint = p - shadowOffset;
 			float shadowDist = sdRoundedBox(shadowPoint, (rectSize * 0.5) + vec2(shadowSpread), radius);
 			float safeSoftness = max(shadowSoftness, MIN_SHADOW_SOFTNESS);
@@ -231,69 +207,50 @@ constexpr const char *kRendererFragmentShader = R"(
 
 		float clipping() {
 			Rect r = rects[v_InstanceID];
-		    float clipAlpha = 1.0;
-
-			uint currentClip = r.clipIndex;
-		    uint depth = 0;
 			
-			while (depth < MAX_CLIP_DEPTH) {
-				Rect clipRect = rects[currentClip];
-				
-				if ((clipRect.flags & FLAG_CLIP)) {  // ← ÇA C'ETAIT LE PROBLÈME !
-					
-					// Calculer le masque pour ce clip
-					vec2 clipCenter = clipRect.geometry.xy + 0.5 * clipRect.geometry.zw;
-					vec2 pointInClipSpace = rectWorldPos - clipCenter;
-					
-					float clipDist = sdRoundedBox(pointInClipSpace, 
-												 0.5 * clipRect.geometry.zw, 
-												 clipRect.radius);
-					
-					float clipMask = 1.0 - smoothstep(-AA_WIDTH, AA_WIDTH, clipDist);
-					clipAlpha = min(clipAlpha, clipMask);  // Intersection
-					
-					if (clipAlpha < 0.01) break;
-
-				}
-        
-        // Suivre la chaîne vers le parent du clip
-        currentClip = clipRect.clipIndex;
-        depth++;
-		    }
-			return clipAlpha;
+	//		while(r.clipIndex != NO_CLIP) {
+	//			float dist = sdRoundedBox(p, r.geometry.zw * 0.5, r.radius);
+	//		    return 0.5;  // Rouge si a un parent
+	//		}
+			return 1.0;
 		}
 
 		void main() {
+
+			Rect r = rects[v_InstanceID];
+			
 			vec2 p = localPoint;
 
-			float clipAlpha = clipping();
+			float clipAlpha = 1.0;
+
+			clipAlpha = clipping();
 		    if (clipAlpha < 0.01) discard;
 
-			vec4 gradientFill = computeGradientFill(p);
-			float dist = sdRoundedBox(p, rectSize * 0.5, radius);
+			vec4 gradientFill = computeGradientFill(p, r.backgroundColorA, r.backgroundColorB, r.gradientAngle);
+			float dist = sdRoundedBox(p, rectSize * 0.5, r.radius);
 
 			bool hasTexture = any(notEqual(textureHandle, uvec2(0u)));
-			bool hasRoundedCorners = any(greaterThan(radius, vec4(0.0)));
-			bool hasBorder = borderThickness > 0.0;
+			bool hasRoundedCorners = any(greaterThan(r.radius, vec4(0.0)));
+			bool hasBorder = r.borderThickness > 0.0;
 			bool useShapeMask = hasRoundedCorners || hasBorder || !hasTexture;
 
 			float shapeAlpha = smoothstep(AA_WIDTH, -AA_WIDTH, dist);
-			float borderInner = smoothstep(AA_WIDTH, -AA_WIDTH, dist + borderThickness);
+			float borderInner = smoothstep(AA_WIDTH, -AA_WIDTH, dist + r.borderThickness);
 			float borderMask = useShapeMask ? clamp(shapeAlpha - borderInner, 0.0, 1.0) : 0.0;
 
 			vec4 baseFill = resolveBaseFill(gradientFill, hasTexture);
-			vec4 shapeColor = mix(baseFill, borderColor, borderMask);
+			vec4 shapeColor = mix(baseFill, r.borderColor, borderMask);
 			float shapeCoverage = useShapeMask ? max(shapeAlpha, borderMask) : 1.0;
 			float shapeAlphaCombined = clamp(shapeColor.a * shapeCoverage, 0.0, 1.0);
 
-			float shadowAlpha = computeShadowAlpha(p);
+			float shadowAlpha = computeShadowAlpha(p, r.radius, r.shadowOffset);
 			float shadowCombinedAlpha = clamp(shadowColor.a * shadowAlpha, 0.0, 1.0);
 			float visibleShadow = shadowCombinedAlpha * (1.0 - shapeAlphaCombined);
 			float outAlpha = shapeAlphaCombined + visibleShadow;
 
 			vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (shadowColor.rgb * visibleShadow);
 			vec3 outRgb = (outAlpha > 0.0) ? (premulRgb / outAlpha) : vec3(0.0);
-			FragColor = vec4(outRgb, outAlpha);
+			FragColor = vec4(outRgb, outAlpha * clipAlpha);
 		}
 	)";
 } // namespace
@@ -502,7 +459,7 @@ public:
     for (auto &rect : rectangles) {
       sanitizeRectangle(rect);
     }
-	
+
     if (!reserveSsboCapacity(rectangles.size())) {
       DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
       rectangles.clear();
