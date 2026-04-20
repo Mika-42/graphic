@@ -300,7 +300,6 @@ private:
       
 	  if (view->isKeyboardFocused()) {
         view->onKeyboardEvent(keyboard);
-		break;
       }
 	}
 	
