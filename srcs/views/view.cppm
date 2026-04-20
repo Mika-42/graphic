@@ -3,6 +3,7 @@ module;
 #include <glm/glm.hpp>
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 #include "debug.hpp"
 
@@ -41,7 +42,7 @@ public: // parent/children management
 
     if (it != children.end()) {
       (*it)->parent = nullptr;
-	  (*it)->clipRect.clipIndex = NO_CLIP;
+	  (*it)->clipRect.flags.z = NO_CLIP;
       children.erase(it);
 
       markDirty();
@@ -84,12 +85,12 @@ public: // getters
   }
 
   glm::vec4 getClipRadius() { return clipRect.radius; }
-  uint32_t getClipIndex() { return clipRect.clipIndex; }
+  const int32_t& getClipIndex() { return currentClipIndex; }
   const glm::vec4 &getGeometry() { return geometry; }
   const bool &isVisible() const { return visible; }
   const bool &isKeyboardFocused() const { return keyboardFocus; }
   const bool &isMouseFocused() const { return mouseFocus; }
-  bool isClipped() const { return (clipRect.flags & CLIP) != 0; }
+  bool isClip() const { return clipRect.flags.y; }
 
 public: //setters
 
@@ -114,51 +115,52 @@ public: //setters
 
   void setClip(bool enabled) {
 	if(enabled) {
-		clipRect.flags |= CLIP;
+		clipRect.flags.y = CLIP;
 	} else {
-		clipRect.flags &= ~CLIP;
+		clipRect.flags.y = 0.0f;
 	}
+	markDirty();
   }
 
   void setRadius(const glm::vec4& radius) {
 	clipRect.radius = radius;
   }
 
-public:
- virtual void draw(Renderer &renderer) {
+  virtual void draw(Renderer &) {} //TODO make it virtual pure
+protected:
+ virtual void update(Renderer &renderer) {
     layout();
 
     computeOverflow();
 
+	clipRect.geometry = geometry;
+	currentClipIndex = parent ? parent->getClipIndex() : NO_CLIP;
+	
+	if(isClip()) {
+		clipRect.flags.z = currentClipIndex;
+		currentClipIndex = renderer.add(clipRect);
+	}
+
+	updateChild(renderer);
+
+	draw(renderer);
+ }
+
+ void updateChild(Renderer &renderer) {
 	std::vector<std::shared_ptr<View>> sorted = children;
     std::stable_sort(
         sorted.begin(), sorted.end(),
         [](const auto &a, const auto &b) { return a->zIndex < b->zIndex; });
  
-	clipRect.geometry = geometry;
-	clipRect.backgroundColorA = clipRect.backgroundColorB = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
-
-
-	if(!parent) {
-		clipRect.clipIndex = NO_CLIP;
-	}
-	else  {	
-		if(parent->currentClipIndex == NO_CLIP) {
-			parent->currentClipIndex = renderer.add(parent->clipRect);
-		}
-
-		clipRect.clipIndex = parent->currentClipIndex; 
-	}
-
-	 for (auto &child : sorted) {
-		
+	 for (auto &child : sorted) {	
 		 if (child && child->isVisible()) {
-			child->draw(renderer);
+			child->update(renderer);
 		}
 	}
 
  }
 
+public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
@@ -244,7 +246,7 @@ private:
   int updateDepth = 0;
 
   Rectangle clipRect;
-  uint64_t currentClipIndex = NO_CLIP;
+  int32_t currentClipIndex = NO_CLIP;
 
   glm::vec2 relativePosition = glm::vec2(0.0f);
   glm::vec2 overflows = glm::vec2(0.0f);

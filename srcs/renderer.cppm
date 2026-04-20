@@ -19,6 +19,9 @@ module;
 #include <utility>
 #include <vector>
 
+#include <iomanip>
+#include <set>
+
 export module mka.graphic.opengl.renderer;
 export import mka.graphic.opengl.rectangle; // TODO rm export
 export import mka.graphic.opengl.text;      // TODO rm export
@@ -45,14 +48,10 @@ constexpr const char *kRendererVertexShader = R"(
 			vec4 backgroundColorB;
 			vec4 borderColor;
 			vec4 shadowColor;
+			vec4 params;
+			vec4 flags;
 			vec2 shadowOffset;
-			float gradientAngle;
-			float shadowSoftness;
-			float shadowSpread;
-			float borderThickness;
 			uvec2 texture;
-			uint flags;
-			uint clipIndex;
 		};
 
 		layout(std430, binding = 0) buffer Rects {
@@ -61,13 +60,10 @@ constexpr const char *kRendererVertexShader = R"(
 
 		out vec2 localPoint;
 		out vec2 rectSize;
-		out vec4 shadowColor;
-		out float shadowSoftness;
-		out float shadowSpread;
 		out vec2 texCoord;
 		flat out uvec2 textureHandle;
-		out uint clipIndex;
-		flat out int v_InstanceID;
+		flat out uint v_InstanceID;
+		out vec2 worldPoint;
 		uniform mat4 uProjection;
 
 		vec2 unitQuadVertex(const int vertexId) {
@@ -83,12 +79,12 @@ constexpr const char *kRendererVertexShader = R"(
 		}
 
 		vec2 computeShadowPadding(const Rect r) {
-			float shadowExtent = max(r.shadowSoftness, 0.0) + max(r.shadowSpread, 0.0);
+			float shadowExtent = max(r.params.y, 0.0) + max(r.params.z, 0.0);
 			return abs(r.shadowOffset) + vec2(shadowExtent + 1.0);
 		}
 
 		vec2 computeTexCoord(const Rect r, vec2 aPos, vec2 localPosition) {
-			if ((r.flags & FLAG_TEXT) != 0u) {
+			if (r.flags.x > 0.0) {
 				return aPos;
 			}
 			// Build UVs from the original rectangle space so shadow padding never
@@ -108,15 +104,12 @@ constexpr const char *kRendererVertexShader = R"(
 
 			vec2 worldPos = expandedPos + aPos * expandedSize;
 			localPoint = (-pad + aPos * expandedSize) - (0.5 * r.geometry.zw);
-			
+			worldPoint = worldPos;
+
 			textureHandle = r.texture;
 			rectSize = r.geometry.zw;
-			shadowColor = r.shadowColor;
-			shadowSoftness = r.shadowSoftness;
-			shadowSpread = r.shadowSpread;
 			texCoord = computeTexCoord(r, aPos, localPoint);
-			clipIndex = r.clipIndex;
-			v_InstanceID = gl_InstanceID;
+			v_InstanceID = uint(gl_InstanceID);
 			gl_Position = uProjection * vec4(worldPos, 0.0, 1.0);
 		}
 	)";
@@ -143,28 +136,21 @@ constexpr const char *kRendererFragmentShader = R"(
 			vec4 backgroundColorB;
 			vec4 borderColor;
 			vec4 shadowColor;
+			vec4 params;
+			vec4 flags;
 			vec2 shadowOffset;
-			float gradientAngle;
-			float shadowSoftness;
-			float shadowSpread;
-			float borderThickness;
 			uvec2 texture;
-			uint flags;
-			uint clipIndex;
 		};
 
 		layout(std430, binding = 0) buffer Rects {
 			Rect rects[];
 		};
-
+		in vec2 worldPoint;
 		in vec2 localPoint;
 		in vec2 rectSize;
 		in vec2 texCoord;
-		in vec4 shadowColor;
-		in float shadowSoftness;
-		in float shadowSpread;
 		flat in uvec2 textureHandle;	
-		flat in int v_InstanceID;
+		flat in uint v_InstanceID;
 
 		out vec4 FragColor;
 		
@@ -175,16 +161,16 @@ constexpr const char *kRendererFragmentShader = R"(
 			return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - cornerRadius.x;
 		}
 
-		vec4 computeGradientFill(vec2 p, vec4 A, vec4 B, float gradientAngle) {
+		vec4 computeGradientFill(vec2 p, vec4 A, vec4 B, float angle) {
 			
-			float angleRad = radians(gradientAngle);
+			float angleRad = radians(angle);
 			vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
 			float gradientExtent = max(dot(abs(gradientDir), rectSize * 0.5), MIN_GRADIENT_EXTENT);
 			float t = clamp((dot(p, gradientDir) / gradientExtent) * 0.5 + 0.5, 0.0, 1.0);
 			return mix(A, B, t);
 		}
 
-		float computeShadowAlpha(vec2 p, vec4 radius, vec2 shadowOffset) {
+		float computeShadowAlpha(vec2 p, vec4 radius, vec2 shadowOffset, float shadowSpread, float shadowSoftness) {
 			vec2 shadowPoint = p - shadowOffset;
 			float shadowDist = sdRoundedBox(shadowPoint, (rectSize * 0.5) + vec2(shadowSpread), radius);
 			float safeSoftness = max(shadowSoftness, MIN_SHADOW_SOFTNESS);
@@ -206,36 +192,51 @@ constexpr const char *kRendererFragmentShader = R"(
 		}
 
 		float clipping() {
-			Rect r = rects[v_InstanceID];
-			
-	//		while(r.clipIndex != NO_CLIP) {
-	//			float dist = sdRoundedBox(p, r.geometry.zw * 0.5, r.radius);
-	//		    return 0.5;  // Rouge si a un parent
-	//		}
-			return 1.0;
+			int index = int(rects[v_InstanceID].flags.z);
+
+			float alpha = 1.0;
+			uint depth = 0;
+
+			while(index >= 0 && depth <= MAX_CLIP_DEPTH) {
+				
+				Rect r = rects[index];
+
+				if(r.flags.y > 0.0) {
+					vec2 parentLocalPoint = worldPoint - (r.geometry.xy + 0.5 * r.geometry.zw);
+					float dist = sdRoundedBox(parentLocalPoint, r.geometry.zw * 0.5, r.radius);
+					alpha *= smoothstep(AA_WIDTH, -AA_WIDTH, dist);
+
+					if (alpha < 0.01) return 0.0;
+				}
+				
+				index = int(r.flags.z);
+				
+				depth++;
+			}
+
+			return alpha;
 		}
 
 		void main() {
 
 			Rect r = rects[v_InstanceID];
-			
 			vec2 p = localPoint;
 
 			float clipAlpha = 1.0;
-
+			
 			clipAlpha = clipping();
 		    if (clipAlpha < 0.01) discard;
 
-			vec4 gradientFill = computeGradientFill(p, r.backgroundColorA, r.backgroundColorB, r.gradientAngle);
-			float dist = sdRoundedBox(p, rectSize * 0.5, r.radius);
+			vec4 gradientFill = computeGradientFill(p, r.backgroundColorA, r.backgroundColorB, r.params.x);
+			float dist = sdRoundedBox(p, r.geometry.zw * 0.5, r.radius);
 
 			bool hasTexture = any(notEqual(textureHandle, uvec2(0u)));
 			bool hasRoundedCorners = any(greaterThan(r.radius, vec4(0.0)));
-			bool hasBorder = r.borderThickness > 0.0;
+			bool hasBorder = r.params.w > 0.0;
 			bool useShapeMask = hasRoundedCorners || hasBorder || !hasTexture;
 
 			float shapeAlpha = smoothstep(AA_WIDTH, -AA_WIDTH, dist);
-			float borderInner = smoothstep(AA_WIDTH, -AA_WIDTH, dist + r.borderThickness);
+			float borderInner = smoothstep(AA_WIDTH, -AA_WIDTH, dist + r.params.w);
 			float borderMask = useShapeMask ? clamp(shapeAlpha - borderInner, 0.0, 1.0) : 0.0;
 
 			vec4 baseFill = resolveBaseFill(gradientFill, hasTexture);
@@ -243,12 +244,12 @@ constexpr const char *kRendererFragmentShader = R"(
 			float shapeCoverage = useShapeMask ? max(shapeAlpha, borderMask) : 1.0;
 			float shapeAlphaCombined = clamp(shapeColor.a * shapeCoverage, 0.0, 1.0);
 
-			float shadowAlpha = computeShadowAlpha(p, r.radius, r.shadowOffset);
-			float shadowCombinedAlpha = clamp(shadowColor.a * shadowAlpha, 0.0, 1.0);
+			float shadowAlpha = computeShadowAlpha(p, r.radius, r.shadowOffset, r.params.z, r.params.y);
+			float shadowCombinedAlpha = clamp(r.shadowColor.a * shadowAlpha, 0.0, 1.0);
 			float visibleShadow = shadowCombinedAlpha * (1.0 - shapeAlphaCombined);
 			float outAlpha = shapeAlphaCombined + visibleShadow;
 
-			vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (shadowColor.rgb * visibleShadow);
+			vec3 premulRgb = (shapeColor.rgb * shapeAlphaCombined) + (r.shadowColor.rgb * visibleShadow);
 			vec3 outRgb = (outAlpha > 0.0) ? (premulRgb / outAlpha) : vec3(0.0);
 			FragColor = vec4(outRgb, outAlpha * clipAlpha);
 		}
@@ -287,6 +288,7 @@ public:
     }
 
     DEBUG_LOG("Renderer init completed.");
+
   }
 
   ~Renderer() {
@@ -297,11 +299,6 @@ public:
     if (vao != 0) {
       glDeleteVertexArrays(1, &vao);
     }
-  }
-
-  uint32_t add(Rectangle &&r) {
-	  rectangles.emplace_back(std::move(r));
-	  return rectangles.size() - 1; //index
   }
 
   uint32_t add(Rectangle &r) { 
@@ -332,8 +329,8 @@ public:
                               sanitizedText.fontSize};
     glyphTemplate.backgroundColorA = textGradientA;
     glyphTemplate.backgroundColorB = textGradientB;
-    glyphTemplate.gradientAngle = sanitizedText.gradientAngle;
-    glyphTemplate.flags |= TEXT;
+    glyphTemplate.params.x = sanitizedText.gradientAngle;
+    glyphTemplate.flags.x = TEXT;
 
     size_t addedCount = 0;
     float cursorX = sanitizedText.position.x;
@@ -375,7 +372,7 @@ public:
       glyphRect.geometry.w = glyph->size.y;
 
       glyphRect.texture = glyph->texture;
-      glyphRect.flags |= TEXT;
+      glyphRect.flags.x = TEXT;
       glyphRects.push_back(std::move(glyphRect));
       // Advance comes from font metrics to preserve spacing/kerning quality.
       cursorX += glyph->advance + sanitizedText.letterSpacing;
@@ -386,9 +383,9 @@ public:
       return 0;
     }
 
-    const float gradientAngleRad = glm::radians(sanitizedText.gradientAngle);
-    const glm::vec2 gradientDir = {std::cos(gradientAngleRad),
-                                   std::sin(gradientAngleRad)};
+    const float angleRad = glm::radians(sanitizedText.gradientAngle);
+    const glm::vec2 gradientDir = {std::cos(angleRad),
+                                   std::sin(angleRad)};
 
     float globalMinProjection = std::numeric_limits<float>::max();
     float globalMaxProjection = std::numeric_limits<float>::lowest();
@@ -432,12 +429,58 @@ public:
                                   0.0f, 1.0f);
       glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
       glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
-      add(std::move(glyphRect));
+      add(glyphRect);
       ++addedCount;
     }
 
     return addedCount;
   }
+
+/* TODO move in a debug file for unit test
+void debugChainage(const std::vector<Rectangle>& rectangles) {
+    std::cout << "\n🔗 CHAÎNAGE DES RECTANGLES (taille: " << rectangles.size() << ")\n";
+    std::cout << "============================================================\n";
+    
+    for (size_t rectIndex = 0; rectIndex < rectangles.size(); ++rectIndex) {
+        const auto& rect = rectangles[rectIndex];
+        
+        if (rect.flags.z < 0.0f) {
+            std::cout << "[" << std::setw(2) << rectIndex << "] NO_CLIP\n";
+            continue;
+        }
+        
+        std::cout << "[" << std::setw(2) << rectIndex << "] flags={" 
+                  << rect.flags.x << "," << rect.flags.y << "," 
+                  << rect.flags.z << "} → ";
+        
+        // 🔥 Parcours sécurisé de la chaîne
+        std::set<int32_t> visited;  // Détection de cycles
+        int32_t current = rect.flags.z;
+        
+        while (current >= 0 && static_cast<size_t>(current) < rectangles.size()) {
+            if (visited.count(current)) {
+                std::cout << "[CYCLE! " << current << "] ";
+                break;
+            }
+            visited.insert(current);
+            
+            const auto& clipRect = rectangles[current];
+            std::cout << current;
+            
+            if (clipRect.flags.y > 0.0f) {
+                std::cout << "(CLIP)";
+            }
+            std::cout << "→";
+            
+            current = clipRect.flags.z;
+        }
+        
+        std::cout << "NO_CLIP\n";
+    }
+    
+    std::cout << "============================================================\n\n";
+}
+*/
 
   /// TODO Make it unusable by user
   /// @brief Flush batched rectangles to GPU and issue one instanced draw.
@@ -460,6 +503,8 @@ public:
       sanitizeRectangle(rect);
     }
 
+	//debugChainage(rectangles); //TODO enclose with test
+
     if (!reserveSsboCapacity(rectangles.size())) {
       DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
       rectangles.clear();
@@ -468,7 +513,6 @@ public:
 
     const size_t rectBytes = rectangles.size() * sizeof(Rectangle);
     glNamedBufferSubData(ssbo, 0, rectBytes, rectangles.data());
-
     // Draw
     shader.use();
     shader.set("uProjection", projection);

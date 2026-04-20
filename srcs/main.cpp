@@ -83,7 +83,6 @@ class A : public View {
 		}
 	
 		void draw(Renderer &renderer) override {
-			View::draw(renderer);
 
 			aa.geometry = this->geometry;
 			aa.radius = glm::vec4(90.0f);
@@ -99,11 +98,8 @@ class A : public View {
 			aa.borderColor = glm::vec4(1.0f);
 			aa.shadowColor = {0.5f, 0.25f, 1.0f, 0.5f};
 			aa.shadowOffset = {10.0f, 10.0f};
-			aa.gradientAngle = 60.0f;
-			aa.shadowSoftness = 50.0f;
-			aa.shadowSpread = 10.0f;
-			aa.borderThickness = 5.0f;
-			aa.clipIndex = getClipIndex();
+			aa.params = {60.0f, 50.0f, 10.0f, 5.0f };
+			aa.flags.z = getClipIndex();
 			renderer.add(aa);
 		}
 
@@ -126,6 +122,7 @@ int main() {
 
   // 🟦 ROOT FloatView - Conteneur flottant principal
   auto root = std::make_shared<View>();
+
   // 🔴 CLIP 1 - ClipView principal (grand cercle rouge)
   auto clip1 = std::make_shared<View>();
   clip1->setPosition({50.0f, 50.0f});
@@ -232,7 +229,7 @@ int main() {
 
 	*/
 
-  app.setBackgroundColor({0.1f, 0.1f, 0.15f, 1.0f});
+  app.setBackgroundColor(glm::vec4{1.0f});
   app.setRoot(root);
 
   return app.run();

@@ -72,11 +72,11 @@ export namespace mka::graphic {
 		sanitizeColor(r.backgroundColorB);
 		sanitizeColor(r.borderColor);
 		sanitizeColor(r.shadowColor);
-		sanitizeShadow(r.shadowOffset, r.shadowSoftness, r.shadowSpread);
-		sanitizeBorderThickness(r.borderThickness);
-		r.gradientAngle = std::fmod(r.gradientAngle, 360.0f);
-		if (r.gradientAngle < 0.0f) {
-			r.gradientAngle += 360.0f;
+		sanitizeShadow(r.shadowOffset, r.params.y, r.params.z);
+		sanitizeBorderThickness(r.params.w);
+		r.params.x = std::fmod(r.params.x, 360.0f);
+		if (r.params.x < 0.0f) {
+			r.params.x += 360.0f;
 		}
 	}
 }

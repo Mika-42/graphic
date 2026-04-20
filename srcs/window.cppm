@@ -11,6 +11,7 @@ module;
 #include <glm/gtc/matrix_transform.hpp>
 #include <iterator>
 #include <memory>
+#include <random>
 #include <ranges>
 
 export module mka.graphic.window;
@@ -30,27 +31,26 @@ void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
 }
 
 namespace mka::graphic {
-class RootView : public View {
+class RootView final: private View {
 private:
-	using View::addChild;
-
 public:
 
   RootView() : View() {}
 
-    void addChild(std::shared_ptr<View> child) override {
-		if (child) {
-		  children.emplace_back(child);
-		  markDirty();
+    void addRoot(std::shared_ptr<View> child) {
+		if (child && children.empty()) {
+			View::addChild(child);
 		}
 		//TODO set child->parent = nullptr
-	//	View::addChild(child);
+	}
+//--- NOTE : everything under, (public/private/protected) do not exist for child trying to access by parent
+	void updateRoot(Renderer &renderer) {
+		//TODO check if should I let or remove:	layout();
+		updateChild(renderer);
 	}
 
-	void draw(Renderer &renderer) {
-			for(auto& child : children) {
-				child->draw(renderer);
-			}
+	void setRootGeometry(const glm::vec4& g) {
+		geometry = g;
 	}
 
   // Nouvelle méthode publique : trie TOUS les enfants visibles
@@ -65,6 +65,8 @@ public:
   }
 
 private:
+  void draw(Renderer &) {}
+
   // Méthode récursive privée
   void topoZSortRecursive(View* view) noexcept {
     if (!view || !view->isVisible()) return;
@@ -252,7 +254,7 @@ public:
   void setRoot(std::shared_ptr<View> root) {
 	if(!root) { return; }
     rootView = std::make_shared<RootView>(); // TODO check if .reset() should be better
-    rootView->addChild(root);
+    rootView->addRoot(root);
   }
 
 private:
@@ -271,8 +273,7 @@ private:
       return;
     }
 
-    rootView->setPosition({0.0f, 0.0f});
-    rootView->setSize(size);
+    rootView->setRootGeometry({0.0f, 0.0f, size.x, size.y});
 
     rootView->topoZSort();
 
@@ -298,7 +299,7 @@ private:
       }
 	}
 	
-	rootView->draw(*renderer);
+	rootView->updateRoot(*renderer);
 
     for (auto &view : rootView->sortedViews) {
       if (!view) {

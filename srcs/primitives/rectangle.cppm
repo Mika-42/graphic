@@ -10,10 +10,9 @@ export module mka.graphic.opengl.rectangle;
 //OpenGL
 export namespace mka::graphic {
 	
-	constexpr uint32_t TEXT				= 1u << 0;
-	constexpr uint32_t CLIP				= 1u << 1;
-		
-	constexpr uint32_t NO_CLIP = 0xFFFFFFFFu;
+	constexpr float TEXT	= 1.0f;
+	constexpr float CLIP	= 1.0f;
+	constexpr float NO_CLIP = -1.0f;
 
 	/**
 	 * @brief GPU instance payload for rectangle/text rendering.
@@ -27,19 +26,10 @@ export namespace mka::graphic {
 		glm::vec4 backgroundColorB {};
 		glm::vec4 borderColor {};
 		glm::vec4 shadowColor {};
+		glm::vec4 params {}; // gradientAngle, shadowSoftness, shadowSpread, borderThickness
+		glm::vec4 flags {0.0f, 0.0f, NO_CLIP, 0.0f}; // text, clipFlag, clipIndex, none
 		glm::vec2 shadowOffset {};
-		float gradientAngle {};
-		float shadowSoftness {};
-		float shadowSpread {};
-		float borderThickness {};
 		glm::uvec2 texture {};
-		uint32_t flags {};
-		uint32_t clipIndex {NO_CLIP};
-	};
-
-	struct alignas(16) Clip {
-		glm::vec4 geometry {};
-		glm::vec4 radius {};
 	};
 
 	float distance(const Rectangle& rect, glm::vec2 point) {
