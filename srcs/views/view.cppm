@@ -1,12 +1,12 @@
 module;
+#include "debug.hpp"
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <limits>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <vector>
-#include <ranges>
-#include "debug.hpp"
 
 export module mka.graphic.view;
 import mka.graphic.opengl.renderer;
@@ -22,7 +22,9 @@ public:
   virtual ~View() = default;
 
 public: // parent/children management
-  [[nodiscard]] virtual const View *getParent() const noexcept final { return parent; }
+  [[nodiscard]] virtual const View *getParent() const noexcept final {
+    return parent;
+  }
 
   virtual void addChild(std::shared_ptr<View> child) {
     if (child && child->parent == nullptr) {
@@ -43,7 +45,7 @@ public: // parent/children management
 
     if (it != children.end()) {
       (*it)->parent = nullptr;
-	  (*it)->clipRect.flags.z = NO_CLIP;
+      (*it)->clipRect.flags.z = NO_CLIP;
       children.erase(it);
       markDirty();
     }
@@ -55,17 +57,16 @@ public: // parent/children management
   }
 
 public: // getters
-	
   enum class PositionType : uint8_t { Relative, Absolute };
 
   glm::vec2 getPosition(PositionType type = PositionType::Relative) {
     updateData();
 
-	if(type == PositionType::Relative) {
-		return relativePosition;
-	}
+    if (type == PositionType::Relative) {
+      return relativePosition;
+    }
 
-	glm::vec2 pos(relativePosition);
+    glm::vec2 pos(relativePosition);
     View *p = parent;
     while (p != nullptr) {
       pos += p->relativePosition;
@@ -79,22 +80,22 @@ public: // getters
     updateData();
     return glm::vec2{geometry.z, geometry.w};
   }
-  
-  const glm::vec2 &getOverflows() { 
-	  computeOverflow();
-	  return overflows; 
+
+  const glm::vec2 &getOverflows() {
+    computeOverflow();
+    return overflows;
   }
 
+  const glm::vec2& getScroll() const { return scrollOffset; }
   glm::vec4 getClipRadius() const { return clipRect.radius; }
-  const int32_t& getClipIndex() const { return currentClipIndex; }
+  const int32_t &getClipIndex() const { return currentClipIndex; }
   const glm::vec4 &getGeometry() const { return geometry; }
   const bool &isVisible() const { return visible; }
   const bool &isKeyboardFocused() const { return keyboardFocus; }
   const bool &isMouseFocused() const { return mouseFocus; }
   bool isClip() const { return clipRect.flags.y; }
 
-public: //setters
-
+public: // setters
   void setPosition(const glm::vec2 &p) {
     relativePosition = p;
     markDirty();
@@ -113,51 +114,51 @@ public: //setters
   void setMouseFocus(bool v) { mouseFocus = v; }
 
   void setClip(bool enabled) {
-	clipRect.flags.y = enabled ? CLIP : 0.0f;
-	markDirty();
+    clipRect.flags.y = enabled ? CLIP : 0.0f;
+    markDirty();
   }
 
-  void setRadius(const glm::vec4& radius) {
-	clipRect.radius = radius;
-  }
+  void setRadius(const glm::vec4 &radius) { clipRect.radius = radius; }
 
-  virtual void draw(Renderer &) {} //TODO make it virtual pure
+  void setScroll(const glm::vec2& s) { scrollOffset = s; }
+  void setScrollX(float x) { scrollOffset.x = x; }
+  void setScrollY(float y) { scrollOffset.y = y; }
 
-protected: //updates
+  virtual void draw(Renderer &) {} // TODO make it virtual pure
 
- virtual void update(Renderer &renderer) {
+protected: // updates
+  virtual void update(Renderer &renderer) {
     layout();
 
     computeOverflow();
 
-	clipRect.geometry = geometry;
-	currentClipIndex = parent ? parent->getClipIndex() : NO_CLIP;
-	
-	if(isClip()) {
-		clipRect.flags.z = currentClipIndex;
-		currentClipIndex = renderer.add(clipRect);
-	}
+    clipRect.geometry = geometry;
+    currentClipIndex = parent ? parent->getClipIndex() : NO_CLIP;
 
-	updateChild(renderer);
+    if (isClip()) {
+      clipRect.flags.z = currentClipIndex;
+      currentClipIndex = renderer.add(clipRect);
+    }
 
-	draw(renderer);
- }
+    updateChild(renderer);
 
- std::vector<std::shared_ptr<View>> getSortedChildren() const {
-	auto sorted = children;
+    draw(renderer);
+  }
+
+  std::vector<std::shared_ptr<View>> getSortedChildren() const {
+    auto sorted = children;
     std::ranges::stable_sort(sorted, {}, &View::zIndex);
-	return sorted;
- }
+    return sorted;
+  }
 
- void updateChild(Renderer &renderer) {
- 
-	 for (auto &child : getSortedChildren()) {	
-		 if (child && child->isVisible()) {
-			child->update(renderer);
-		}
-	}
+  void updateChild(Renderer &renderer) {
 
- }
+    for (auto &child : getSortedChildren()) {
+      if (child && child->isVisible()) {
+        child->update(renderer);
+      }
+    }
+  }
 
 public:
   virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
@@ -174,8 +175,8 @@ protected:
   virtual void layout() {
     const glm::vec2 apos = getPosition(PositionType::Absolute);
 
-    geometry.x = apos.x;
-    geometry.y = apos.y;
+    geometry.x = apos.x + scrollOffset.x;
+    geometry.y = apos.y + scrollOffset.y;
   }
 
   std::vector<std::shared_ptr<View>> children;
@@ -195,7 +196,6 @@ protected:
     updateDepth--;
     dirty = false;
   }
-
 
 private:
   void computeOverflow() {
@@ -235,18 +235,20 @@ private:
 
 private:
   View *parent = nullptr;
-  bool visible = true;
-  bool keyboardFocus = false;
-  bool mouseFocus = false;
-  bool dirty = true;
-  int updateDepth = 0;
+  Rectangle clipRect = {};
+  
+  bool visible			= true;
+  bool keyboardFocus	= false;
+  bool mouseFocus		= false;
+  bool dirty			= true;
 
-  Rectangle clipRect;
-  int32_t currentClipIndex = NO_CLIP;
+  int32_t updateDepth		= 0;
+  int32_t currentClipIndex	= NO_CLIP;
 
-  glm::vec4 geometry = {0.0f, 0.0f, 0.0f, 0.0f};
-  glm::vec2 relativePosition = glm::vec2(0.0f);
-  glm::vec2 overflows = glm::vec2(0.0f);
+  glm::vec4 geometry			= glm::vec4(0.0f);
+  glm::vec2 relativePosition	= glm::vec2(0.0f);
+  glm::vec2 overflows			= glm::vec2(0.0f);
+  glm::vec2 scrollOffset		= glm::vec2(0.0f);
 };
 
 } // namespace mka::graphic

@@ -2,7 +2,7 @@ module;
 #include <string>
 #include <vector>
 export module mka.graphic.keyboardview;
-import mka.graphic.keyboard;
+export import mka.graphic.keyboard; //TODO find a way to import only enum
 
 export namespace mka::graphic {
 

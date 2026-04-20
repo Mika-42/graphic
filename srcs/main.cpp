@@ -107,7 +107,19 @@ class A : public View {
 			return (distance(aa, mouse) <= 0.0f);
 		}
 
-		void onMouseEvent(const MouseEventView &/*mouse*/) override {
+		void onKeyboardEvent(const KeyboardEventView &kb) override {
+			static float scroll = 0.0f;
+
+			if(kb.isPressed(Key::A)) {
+				scroll += 2.0f;
+				setScrollY(scroll);
+			}
+
+			if(kb.isPressed(Key::Z)) {
+				scroll -= 2.0f;
+				setScrollY(scroll);
+			}
+
 		}
 
 	private:
@@ -161,7 +173,8 @@ int main() {
   // Contenu TEST 4 - Rectangle D (visible dans clip1 mais pas clip2)
   auto rectD = std::make_shared<A>(glm::vec4{1.0f, 1.0f, 0.0f, 1.0f}); // Jaune
   rectD->setPosition({-50.0f, 150.0f});
-  rectD->setSize({150.0f, 100.0f});
+  rectD->setSize({150.0f, 100.0f}); 
+  rectD->setKeyboardFocus(true);
 
   // Contenu TEST 5 - Rectangle E (visible partout - référence)
   auto rectE = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}); // Magenta
