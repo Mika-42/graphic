@@ -32,7 +32,12 @@ void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
 
 namespace mka::graphic {
 class RootView final: private View {
-private:
+public: // expose base method
+	  using View::getSize;
+	  using View::getOverflows; 
+	  using View::isKeyboardFocused;
+	using View::isMouseFocused;
+
 public:
 
   RootView() : View() {}
@@ -41,23 +46,22 @@ public:
 		if (child && children.empty()) {
 			View::addChild(child);
 		}
-		//TODO set child->parent = nullptr
 	}
 //--- NOTE : everything under, (public/private/protected) do not exist for child trying to access by parent
 	void updateRoot(Renderer &renderer) {
-		//TODO check if should I let or remove:	layout();
 		updateChild(renderer);
 	}
 
-	void setRootGeometry(const glm::vec4& g) {
-		geometry = g;
+	void setRootSize(const glm::vec2& g) {
+		setPosition(glm::vec2(0.0f));
+		setSize(g);
 	}
 
   // Nouvelle méthode publique : trie TOUS les enfants visibles
   void topoZSort() noexcept {
     sortedViews.clear();
 
-    for (auto& child : children) {
+    for (auto& child : getChildren()) {
       if (child && child->isVisible()) {
         topoZSortRecursive(child.get());
       }
@@ -273,7 +277,7 @@ private:
       return;
     }
 
-    rootView->setRootGeometry({0.0f, 0.0f, size.x, size.y});
+    rootView->setRootSize(size);
 
     rootView->topoZSort();
 

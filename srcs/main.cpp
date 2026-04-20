@@ -84,7 +84,7 @@ class A : public View {
 	
 		void draw(Renderer &renderer) override {
 
-			aa.geometry = this->geometry;
+			aa.geometry = getGeometry();
 			aa.radius = glm::vec4(90.0f);
 
 			if(isMouseFocused()) {

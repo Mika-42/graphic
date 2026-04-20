@@ -134,8 +134,8 @@ private:
       return 0.0f;
     }
 
-    const float dw = geometry.z - view->getSize().x;
-    const float dh = geometry.w - view->getSize().y;
+    const float dw = getGeometry().z - view->getSize().x;
+    const float dh = getGeometry().w - view->getSize().y;
     const bool isVertical = (orientation == Orientation::Vertical);
 
     switch (align) {
@@ -165,8 +165,6 @@ private:
         return;
       }
 
-      geometry.z = glm::max(geometry.z, child->getSize().x);
-
       child->setPosition({alignOffset(child), offset});
       offset += child->getSize().y + gap;
     };
@@ -176,8 +174,6 @@ private:
     } else {
       std::ranges::for_each(children, process);
     }
-
-    geometry.w = offset;
   }
 
   virtual void hlayout() final {
@@ -185,7 +181,6 @@ private:
     float offset = 0.0f;
 
     auto process = [&](std::shared_ptr<View> &child) {
-      geometry.w = glm::max(geometry.w, child->getSize().y);
 
       child->setPosition({offset, alignOffset(child)});
       offset += child->getSize().x + gap;
@@ -196,8 +191,6 @@ private:
     } else {
       std::ranges::for_each(children, process);
     }
-
-    geometry.z = offset;
   }
 
   virtual void layout() override {

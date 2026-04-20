@@ -159,8 +159,8 @@ private:
   }
 
   void updateCaches() {
-    colCache = computeTrackCache(columns, geometry.z, gaps.y);
-    rowCache = computeTrackCache(rows, geometry.w, gaps.x);
+    colCache = computeTrackCache(columns, getGeometry().z, gaps.y);
+    rowCache = computeTrackCache(rows, getGeometry().w, gaps.x);
     cacheDirty = false;
   }
 
