@@ -141,7 +141,7 @@ public:
   }
 
   glm::vec2 getOverflows() {
-    update();
+    updateData();
     return {colCache.overflow, rowCache.overflow};
   }
 

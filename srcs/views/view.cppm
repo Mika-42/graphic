@@ -59,7 +59,7 @@ public: // getters
   enum class PositionType : uint8_t { Relative, Absolute };
 
   glm::vec2 getPosition(PositionType type = PositionType::Relative) {
-    update();
+    updateData();
 
 	if(type == PositionType::Relative) {
 		return relativePosition;
@@ -76,7 +76,7 @@ public: // getters
   }
 
   glm::vec2 getSize() {
-    update();
+    updateData();
     return glm::vec2{geometry.z, geometry.w};
   }
   
@@ -187,7 +187,7 @@ protected:
 
   const bool &isDirty() const { return dirty; }
 
-  void update() {
+  void updateData() {
     if (!dirty || updateDepth > 0)
       return;
     updateDepth++;
