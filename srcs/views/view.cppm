@@ -164,13 +164,12 @@ public:
 
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  virtual bool contain(const glm::vec2 &mouse) {
-    return mouse.x >= geometry.x && mouse.x <= geometry.x + geometry.z &&
-           mouse.y >= geometry.y && mouse.y <= geometry.y + geometry.w;
+  virtual bool contain(const MouseEventView& mouse) {
+    return clipContain(mouse);
   }
 
-  virtual bool clipContain(const glm::vec2 &mouse) const final {
-	return distance(clipRect, mouse) <= 0.0f;
+  virtual bool clipContain(const MouseEventView& mouse) const final {
+	return distance(clipRect, mouse.position()) <= mouse.cursorRadius();
   }
 
   int zIndex = 0;

@@ -95,16 +95,18 @@ class A : public View {
 			renderer.add(aa);
 		}
 
-		bool contain(const glm::vec2& mouse) override {
-			return (distance(aa, mouse) <= 0.0f);
+		bool contain(const MouseEventView& mouse) override {
+			return (distance(aa, mouse.position()) <= mouse.cursorRadius());
 		}
 
-		void onMouseEnter(const MouseEventView &) override {
+		void onMouseEnter(const MouseEventView &ms) override {
+			View::onMouseEnter(ms);
 			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 		}
 
-		void onMouseLeave(const MouseEventView &) override {
-			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+		void onMouseLeave(const MouseEventView &ms) override {
+			View::onMouseLeave(ms);
+			aa.backgroundColorA = aa.backgroundColorB = cc;
 		}
 
 		void onKeyboardEvent(const KeyboardEventView &kb) override {
@@ -178,7 +180,7 @@ int main() {
 
   // Contenu TEST 5 - Rectangle E (visible partout - référence)
   auto rectE = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}); // Magenta
-  rectE->setPosition({400.0f, 100.0f});
+  rectE->setPosition({0.0f, 0.0f});
   rectE->setSize({80.0f, 80.0f});
 
   // 🔧 ASSEMBLAGE IMBRIQUÉ (ORDRE IMPORTANT)

@@ -62,5 +62,7 @@ export namespace mka::graphic {
 			glm::vec2 scroll = {0.0, 0.0};
 			/** @brief Last cursor position in window coordinates. */
 			glm::vec2 position = {-99999.0, -99999.0};
+
+			float cursorRadius = 16.0f;
 	};
 }

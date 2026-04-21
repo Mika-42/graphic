@@ -69,7 +69,7 @@ public:
     }
   }
 
-  std::vector<View*>& getHoveredViews(const glm::vec2& pos) noexcept {
+  std::vector<View*>& getHoveredViews(const MouseEventView& mouse) noexcept {
 	  hovered.clear();
 	  std::function<void(View*)> collect = [&](View* node) noexcept {
 		if (!node) return;
@@ -80,11 +80,11 @@ public:
 			  continue;
 		  }
 		  
-		  if (child->isClip() && !child->clipContain(pos)) {
+		  if (child->isClip() && !child->clipContain(mouse)) {
 			  continue;
 		  }
 		  
-		  if (child->contain(pos)) {
+		  if (child->contain(mouse)) {
 			hovered.push_back(child.get());
 			collect(child.get());
 		  }
@@ -328,7 +328,7 @@ private:
   }
 
   void handleMouse(const MouseEventView& mouse) noexcept {
-	auto& hits = rootView->getHoveredViews(mouse.position());
+	auto& hits = rootView->getHoveredViews(mouse);
 	View* prevTop = focusedView;
 
 	if(!hits.empty()) {

@@ -20,6 +20,7 @@ public:
 
   glm::vec2 scroll() const { return m.scroll; }
   glm::vec2 position() const { return m.position; }
+  float cursorRadius() const { return m.cursorRadius; }
 
 private:
   MouseEvent &m;
