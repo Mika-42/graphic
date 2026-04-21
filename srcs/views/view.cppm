@@ -111,8 +111,6 @@ public: // setters
 
   void setKeyboardFocus(bool v) { keyboardFocus = v; }
 
-  void setMouseFocus(bool v) { mouseFocus = v; }
-
   void setClip(bool enabled) {
     clipRect.flags.y = enabled ? CLIP : 0.0f;
     markDirty();
@@ -132,7 +130,6 @@ protected: // updates
 
     computeOverflow();
 
-    clipRect.geometry = geometry;
     currentClipIndex = parent ? parent->getClipIndex() : NO_CLIP;
 
     if (isClip()) {
@@ -161,12 +158,19 @@ protected: // updates
   }
 
 public:
-  virtual void onMouseEvent(const MouseEventView & /*mouse*/) {}
+  virtual void onMouseEnter(const MouseEventView & /*mouse*/) { mouseFocus = true; }
+  virtual void onMouseLeave(const MouseEventView & /*mouse*/) { mouseFocus = false; }
+  virtual void onMouseMove(const MouseEventView & /*mouse*/) {}
+
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  virtual bool contain(const glm::vec2 &mouse) const {
+  virtual bool contain(const glm::vec2 &mouse) {
     return mouse.x >= geometry.x && mouse.x <= geometry.x + geometry.z &&
            mouse.y >= geometry.y && mouse.y <= geometry.y + geometry.w;
+  }
+
+  virtual bool clipContain(const glm::vec2 &mouse) const final {
+	return distance(clipRect, mouse) <= 0.0f;
   }
 
   int zIndex = 0;
@@ -174,9 +178,10 @@ public:
 protected:
   virtual void layout() {
     const glm::vec2 apos = getPosition(PositionType::Absolute);
-
     geometry.x = apos.x + scrollOffset.x;
     geometry.y = apos.y + scrollOffset.y;
+    clipRect.geometry = geometry;
+
   }
 
   std::vector<std::shared_ptr<View>> children;

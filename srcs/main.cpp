@@ -87,14 +87,6 @@ class A : public View {
 			aa.geometry = getGeometry();
 			aa.radius = glm::vec4(90.0f);
 
-			if(isMouseFocused()) {
-				aa.backgroundColorA = glm::vec4(0.0f, 1.0, 0.0, 1.0);
-				aa.backgroundColorB = glm::vec4(0.5f, 1.0, 1.0, 1.0);
-			} else {
-				aa.backgroundColorA = cc;
-				aa.backgroundColorB = cc;	
-			}
-
 			aa.borderColor = glm::vec4(1.0f);
 			aa.shadowColor = {0.5f, 0.25f, 1.0f, 0.5f};
 			aa.shadowOffset = {10.0f, 10.0f};
@@ -103,8 +95,16 @@ class A : public View {
 			renderer.add(aa);
 		}
 
-		bool contain(const glm::vec2& mouse) const override {
+		bool contain(const glm::vec2& mouse) override {
 			return (distance(aa, mouse) <= 0.0f);
+		}
+
+		void onMouseEnter(const MouseEventView &) override {
+			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		}
+
+		void onMouseLeave(const MouseEventView &) override {
+			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
 		}
 
 		void onKeyboardEvent(const KeyboardEventView &kb) override {

@@ -12,6 +12,7 @@ module;
 #include <iterator>
 #include <memory>
 #include <random>
+#include <vector>
 #include <ranges>
 
 export module mka.graphic.window;
@@ -68,6 +69,32 @@ public:
     }
   }
 
+  std::vector<View*>& getHoveredViews(const glm::vec2& pos) noexcept {
+	  hovered.clear();
+	  std::function<void(View*)> collect = [&](View* node) noexcept {
+		if (!node) return;
+	
+		for (auto& child : node->getChildren()) {
+		  
+		  if (!child || !child->isVisible()) {
+			  continue;
+		  }
+		  
+		  if (child->isClip() && !child->clipContain(pos)) {
+			  continue;
+		  }
+		  
+		  if (child->contain(pos)) {
+			hovered.push_back(child.get());
+			collect(child.get());
+		  }
+		}
+	  };
+	  
+	  collect(children[0].get());
+	  return hovered;  // Top-most = hovered.back() !
+	}
+
 private:
   void draw(Renderer &) {}
 
@@ -89,6 +116,8 @@ private:
 
 public:
   std::vector<View*> sortedViews;  // public pour accès externe si besoin
+  std::vector<View*> hovered;
+
 };
 } // namespace mka::graphic
 
@@ -281,23 +310,11 @@ private:
 
     rootView->topoZSort();
 
-    for (auto &view : rootView->sortedViews | std::views::reverse) {
-      if (!view) {
-        continue;
-      }
-
-      if (view->contain(mouse.position())) {
-        view->setMouseFocus(true);
-        view->onMouseEvent(mouse);
-        break;
-      }
-    }
-
     for (auto &view : rootView->sortedViews) {
       if (!view) {
         continue;
       }
-      
+
 	  if (view->isKeyboardFocused()) {
         view->onKeyboardEvent(keyboard);
       }
@@ -305,15 +322,33 @@ private:
 	
 	rootView->updateRoot(*renderer);
 
-    for (auto &view : rootView->sortedViews) {
-      if (!view) {
-        continue;
-      }
-      	
-	  view->setMouseFocus(false);
-    }
+	handleMouse(mouse);
 
     renderer->draw(orthographicProjection);
+  }
+
+  void handleMouse(const MouseEventView& mouse) noexcept {
+	auto& hits = rootView->getHoveredViews(mouse.position());
+	View* prevTop = focusedView;
+
+	if(!hits.empty()) {
+		View* newTop = hits.back();
+
+		if (newTop != prevTop) {
+			if (prevTop) { 
+				prevTop->onMouseLeave(mouse);
+			}
+
+			focusedView = newTop;
+			newTop->onMouseEnter(mouse);
+		} 
+
+		newTop->onMouseMove(mouse);
+
+	} else if (prevTop) {
+		prevTop->onMouseLeave(mouse);
+		focusedView = nullptr;
+	}
   }
 
 private:
@@ -334,9 +369,9 @@ private:
   Time time;
 
   std::unique_ptr<Renderer> renderer;
-
   std::shared_ptr<RootView> rootView = nullptr;
 
+  View* focusedView = nullptr;
 private:
   void handleKeyboard() {
     for (auto &i : keyboardEvent.castTable) {
