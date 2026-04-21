@@ -311,11 +311,7 @@ private:
     rootView->topoZSort();
 
     for (auto &view : rootView->sortedViews) {
-      if (!view) {
-        continue;
-      }
-
-	  if (view->isKeyboardFocused()) {
+	  if (view && view->isKeyboardFocused()) {
         view->onKeyboardEvent(keyboard);
       }
 	}
