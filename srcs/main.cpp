@@ -100,18 +100,11 @@ class A : public View {
 			return (distance(aa, mouse.position()) <= mouse.cursorRadius());
 		}
 
-		void onMouseEnter(const MouseEventView &ms) override {
-			View::onMouseEnter(ms);
-			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-			event::send(this, "mouse.enter");
-		}
-
-		void foo() {
+		void onEnter() {
 			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 0.0f, 0.5f, 1.0f);
 		}
 
-		void onMouseLeave(const MouseEventView &ms) override {
-			View::onMouseLeave(ms);
+		void onLeave() {
 			aa.backgroundColorA = aa.backgroundColorB = cc;
 		}
 
@@ -206,7 +199,8 @@ int main() {
   root->addChild(clip1);
   root->addChild(rectE);
 
-  event::link(rectE.get(), "mouse.enter", rectD.get(), &A::foo);
+  event::link(rectE.get(), event::mouse::enter, rectD.get(), &A::onEnter);
+  event::link(rectE.get(), event::mouse::leave, rectD.get(), &A::onLeave);
 
   /*
     HIERARCHIE FINALE:

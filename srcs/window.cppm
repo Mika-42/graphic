@@ -25,7 +25,7 @@ import mka.graphic.keyboard;
 import mka.graphic.mouse;
 import mka.graphic.opengl.renderer;
 import mka.graphic.view;
-
+import mka.graphic.event;
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
   glViewport(0, 0, width, height);
@@ -268,6 +268,7 @@ public:
 
       ctx->swapBuffers();
     }
+	event::send(this, event::app::close);
 
     state = State::Stopped;
     return 0;

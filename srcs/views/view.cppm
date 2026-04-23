@@ -13,6 +13,7 @@ import mka.graphic.opengl.renderer;
 import mka.graphic.sanitize;
 import mka.graphic.keyboardview;
 import mka.graphic.mouseview;
+import mka.graphic.event;
 
 export namespace mka::graphic {
 class View {
@@ -158,9 +159,17 @@ protected: // updates
   }
 
 public:
-  virtual void onMouseEnter(const MouseEventView & /*mouse*/) { mouseFocus = true; }
-  virtual void onMouseLeave(const MouseEventView & /*mouse*/) { mouseFocus = false; }
-  virtual void onMouseMove(const MouseEventView & /*mouse*/) {}
+  virtual void onMouseEnter(const MouseEventView & /*mouse*/) { 
+	  mouseFocus = true; 
+	  event::send(this, event::mouse::enter);
+  }
+  virtual void onMouseLeave(const MouseEventView & /*mouse*/) { 
+	  mouseFocus = false; 
+      event::send(this, event::mouse::leave);
+  }
+  virtual void onMouseMove(const MouseEventView & /*mouse*/) {
+      event::send(this, event::mouse::move);
+  }
 
   virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 

@@ -3,17 +3,18 @@ module;
 #include <cstddef>
 #include <exception>
 #include <functional>
+#include <memory>
 #include <string_view>
 #include <unordered_map>
-#include <memory>
 #include <vector>
 
 export module mka.graphic.event;
+export import mka.graphic.event.definition;
 
 namespace mka::graphic {
 
 using EventHash = size_t;
-using Emitter = void*;
+using Emitter = void *;
 using Event = std::string_view;
 using LinkID = size_t;
 
@@ -28,11 +29,9 @@ private:
 
 public:
   Link() : impl_(std::make_shared<Impl>()) {}
-  
-  bool valid() const { 
-    return impl_ && impl_->emitter != nullptr; 
-  }
-  
+
+  bool valid() const { return impl_ && impl_->emitter != nullptr; }
+
   // Ami pour EventManager internals
   friend class EventManager;
 };
@@ -42,8 +41,9 @@ private:
   using Callback = std::function<void()>;
   using CallbackList = std::vector<Callback>;
 
-  static inline std::unordered_map<
-      Emitter, std::unordered_map<EventHash, CallbackList>> callbacks;
+  static inline std::unordered_map<Emitter,
+                                   std::unordered_map<EventHash, CallbackList>>
+      callbacks;
 
 public:
   template <typename Receiver, typename Method>
@@ -59,12 +59,12 @@ public:
                   "Must be member function pointer");
 
     EventHash evtHash = std::hash<std::string_view>{}(event);
-    auto& cb = callbacks[emitter][evtHash];
+    auto &cb = callbacks[emitter][evtHash];
     LinkID id = cb.size();
 
-    cb.emplace_back([receiver, method, event](auto &&... args) {
+    cb.emplace_back([receiver, method, event](auto &&...args) {
       if (receiver) {
-          (receiver->*method)();
+        (receiver->*method)();
       }
     });
 
@@ -82,14 +82,13 @@ public:
       DEBUG_LOG("link() ignored: emitter=nullptr");
       return Link{};
     }
-	
+
     EventHash evtHash = std::hash<std::string_view>{}(event);
-    auto& cb = callbacks[emitter][evtHash];
+    auto &cb = callbacks[emitter][evtHash];
     LinkID id = cb.size();
 
-    cb.emplace_back([lambda = std::forward<F>(lambda), event](auto &&...) {
-        lambda();
-    });
+    cb.emplace_back(
+        [lambda = std::forward<F>(lambda), event](auto &&...) { lambda(); });
 
     Link result;
     result.impl_ = std::make_shared<Link::Impl>(emitter, evtHash, id);
@@ -102,10 +101,12 @@ public:
       return;
     }
 
-    if (!l.impl_) return;
+    if (!l.impl_)
+      return;
 
     auto emIt = callbacks.find(l.impl_->emitter);
-    if (emIt == callbacks.end()) return;
+    if (emIt == callbacks.end())
+      return;
 
     auto evtIt = emIt->second.find(l.impl_->eventHash);
     if (evtIt != emIt->second.end() && l.impl_->index < evtIt->second.size()) {
@@ -115,8 +116,8 @@ public:
       }
       clbk.pop_back();
     }
-    
-    l.impl_->emitter = nullptr;  // Invalidate
+
+    l.impl_->emitter = nullptr; // Invalidate
   }
 
   static void unlink(Emitter emitter) {
@@ -136,8 +137,8 @@ public:
     EventHash evtHash = std::hash<std::string_view>{}(event);
     auto emIt = callbacks.find(emitter);
     if (emIt == callbacks.end()) {
-		return;
-	}
+      return;
+    }
 
     auto evtIt = emIt->second.find(evtHash);
     if (evtIt != emIt->second.end()) {
@@ -145,14 +146,31 @@ public:
         try {
           cb();
         } catch (const std::exception &e) {
-          DEBUG_LOG("Callback error '" + std::string(event) 
-                  + "': " + e.what());
+          DEBUG_LOG("Callback error '" + std::string(event) + "': " + e.what());
         }
       }
     }
   }
 };
 
-export using event = EventManager;
+export namespace event {
+inline Link link(Emitter emitter, Event event, std::nullptr_t, auto &&lambda) {
+  return EventManager::link(emitter, event, nullptr,
+                            std::forward<decltype(lambda)>(lambda));
+}
 
+template <typename Receiver, typename Method>
+inline Link link(Emitter emitter, Event event, Receiver *receiver,
+                 Method method) {
+  return EventManager::link(emitter, event, receiver, method);
+}
+
+inline void unlink(Link &l) { EventManager::unlink(l); }
+
+inline void unlink(Emitter emitter) { EventManager::unlink(emitter); }
+
+inline void send(Emitter emitter, Event event) {
+  EventManager::send(emitter, event);
+}
+} // namespace event
 } // namespace mka::graphic
