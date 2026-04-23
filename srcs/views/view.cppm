@@ -7,7 +7,7 @@ module;
 #include <ranges>
 #include <string>
 #include <vector>
-
+#include <glm/gtc/epsilon.hpp>
 export module mka.graphic.view;
 import mka.graphic.opengl.renderer;
 import mka.graphic.sanitize;
@@ -15,253 +15,266 @@ import mka.graphic.keyboardview;
 import mka.graphic.mouseview;
 import mka.graphic.event;
 
+bool isEq(const glm::vec2 &a, const glm::vec2 &b, float eps = 0.01f) {
+	return glm::all(glm::epsilonEqual(a, b, glm::vec2(eps)));
+}
+
 export namespace mka::graphic {
-class View {
-public:
-  // Constructeur / Destructeur
-  View() = default;
-  virtual ~View() = default;
+    class View {
+        public:
+            // Constructeur / Destructeur
+            View() = default;
+            virtual ~View() = default;
 
-public: // parent/children management
-  [[nodiscard]] virtual const View *getParent() const noexcept final {
-    return parent;
-  }
+        public: // parent/children management
+            [[nodiscard]] virtual const View *getParent() const noexcept final { return parent; }
 
-  virtual void addChild(std::shared_ptr<View> child) {
-    if (child && child->parent == nullptr) {
-      child->parent = this;
-      children.emplace_back(child);
-      markDirty();
-    }
-  }
+            virtual void addChild(std::shared_ptr<View> child) {
+                if (child && child->parent == nullptr) {
+                    child->parent = this;
+                    children.emplace_back(child);
+                    markDirty();
 
-  virtual void removeChild(View *child) {
-    if (!child) {
-      return;
-    }
-    auto it =
-        std::ranges::find_if(children, [&](const std::shared_ptr<View> &c) {
-          return c.get() == child;
-        });
+                    event::send(this, event::view_add_child);
+                }
+            }
 
-    if (it != children.end()) {
-      (*it)->parent = nullptr;
-      (*it)->clipRect.flags.z = NO_CLIP;
-      children.erase(it);
-      markDirty();
-    }
-  }
+            virtual void removeChild(View *child) {
+                if (!child) {
+                    return;
+                }
+                auto it = std::ranges::find_if(
+                    children, [&](const std::shared_ptr<View> &c) { return c.get() == child; });
 
-  [[nodiscard]] virtual const std::vector<std::shared_ptr<View>> &
-  getChildren() const noexcept final {
-    return children;
-  }
+                if (it != children.end()) {
+                    (*it)->parent = nullptr;
+                    (*it)->clipRect.flags.z = NO_CLIP;
+                    children.erase(it);
+                    markDirty();
 
-public: // getters
-  enum class PositionType : uint8_t { Relative, Absolute };
+                    event::send(this, event::view_remove_child);
+                }
+            }
 
-  glm::vec2 getPosition(PositionType type = PositionType::Relative) {
-    updateData();
+            [[nodiscard]] virtual const std::vector<std::shared_ptr<View>> &
+            getChildren() const noexcept final {
+                return children;
+            }
 
-    if (type == PositionType::Relative) {
-      return relativePosition;
-    }
+        public: // getters
+            enum class PositionType : uint8_t { Relative, Absolute };
 
-    glm::vec2 pos(relativePosition);
-    View *p = parent;
-    while (p != nullptr) {
-      pos += p->relativePosition;
-      p = p->parent;
-    }
+            glm::vec2 getPosition(PositionType type = PositionType::Relative) {
+                updateData();
 
-    return pos;
-  }
+                if (type == PositionType::Relative) {
+                    return relativePosition;
+                }
 
-  glm::vec2 getSize() {
-    updateData();
-    return glm::vec2{geometry.z, geometry.w};
-  }
+                glm::vec2 pos(relativePosition);
+                View *p = parent;
+                while (p != nullptr) {
+                    pos += p->relativePosition;
+                    p = p->parent;
+                }
 
-  const glm::vec2 &getOverflows() {
-    computeOverflow();
-    return overflows;
-  }
+                return pos;
+            }
 
-  const glm::vec2& getScroll() const { return scrollOffset; }
-  glm::vec4 getClipRadius() const { return clipRect.radius; }
-  const int32_t &getClipIndex() const { return currentClipIndex; }
-  const glm::vec4 &getGeometry() const { return geometry; }
-  const bool &isVisible() const { return visible; }
-  const bool &isKeyboardFocused() const { return keyboardFocus; }
-  const bool &isMouseFocused() const { return mouseFocus; }
-  bool isClip() const { return clipRect.flags.y; }
+            glm::vec2 getSize() {
+                updateData();
+                return glm::vec2{geometry.z, geometry.w};
+            }
 
-public: // setters
-  void setPosition(const glm::vec2 &p) {
-    relativePosition = p;
-    markDirty();
-  }
+            const glm::vec2 &getOverflows() {
+                computeOverflow();
+                return overflows;
+            }
 
-  void setSize(const glm::vec2 &s) {
-    geometry.z = sanitizeFloat(s.x);
-    geometry.w = sanitizeFloat(s.y);
-    markDirty();
-  }
+            const glm::vec2 &getScroll() const { return scrollOffset; }
+            glm::vec4 getClipRadius() const { return clipRect.radius; }
+            const int32_t &getClipIndex() const { return currentClipIndex; }
+            const glm::vec4 &getGeometry() const { return geometry; }
+            const bool &isVisible() const { return visible; }
+            const bool &isKeyboardFocused() const { return keyboardFocus; }
+            const bool &isMouseFocused() const { return mouseFocus; }
+            bool isClip() const { return clipRect.flags.y; }
 
-  void setVisible(bool v) { visible = v; }
+        public: // setters
+            void setPosition(const glm::vec2 &p) {
+                if (!isEq(p, relativePosition)) {
+                    event::send(this, event::view_position_changed);
+                }
+                relativePosition = p;
+                markDirty();
+            }
 
-  void setKeyboardFocus(bool v) { keyboardFocus = v; }
+            void setSize(const glm::vec2 &s) {	
+                if (!isEq(s, glm::vec2(geometry.z, geometry.w))) {
+                    event::send(this, event::view_size_changed);
+                }
 
-  void setClip(bool enabled) {
-    clipRect.flags.y = enabled ? CLIP : 0.0f;
-    markDirty();
-  }
+                geometry.z = sanitizeFloat(s.x);
+                geometry.w = sanitizeFloat(s.y);
+                markDirty();
+            }
 
-  void setRadius(const glm::vec4 &radius) { clipRect.radius = radius; }
+            void setVisible(bool v) {
+                if (visible != v) {
+                    event::send(this, event::view_visibility_changed);
+                }
 
-  void setScroll(const glm::vec2& s) { scrollOffset = s; }
-  void setScrollX(float x) { scrollOffset.x = x; }
-  void setScrollY(float y) { scrollOffset.y = y; }
+                visible = v;
+            }
 
-  virtual void draw(Renderer &) {} // TODO make it virtual pure
+            void setKeyboardFocus(bool v) { keyboardFocus = v; }
 
-protected: // updates
-  virtual void update(Renderer &renderer) {
-    layout();
+            void setClip(bool enabled) {
+                clipRect.flags.y = enabled ? CLIP : 0.0f;
+                markDirty();
+            }
 
-    computeOverflow();
+            void setRadius(const glm::vec4 &radius) { clipRect.radius = radius; }
 
-    currentClipIndex = parent ? parent->getClipIndex() : NO_CLIP;
+            void setScroll(const glm::vec2 &s) { scrollOffset = s; }
+            void setScrollX(float x) { scrollOffset.x = x; }
+            void setScrollY(float y) { scrollOffset.y = y; }
 
-    if (isClip()) {
-      clipRect.flags.z = currentClipIndex;
-      currentClipIndex = renderer.add(clipRect);
-    }
+            virtual void draw(Renderer &) {} // TODO make it virtual pure
 
-    updateChild(renderer);
+        protected: // updates
+            virtual void update(Renderer &renderer) {
+                layout();
 
-    draw(renderer);
-  }
+                computeOverflow();
 
-  std::vector<std::shared_ptr<View>> getSortedChildren() const {
-    auto sorted = children;
-    std::ranges::stable_sort(sorted, {}, &View::zIndex);
-    return sorted;
-  }
+                currentClipIndex = parent ? parent->getClipIndex() : NO_CLIP;
 
-  void updateChild(Renderer &renderer) {
+                if (isClip()) {
+                    clipRect.flags.z = currentClipIndex;
+                    currentClipIndex = renderer.add(clipRect);
+                }
 
-    for (auto &child : getSortedChildren()) {
-      if (child && child->isVisible()) {
-        child->update(renderer);
-      }
-    }
-  }
+                updateChild(renderer);
 
-public:
-  virtual void onMouseEnter(const MouseEventView & /*mouse*/) { 
-	  mouseFocus = true; 
-	  event::send(this, event::mouse::enter);
-  }
-  virtual void onMouseLeave(const MouseEventView & /*mouse*/) { 
-	  mouseFocus = false; 
-      event::send(this, event::mouse::leave);
-  }
-  virtual void onMouseMove(const MouseEventView & /*mouse*/) {
-      event::send(this, event::mouse::move);
-  }
+                draw(renderer);
+            }
 
-  virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
+            std::vector<std::shared_ptr<View>> getSortedChildren() const {
+                auto sorted = children;
+                std::ranges::stable_sort(sorted, {}, &View::zIndex);
+                return sorted;
+            }
 
-  virtual bool contain(const MouseEventView& mouse) {
-    return clipContain(mouse);
-  }
+            void updateChild(Renderer &renderer) {
 
-  virtual bool clipContain(const MouseEventView& mouse) const final {
-	return distance(clipRect, mouse.position()) <= mouse.cursorRadius();
-  }
+                for (auto &child : getSortedChildren()) {
+                    if (child && child->isVisible()) {
+                        child->update(renderer);
+                    }
+                }
+            }
 
-  int zIndex = 0;
+        public:
+            virtual void onMouseEnter(const MouseEventView & /*mouse*/) {
+                mouseFocus = true;
+                event::send(this, event::mouse_enter);
+            }
+            virtual void onMouseLeave(const MouseEventView & /*mouse*/) {
+                mouseFocus = false;
+                event::send(this, event::mouse_leave);
+            }
+            virtual void onMouseMove(const MouseEventView & /*mouse*/) {
+                event::send(this, event::mouse_move);
+            }
 
-protected:
-  virtual void layout() {
-    const glm::vec2 apos = getPosition(PositionType::Absolute);
-    geometry.x = apos.x + scrollOffset.x;
-    geometry.y = apos.y + scrollOffset.y;
-    clipRect.geometry = geometry;
+            virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
-  }
+            virtual bool contain(const MouseEventView &mouse) { return clipContain(mouse); }
 
-  std::vector<std::shared_ptr<View>> children;
+            virtual bool clipContain(const MouseEventView &mouse) const final {
+                return distance(clipRect, mouse.position()) <= mouse.cursorRadius();
+            }
 
-  virtual void markDirty() {
-    if (updateDepth == 0)
-      dirty = true;
-  }
+            int zIndex = 0;
 
-  const bool &isDirty() const { return dirty; }
+        protected:
+            virtual void layout() {
+                const glm::vec2 apos = getPosition(PositionType::Absolute);
+                geometry.x = apos.x + scrollOffset.x;
+                geometry.y = apos.y + scrollOffset.y;
+                clipRect.geometry = geometry;
+            }
 
-  void updateData() {
-    if (!dirty || updateDepth > 0)
-      return;
-    updateDepth++;
-    layout();
-    updateDepth--;
-    dirty = false;
-  }
+            std::vector<std::shared_ptr<View>> children;
 
-private:
-  void computeOverflow() {
-    if (children.empty() || geometry.z <= 0 || geometry.w <= 0) {
-      overflows = glm::vec2(0.0f);
-      return;
-    }
+            virtual void markDirty() {
+                if (updateDepth == 0)
+                    dirty = true;
+            }
 
-    float minX = std::numeric_limits<float>::max();
-    float minY = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::lowest();
-    float maxY = std::numeric_limits<float>::lowest();
+            const bool &isDirty() const { return dirty; }
 
-    for (const auto &child : children) {
-      if (child->geometry.z <= 0 || child->geometry.w <= 0)
-        continue;
+            void updateData() {
+                if (!dirty || updateDepth > 0)
+                    return;
+                updateDepth++;
+                layout();
+                updateDepth--;
+                dirty = false;
+            }
 
-      minX = glm::min(minX, child->geometry.x);
-      minY = glm::min(minY, child->geometry.y);
-      maxX = glm::max(maxX, child->geometry.x + child->geometry.z);
-      maxY = glm::max(maxY, child->geometry.y + child->geometry.w);
-    }
+        private:
+            void computeOverflow() {
+                if (children.empty() || geometry.z <= 0 || geometry.w <= 0) {
+                    overflows = glm::vec2(0.0f);
+                    return;
+                }
 
-    if (maxX <= minX) {
-      overflows = glm::vec2(0.0f);
-      return;
-    }
+                float minX = std::numeric_limits<float>::max();
+                float minY = std::numeric_limits<float>::max();
+                float maxX = std::numeric_limits<float>::lowest();
+                float maxY = std::numeric_limits<float>::lowest();
 
-    const float contRight = geometry.x + geometry.z;
-    const float contBottom = geometry.y + geometry.w;
+                for (const auto &child : children) {
+                    if (child->geometry.z <= 0 || child->geometry.w <= 0)
+                        continue;
 
-    // Overflow total (gauche + droite, haut + bas)
-    overflows = {
-        std::max(0.0f, minX - geometry.x) + std::max(0.0f, maxX - contRight),
-        std::max(0.0f, minY - geometry.y) + std::max(0.0f, maxY - contBottom)};
-  }
+                    minX = glm::min(minX, child->geometry.x);
+                    minY = glm::min(minY, child->geometry.y);
+                    maxX = glm::max(maxX, child->geometry.x + child->geometry.z);
+                    maxY = glm::max(maxY, child->geometry.y + child->geometry.w);
+                }
 
-private:
-  View *parent = nullptr;
-  Rectangle clipRect = {};
-  
-  bool visible			= true;
-  bool keyboardFocus	= false;
-  bool mouseFocus		= false;
-  bool dirty			= true;
+                if (maxX <= minX) {
+                    overflows = glm::vec2(0.0f);
+                    return;
+                }
 
-  int32_t updateDepth		= 0;
-  int32_t currentClipIndex	= NO_CLIP;
+                const float contRight = geometry.x + geometry.z;
+                const float contBottom = geometry.y + geometry.w;
 
-  glm::vec4 geometry			= glm::vec4(0.0f);
-  glm::vec2 relativePosition	= glm::vec2(0.0f);
-  glm::vec2 overflows			= glm::vec2(0.0f);
-  glm::vec2 scrollOffset		= glm::vec2(0.0f);
-};
+                // Overflow total (gauche + droite, haut + bas)
+                overflows = {std::max(0.0f, minX - geometry.x) + std::max(0.0f, maxX - contRight),
+                             std::max(0.0f, minY - geometry.y) + std::max(0.0f, maxY - contBottom)};
+            }
+
+        private:
+            View *parent = nullptr;
+            Rectangle clipRect = {};
+
+            bool visible = true;
+            bool keyboardFocus = false;
+            bool mouseFocus = false;
+            bool dirty = true;
+
+            int32_t updateDepth = 0;
+            int32_t currentClipIndex = NO_CLIP;
+
+            glm::vec4 geometry = glm::vec4(0.0f);
+            glm::vec2 relativePosition = glm::vec2(0.0f);
+            glm::vec2 overflows = glm::vec2(0.0f);
+            glm::vec2 scrollOffset = glm::vec2(0.0f);
+    };
 
 } // namespace mka::graphic

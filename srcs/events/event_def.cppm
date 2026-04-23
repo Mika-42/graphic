@@ -3,41 +3,33 @@ module;
 
 export module mka.graphic.event.definition;
 
+export namespace mka::graphic::event {
+    // APP
+    inline constexpr std::string_view app_close = "mka.app.close";
 
-export namespace mka::graphic::event::app {
-    inline constexpr std::string_view close = "mka.app.close";
-}
+    // VIEW
+    inline constexpr std::string_view view_add_child = "mka.view.add.child";
+    inline constexpr std::string_view view_remove_child = "mka.view.remove.child";
+	
+    inline constexpr std::string_view view_position_changed = "mka.view.position.changed";
+    inline constexpr std::string_view view_size_changed = "mka.view.size.changed";
+    inline constexpr std::string_view view_visibility_changed = "mka.view.visibility.changed";
 
-export namespace mka::graphic::event::view {
-    inline constexpr std::string_view addChild = "mka.view.add.child";
-    inline constexpr std::string_view removeChild = "mka.view.remove.child";
-}
+    // MOUSE
+    inline constexpr std::string_view mouse_enter = "mka.mouse.enter";
+    inline constexpr std::string_view mouse_leave = "mka.mouse.leave";
+    inline constexpr std::string_view mouse_move = "mka.mouse.move";
 
-export namespace mka::graphic::event::mouse {
+    inline constexpr std::string_view mouse_button_left_up = "mka.mouse.button.left.up";
+    inline constexpr std::string_view mouse_button_left_down = "mka.mouse.button.left.down";
 
-    inline constexpr std::string_view enter = "mka.mouse.enter";
-    inline constexpr std::string_view leave = "mka.mouse.leave";
-    inline constexpr std::string_view move  = "mka.mouse.move";
+    inline constexpr std::string_view mouse_button_middle_up = "mka.mouse.button.middle.up";
+    inline constexpr std::string_view mouse_button_middle_down = "mka.mouse.button.middle.down";
+    inline constexpr std::string_view mouse_button_scroll_up = "mka.mouse.button.scroll.up";
+    inline constexpr std::string_view mouse_button_scroll_down = "mka.mouse.button.scroll.down";
+    inline constexpr std::string_view mouse_button_scroll_left = "mka.mouse.button.scroll.left";
+    inline constexpr std::string_view mouse_button_scroll_right = "mka.mouse.button.scroll.right";
 
-    namespace button {
-
-        namespace left {
-            inline constexpr std::string_view up   = "mka.mouse.button.left.up";
-            inline constexpr std::string_view down = "mka.mouse.button.left.down";
-        }
-
-        namespace middle {
-            inline constexpr std::string_view up          = "mka.mouse.button.middle.up";
-            inline constexpr std::string_view down        = "mka.mouse.button.middle.down";
-            inline constexpr std::string_view scrollUp    = "mka.mouse.button.scroll.up";
-            inline constexpr std::string_view scrollDown  = "mka.mouse.button.scroll.down";
-            inline constexpr std::string_view scrollLeft  = "mka.mouse.button.scroll.left";
-            inline constexpr std::string_view scrollRight = "mka.mouse.button.scroll.right";
-        }
-
-        namespace right {
-            inline constexpr std::string_view up   = "mka.mouse.button.right.up";
-            inline constexpr std::string_view down = "mka.mouse.button.right.down";
-        }
-    }
+    inline constexpr std::string_view mouse_button_right_up = "mka.mouse.button.right.up";
+    inline constexpr std::string_view mouse_button_right_down = "mka.mouse.button.right.down";
 }

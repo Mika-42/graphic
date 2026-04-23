@@ -268,7 +268,7 @@ public:
 
       ctx->swapBuffers();
     }
-	event::send(this, event::app::close);
+	event::send(this, event::app_close);
 
     state = State::Stopped;
     return 0;

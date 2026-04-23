@@ -199,8 +199,8 @@ int main() {
   root->addChild(clip1);
   root->addChild(rectE);
 
-  event::link(rectE.get(), event::mouse::enter, rectD.get(), &A::onEnter);
-  event::link(rectE.get(), event::mouse::leave, rectD.get(), &A::onLeave);
+  event::link(rectE.get(), event::mouse_enter, rectD.get(), &A::onEnter);
+  event::link(rectE.get(), event::mouse_leave, rectD.get(), &A::onLeave);
 
   /*
     HIERARCHIE FINALE:
