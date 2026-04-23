@@ -7,11 +7,16 @@
 + clean and format the code
 + contain = in shape + in clip
 
+### Layout
++ make an abstract class for layout (layout shouldn't be views)
+
 ### Keyboard
+
 + fix key for kb layout
 + fix keyboard focus to allow focus on Tab or mouse focus and stop iterate over all views
 
 ### Event
+
 + event system
 + hit testing
 
