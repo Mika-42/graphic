@@ -1,0 +1,51 @@
+# Base solide (tu peux aussi tester Google si tu préfères)
+BasedOnStyle: LLVM
+
+# =========================
+# INDENTATION
+# =========================
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+ContinuationIndentWidth: 4
+
+# =========================
+# ACCOLADES
+# =========================
+BreakBeforeBraces: Attach
+
+# =========================
+# NAMESPACE / STRUCTURE C++
+# =========================
+NamespaceIndentation: All   # <-- super important pour ton cas
+
+AccessModifierOffset: -2    # public / private / protected légèrement décalés
+
+IndentAccessModifiers: true
+
+# =========================
+# IF / ELSE / CONTROL FLOW
+# =========================
+IndentCaseLabels: true
+AllowShortIfStatementsOnASingleLine: false
+
+# =========================
+# PREPROCESSOR (le point que tu veux)
+# =========================
+
+# Indente les directives #if / #else / #endif proprement
+IndentPPDirectives: AfterHash
+
+# Indente le contenu dans les blocs de macro conditionnelles
+# (très utile pour gros headers)
+MacroBlockBegin: "^#if"
+MacroBlockEnd: "^#endif"
+
+# =========================
+# STYLE GÉNÉRAL
+# =========================
+ColumnLimit: 100
+
+SortIncludes: false
+ReflowComments: true
