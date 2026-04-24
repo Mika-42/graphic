@@ -28,6 +28,7 @@ export import mka.graphic.opengl.text;      // TODO rm export
 import mka.graphic.opengl.text.rasterizer;
 import mka.graphic.opengl.shader;
 import mka.graphic.sanitize;
+import mka.graphic.log;
 
 namespace {
 // Shader sources stay in C++ to keep module self-contained.
@@ -265,30 +266,29 @@ export namespace mka::graphic {
 class Renderer {
 public:
   Renderer() {
-    DEBUG_LOG("Renderer init started.");
-    DEBUG_LOG("Vertex:" + shader.addScript(kRendererVertexShader, ShaderType::Vertex));
-    DEBUG_LOG("Fragment:" + shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
+	Log::debug("Renderer(), init started.");
+	Log::debug(Log::getContext(), "vertex:   {}", shader.addScript(kRendererVertexShader, ShaderType::Vertex));
+	Log::debug(Log::getContext(), "fragment: {}", shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
     shader.link();
 
     // empty vao (without it doesn't work...)
     glCreateVertexArrays(1, &vao);
     if (vao == 0) {
-      DEBUG_LOG("glCreateVertexArrays failed: vao == 0.");
+	  Log::error("Renderer(), OpenGL failed to create vertex array (vao).");
     }
 
     // create an ssbo
     glCreateBuffers(1, &ssbo);
     if (ssbo == 0) {
-      DEBUG_LOG("glCreateBuffers failed: ssbo == 0.");
+	  Log::error("Renderer(), OpenGL failed to create buffer (ssbo).");
     }
 
     rectangles.reserve(initialSsboCapacity);
     if (!reserveSsboCapacity(initialSsboCapacity)) {
-      DEBUG_LOG("Initial SSBO allocation failed.");
+	  Log::error("Renderer(), failed to reserve initial capacity (ssbo).");
     }
 
-    DEBUG_LOG("Renderer init completed.");
-
+	Log::debug("Renderer(), init completed.");
   }
 
   ~Renderer() {
@@ -549,7 +549,7 @@ private:
     size_t newCapacity = std::max(ssboCapacityInstances, initialSsboCapacity);
     while (newCapacity < requiredInstances) {
       if (newCapacity > (std::numeric_limits<size_t>::max() / 2u)) {
-        DEBUG_LOG("reserveSsboCapacity overflow while growing capacity.");
+		Log::error("reserveSsboCapacity(...) overflow.");
         return false;
       }
       newCapacity *= 2u;
@@ -557,8 +557,8 @@ private:
 
     const size_t allocationBytes = newCapacity * sizeof(Rectangle);
     if (allocationBytes / sizeof(Rectangle) != newCapacity) {
-      DEBUG_LOG("reserveSsboCapacity overflow during byte size computation.");
-      return false;
+	  Log::error("reserveSsboCapacity(...) overflow during byte computation.");
+	  return false;
     }
  
 	glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);

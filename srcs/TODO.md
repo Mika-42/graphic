@@ -15,8 +15,6 @@
 + fix key for kb layout
 + fix keyboard focus to allow focus on Tab or mouse focus and stop iterate over all views
 
-### Event
+### debug
 
-+ event system
-+ hit testing
-
++ replace old DEBUG_LOG macro with new Log::debug/warn/info/trace/error/fatal
