@@ -18,3 +18,7 @@
 ### debug
 
 + replace old DEBUG_LOG macro with new Log::debug/warn/info/trace/error/fatal
+
+### global
+
++ replace all default type by std::(u)intXX_t or std::size_t

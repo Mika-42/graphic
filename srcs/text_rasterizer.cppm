@@ -11,6 +11,7 @@ module;
 
 export module mka.graphic.opengl.text.rasterizer;
 import mka.graphic.opengl.text;
+import mka.graphic.log;
 
 export namespace mka::graphic {
 
@@ -37,7 +38,7 @@ class TextRasterizer {
 public:
   TextRasterizer() {
     if (FT_Init_FreeType(&ftLibrary) != 0) {
-      DEBUG_LOG("TextRasterizer: FreeType init failed.");
+		Log::error("TextRasterizer(), FreeType init failed.");
       ftLibrary = nullptr;
     }
   }
@@ -84,14 +85,14 @@ public:
   }
 
   [[nodiscard]] const TextGlyph *getOrCreateGlyph(const std::string &fontPath,
-                                                  unsigned int codepoint,
-                                                  unsigned int pixelSize) {
+                                                  std::uint32_t codepoint,
+                                                  std::uint32_t pixelSize) {
     FontCache *cache = getOrCreateFontCache(fontPath);
     if (cache == nullptr) {
       return nullptr;
 	}
-    const uint64_t glyphKey =
-        (static_cast<uint64_t>(pixelSize) << 32u) | codepoint;
+    const std::uint64_t glyphKey =
+        (static_cast<std::uint64_t>(pixelSize) << 32u) | codepoint;
     if (const auto it = cache->glyphsByKey.find(glyphKey);
         it != cache->glyphsByKey.end()) {
       return &cache->glyphs[it->second].payload;
@@ -113,7 +114,7 @@ public:
     }
 
     const FT_Bitmap &bitmap = glyph->bitmap;
-    const size_t pixelCount = static_cast<size_t>(bitmap.width) * bitmap.rows;
+    const std::size_t pixelCount = static_cast<std::size_t>(bitmap.width) * bitmap.rows;
     if (bitmap.width > 0 && bitmap.rows > 0 &&
         pixelCount / bitmap.width != bitmap.rows) {
       DEBUG_LOG("TextRasterizer: glyph bitmap size overflow detected.");
@@ -231,6 +232,7 @@ private:
     glCreateTextures(GL_TEXTURE_2D, 1, &tex);
     if (tex == 0) {
       DEBUG_LOG("TextRasterizer: glCreateTextures failed.");
+	  Log::warn("createGlyphTextureRGBA(...) abort, OpenGL failed to create.");
       return false;
     }
 
@@ -244,7 +246,7 @@ private:
 
     const uint64_t handle = glGetTextureHandleARB(tex);
     if (handle == 0) {
-      DEBUG_LOG("TextRasterizer: glGetTextureHandleARB returned 0.");
+		Log::warn("createGlyphTextureRGBA(...) abort, OpenGL failed to get texture handle ARB.");
       glDeleteTextures(1, &tex);
       return false;
     }

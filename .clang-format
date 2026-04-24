@@ -1,4 +1,3 @@
-# Base solide (tu peux aussi tester Google si tu préfères)
 BasedOnStyle: LLVM
 
 # =========================
@@ -18,7 +17,7 @@ BreakBeforeBraces: Attach
 # =========================
 # NAMESPACE / STRUCTURE C++
 # =========================
-NamespaceIndentation: All   # <-- super important pour ton cas
+NamespaceIndentation: All   
 
 AccessModifierOffset: -4    # public / private / protected légèrement décalés
 
@@ -38,14 +37,13 @@ AllowShortIfStatementsOnASingleLine: false
 IndentPPDirectives: AfterHash
 
 # Indente le contenu dans les blocs de macro conditionnelles
-# (très utile pour gros headers)
 MacroBlockBegin: "^#if"
 MacroBlockEnd: "^#endif"
 
 # =========================
 # STYLE GÉNÉRAL
 # =========================
-ColumnLimit: 100
+ColumnLimit: 120
 
 SortIncludes: false
 ReflowComments: true

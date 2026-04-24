@@ -31,10 +31,10 @@ import mka.graphic.sanitize;
 import mka.graphic.log;
 
 namespace {
-// Shader sources stay in C++ to keep module self-contained.
-// The GLSL code is organized with helper functions so future effects can be
-// added without turning `main()` into a monolith.
-constexpr const char *kRendererVertexShader = R"(
+    // Shader sources stay in C++ to keep module self-contained.
+    // The GLSL code is organized with helper functions so future effects can be
+    // added without turning `main()` into a monolith.
+    constexpr const char *kRendererVertexShader = R"(
 		#version 460 core
 		#extension GL_ARB_bindless_texture : require
 
@@ -115,7 +115,7 @@ constexpr const char *kRendererVertexShader = R"(
 		}
 	)";
 
-constexpr const char *kRendererFragmentShader = R"(
+    constexpr const char *kRendererFragmentShader = R"(
 		#version 460 core
 		#extension GL_ARB_bindless_texture : require
 		#extension GL_ARB_shader_stencil_export : enable
@@ -260,322 +260,309 @@ constexpr const char *kRendererFragmentShader = R"(
 // OpenGL
 export namespace mka::graphic {
 
-/**
- * @brief Instanced rectangle renderer with optional text support.
- */
-class Renderer {
-public:
-  Renderer() {
-	Log::debug("Renderer(), init started.");
-	Log::debug(Log::getContext(), "vertex:   {}", shader.addScript(kRendererVertexShader, ShaderType::Vertex));
-	Log::debug(Log::getContext(), "fragment: {}", shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
-    shader.link();
+    /**
+     * @brief Instanced rectangle renderer with optional text support.
+     */
+    class Renderer {
+    public:
+        Renderer() {
+            Log::debug("Renderer(), init started.");
+            Log::debug(Log::getContext(), "vertex:   {}", shader.addScript(kRendererVertexShader, ShaderType::Vertex));
+            Log::debug(Log::getContext(), "fragment: {}",
+                       shader.addScript(kRendererFragmentShader, ShaderType::Fragment));
+            shader.link();
 
-    // empty vao (without it doesn't work...)
-    glCreateVertexArrays(1, &vao);
-    if (vao == 0) {
-	  Log::error("Renderer(), OpenGL failed to create vertex array (vao).");
-    }
-
-    // create an ssbo
-    glCreateBuffers(1, &ssbo);
-    if (ssbo == 0) {
-	  Log::error("Renderer(), OpenGL failed to create buffer (ssbo).");
-    }
-
-    rectangles.reserve(initialSsboCapacity);
-    if (!reserveSsboCapacity(initialSsboCapacity)) {
-	  Log::error("Renderer(), failed to reserve initial capacity (ssbo).");
-    }
-
-	Log::debug("Renderer(), init completed.");
-  }
-
-  ~Renderer() {
-    if (ssbo != 0) {
-      glDeleteBuffers(1, &ssbo);
-    }
-
-    if (vao != 0) {
-      glDeleteVertexArrays(1, &vao);
-    }
-  }
-
-  uint32_t add(Rectangle &r) { 
-	  rectangles.emplace_back(r);
-	  return rectangles.size() - 1; //index
-  }
-  /**
-   * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
-   * @return Number of generated rectangle instances.
-   */
-  size_t add(const Text &text) {
-    Text sanitizedText = text;
-    sanitizeText(sanitizedText);
-
-    // Text colors are now fully controlled by gradientColorA/B.
-    // For a solid color, caller can simply set A == B.
-    const glm::vec4 textGradientA = sanitizedText.gradientColorA;
-    const glm::vec4 textGradientB = sanitizedText.gradientColorB;
-
-    if (sanitizedText.content.empty()) {
-      DEBUG_LOG("Empty text content.");
-      return 0;
-    }
-
-    Rectangle glyphTemplate{};
-    glyphTemplate.geometry = {sanitizedText.position.x,
-                              sanitizedText.position.y, sanitizedText.fontSize,
-                              sanitizedText.fontSize};
-    glyphTemplate.backgroundColorA = textGradientA;
-    glyphTemplate.backgroundColorB = textGradientB;
-    glyphTemplate.params.x = sanitizedText.gradientAngle;
-    glyphTemplate.flags.x = TEXT;
-
-    size_t addedCount = 0;
-    float cursorX = sanitizedText.position.x;
-    const unsigned int pixelSize =
-        static_cast<unsigned int>(sanitizedText.fontSize);
-    std::vector<Rectangle> glyphRects;
-    glyphRects.reserve(sanitizedText.content.size());
-
-    TextLineMetrics lineMetrics{};
-    if (!textRasterizer.getLineMetrics(sanitizedText.font, pixelSize,
-                                       lineMetrics)) {
-      DEBUG_LOG("Failed to get text line metrics for font: " +
-                sanitizedText.font);
-      return 0;
-    }
-
-    // `position` remains the top-left anchor of the text block.
-    // We derive a single bottom line from font metrics so every glyph ends on
-    // the same Y.
-    const float lineBottomY = sanitizedText.position.y + lineMetrics.lineHeight;
-
-    for (char c : sanitizedText.content) {
-      const TextGlyph *glyph = textRasterizer.getOrCreateGlyph(
-          sanitizedText.font, static_cast<unsigned char>(c), pixelSize);
-      if (glyph == nullptr) {
-        DEBUG_LOG("Missing glyph for codepoint: " +
-                  std::to_string(static_cast<unsigned int>(
-                      static_cast<unsigned char>(c))));
-        break;
-      }
-
-      Rectangle glyphRect = glyphTemplate;
-      glyphRect.geometry.x = cursorX + glyph->bearing.x;
-      // Keep top-left rectangle placement but align all glyph bottoms on the
-      // same line. This avoids per-glyph vertical drift with symbols/accented
-      // characters.
-      glyphRect.geometry.y = lineBottomY - glyph->size.y;
-      glyphRect.geometry.z = glyph->size.x;
-      glyphRect.geometry.w = glyph->size.y;
-
-      glyphRect.texture = glyph->texture;
-      glyphRect.flags.x = TEXT;
-      glyphRects.push_back(std::move(glyphRect));
-      // Advance comes from font metrics to preserve spacing/kerning quality.
-      cursorX += glyph->advance + sanitizedText.letterSpacing;
-    }
-
-    if (glyphRects.empty()) {
-      DEBUG_LOG("No glyph rectangle generated for provided text.");
-      return 0;
-    }
-
-    const float angleRad = glm::radians(sanitizedText.gradientAngle);
-    const glm::vec2 gradientDir = {std::cos(angleRad),
-                                   std::sin(angleRad)};
-
-    float globalMinProjection = std::numeric_limits<float>::max();
-    float globalMaxProjection = std::numeric_limits<float>::lowest();
-
-    for (const Rectangle &glyphRect : glyphRects) {
-      const glm::vec2 center = {
-          glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
-          glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)};
-      const glm::vec2 halfSize = {glyphRect.geometry.z * 0.5f,
-                                  glyphRect.geometry.w * 0.5f};
-      // Keep CPU-side gradient projection identical to the fragment shader:
-      // projection range must account for both axis contributions when angle is
-      // diagonal.
-      const float projectionExtent =
-          std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
-      const float centerProjection = glm::dot(center, gradientDir);
-      globalMinProjection =
-          std::min(globalMinProjection, centerProjection - projectionExtent);
-      globalMaxProjection =
-          std::max(globalMaxProjection, centerProjection + projectionExtent);
-    }
-
-    const float projectionRange =
-        std::max(globalMaxProjection - globalMinProjection, 0.0001f);
-    for (Rectangle &glyphRect : glyphRects) {
-      const glm::vec2 center = {
-          glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
-          glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)};
-      const glm::vec2 halfSize = {glyphRect.geometry.z * 0.5f,
-                                  glyphRect.geometry.w * 0.5f};
-      const float projectionExtent =
-          std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
-      const float centerProjection = glm::dot(center, gradientDir);
-      const float localMinProjection = centerProjection - projectionExtent;
-      const float localMaxProjection = centerProjection + projectionExtent;
-      const float tA = glm::clamp((localMinProjection - globalMinProjection) /
-                                      projectionRange,
-                                  0.0f, 1.0f);
-      const float tB = glm::clamp((localMaxProjection - globalMinProjection) /
-                                      projectionRange,
-                                  0.0f, 1.0f);
-      glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
-      glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
-      add(glyphRect);
-      ++addedCount;
-    }
-
-    return addedCount;
-  }
-
-/* TODO move in a debug file for unit test
-void debugChainage(const std::vector<Rectangle>& rectangles) {
-    std::cout << "\n🔗 CHAÎNAGE DES RECTANGLES (taille: " << rectangles.size() << ")\n";
-    std::cout << "============================================================\n";
-    
-    for (size_t rectIndex = 0; rectIndex < rectangles.size(); ++rectIndex) {
-        const auto& rect = rectangles[rectIndex];
-        
-        if (rect.flags.z < 0.0f) {
-            std::cout << "[" << std::setw(2) << rectIndex << "] NO_CLIP\n";
-            continue;
-        }
-        
-        std::cout << "[" << std::setw(2) << rectIndex << "] flags={" 
-                  << rect.flags.x << "," << rect.flags.y << "," 
-                  << rect.flags.z << "} → ";
-        
-        // 🔥 Parcours sécurisé de la chaîne
-        std::set<int32_t> visited;  // Détection de cycles
-        int32_t current = rect.flags.z;
-        
-        while (current >= 0 && static_cast<size_t>(current) < rectangles.size()) {
-            if (visited.count(current)) {
-                std::cout << "[CYCLE! " << current << "] ";
-                break;
+            // empty vao (without it doesn't work...)
+            glCreateVertexArrays(1, &vao);
+            if (vao == 0) {
+                Log::error("Renderer(), OpenGL failed to create vertex array (vao).");
             }
-            visited.insert(current);
-            
-            const auto& clipRect = rectangles[current];
-            std::cout << current;
-            
-            if (clipRect.flags.y > 0.0f) {
-                std::cout << "(CLIP)";
+
+            // create an ssbo
+            glCreateBuffers(1, &ssbo);
+            if (ssbo == 0) {
+                Log::error("Renderer(), OpenGL failed to create buffer (ssbo).");
             }
-            std::cout << "→";
-            
-            current = clipRect.flags.z;
+
+            rectangles.reserve(initialSsboCapacity);
+            if (!reserveSsboCapacity(initialSsboCapacity)) {
+                Log::error("Renderer(), failed to reserve initial capacity (ssbo).");
+            }
+
+            Log::debug("Renderer(), init completed.");
         }
-        
-        std::cout << "NO_CLIP\n";
-    }
-    
-    std::cout << "============================================================\n\n";
-}
-*/
 
-  /// TODO Make it unusable by user
-  /// @brief Flush batched rectangles to GPU and issue one instanced draw.
-  void draw(const glm::mat4 projection) {
+        ~Renderer() {
+            if (ssbo != 0) {
+                glDeleteBuffers(1, &ssbo);
+            }
 
-    glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-    glClear(GL_COLOR_BUFFER_BIT);
- 
-	if (rectangles.empty()) {
-      return;
-    }
+            if (vao != 0) {
+                glDeleteVertexArrays(1, &vao);
+            }
+        }
 
-    if (ssbo == 0 || vao == 0) {
-      DEBUG_LOG("draw aborted: invalid OpenGL objects (ssbo or vao is 0).");
-      rectangles.clear();
-      return;
-    }
+		std::uint32_t add(Rectangle &r) {
+            rectangles.emplace_back(r);
+            return rectangles.size() - 1; // index
+        }
+        /**
+         * @brief Build text using the rectangle pipeline (1 glyph == 1 rectangle).
+         * @return Number of generated rectangle instances.
+         */
+		std::size_t add(const Text &text) {
+            Text sanitizedText = text;
+            sanitizeText(sanitizedText);
 
-    for (auto &rect : rectangles) {
-      sanitizeRectangle(rect);
-    }
+            // Text colors are now fully controlled by gradientColorA/B.
+            // For a solid color, caller can simply set A == B.
+            const glm::vec4 textGradientA = sanitizedText.gradientColorA;
+            const glm::vec4 textGradientB = sanitizedText.gradientColorB;
 
-	//debugChainage(rectangles); //TODO enclose with test
+            if (sanitizedText.content.empty()) {
+				Log::debug("add(...), empty text.");
+				return 0;
+            }
 
-    if (!reserveSsboCapacity(rectangles.size())) {
-      DEBUG_LOG("draw aborted: failed to reserve SSBO capacity.");
-      rectangles.clear();
-      return;
-    }
+            Rectangle glyphTemplate{};
+            glyphTemplate.geometry = {sanitizedText.position.x, sanitizedText.position.y, sanitizedText.fontSize,
+                                      sanitizedText.fontSize};
+            glyphTemplate.backgroundColorA = textGradientA;
+            glyphTemplate.backgroundColorB = textGradientB;
+            glyphTemplate.params.x = sanitizedText.gradientAngle;
+            glyphTemplate.flags.x = TEXT;
 
-    const size_t rectBytes = rectangles.size() * sizeof(Rectangle);
-    glNamedBufferSubData(ssbo, 0, rectBytes, rectangles.data());
-    // Draw
-    shader.use();
-    shader.set("uProjection", projection);
-   
-	// bind ssbo
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-    glBindVertexArray(vao);
+            size_t addedCount = 0;
+            float cursorX = sanitizedText.position.x;
+            const std::uint32_t pixelSize = static_cast<std::uint32_t>(sanitizedText.fontSize);
+            std::vector<Rectangle> glyphRects;
+            glyphRects.reserve(sanitizedText.content.size());
 
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
+            TextLineMetrics lineMetrics{};
+            if (!textRasterizer.getLineMetrics(sanitizedText.font, pixelSize, lineMetrics)) {
+                Log::warn("add(...), failed to get text line metrics for font {}.", sanitizedText.font);
+                return 0;
+            }
 
-    rectangles.clear();
-  }
+            // `position` remains the top-left anchor of the text block.
+            // We derive a single bottom line from font metrics so every glyph ends on
+            // the same Y.
+            const float lineBottomY = sanitizedText.position.y + lineMetrics.lineHeight;
 
-  /// @brief Set clear color used by `draw`.
-  void setBackgroundColor(const glm::vec4 &color) {
-    bgColor = color;
-    sanitizeColor(bgColor);
-  }
+            for (char c : sanitizedText.content) {
+                const TextGlyph *glyph =
+                    textRasterizer.getOrCreateGlyph(sanitizedText.font, static_cast<std::uint8_t>(c), pixelSize);
+                if (glyph == nullptr) {
+					Log::warn("add(...), missing glyph for codepoint: {:02X}", static_cast<std::uint8_t>(c));
+                    break;
+                }
 
-private:
-  static constexpr size_t initialSsboCapacity = 1024u;
+                Rectangle glyphRect = glyphTemplate;
+                glyphRect.geometry.x = cursorX + glyph->bearing.x;
+                // Keep top-left rectangle placement but align all glyph bottoms on the
+                // same line. This avoids per-glyph vertical drift with symbols/accented
+                // characters.
+                glyphRect.geometry.y = lineBottomY - glyph->size.y;
+                glyphRect.geometry.z = glyph->size.x;
+                glyphRect.geometry.w = glyph->size.y;
 
-  [[nodiscard]] bool reserveSsboCapacity(size_t requiredInstances) {
-    if (requiredInstances == 0u) {
-      return true;
-    }
-    if (requiredInstances <= ssboCapacityInstances) {
-      return true;
-    }
+                glyphRect.texture = glyph->texture;
+                glyphRect.flags.x = TEXT;
+                glyphRects.push_back(std::move(glyphRect));
+                // Advance comes from font metrics to preserve spacing/kerning quality.
+                cursorX += glyph->advance + sanitizedText.letterSpacing;
+            }
 
-    // Grow with power-of-two strategy to keep reallocations rare in real-time
-    // rendering. This avoids per-frame stalls while still accepting bursty
-    // dynamic rectangle counts.
-    size_t newCapacity = std::max(ssboCapacityInstances, initialSsboCapacity);
-    while (newCapacity < requiredInstances) {
-      if (newCapacity > (std::numeric_limits<size_t>::max() / 2u)) {
-		Log::error("reserveSsboCapacity(...) overflow.");
-        return false;
-      }
-      newCapacity *= 2u;
-    }
+            if (glyphRects.empty()) {
+				Log::warn("add(...), failed to generate glyph.");
+                return 0;
+            }
 
-    const size_t allocationBytes = newCapacity * sizeof(Rectangle);
-    if (allocationBytes / sizeof(Rectangle) != newCapacity) {
-	  Log::error("reserveSsboCapacity(...) overflow during byte computation.");
-	  return false;
-    }
- 
-	glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
-    ssboCapacityInstances = newCapacity;
-    return true;
-  }
+            const float angleRad = glm::radians(sanitizedText.gradientAngle);
+            const glm::vec2 gradientDir = {std::cos(angleRad), std::sin(angleRad)};
 
-  std::vector<Rectangle> rectangles;
-  TextRasterizer textRasterizer{};
+            float globalMinProjection = std::numeric_limits<float>::max();
+            float globalMaxProjection = std::numeric_limits<float>::lowest();
 
-  glm::vec4 bgColor = glm::vec4{1.0f};
-  Shader shader;
+            for (const Rectangle &glyphRect : glyphRects) {
+                const glm::vec2 center = {glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
+                                          glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)};
+                const glm::vec2 halfSize = {glyphRect.geometry.z * 0.5f, glyphRect.geometry.w * 0.5f};
+                // Keep CPU-side gradient projection identical to the fragment shader:
+                // projection range must account for both axis contributions when angle is
+                // diagonal.
+                const float projectionExtent = std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
+                const float centerProjection = glm::dot(center, gradientDir);
+                globalMinProjection = std::min(globalMinProjection, centerProjection - projectionExtent);
+                globalMaxProjection = std::max(globalMaxProjection, centerProjection + projectionExtent);
+            }
 
-  GLuint vao = 0;
-  GLuint ssbo = 0;
-  size_t ssboCapacityInstances = 0;
+            const float projectionRange = std::max(globalMaxProjection - globalMinProjection, 0.0001f);
+            for (Rectangle &glyphRect : glyphRects) {
+                const glm::vec2 center = {glyphRect.geometry.x + (glyphRect.geometry.z * 0.5f),
+                                          glyphRect.geometry.y + (glyphRect.geometry.w * 0.5f)};
+                const glm::vec2 halfSize = {glyphRect.geometry.z * 0.5f, glyphRect.geometry.w * 0.5f};
+                const float projectionExtent = std::max(glm::dot(glm::abs(gradientDir), halfSize), 0.0001f);
+                const float centerProjection = glm::dot(center, gradientDir);
+                const float localMinProjection = centerProjection - projectionExtent;
+                const float localMaxProjection = centerProjection + projectionExtent;
+                const float tA = glm::clamp((localMinProjection - globalMinProjection) / projectionRange, 0.0f, 1.0f);
+                const float tB = glm::clamp((localMaxProjection - globalMinProjection) / projectionRange, 0.0f, 1.0f);
+                glyphRect.backgroundColorA = glm::mix(textGradientA, textGradientB, tA);
+                glyphRect.backgroundColorB = glm::mix(textGradientA, textGradientB, tB);
+                add(glyphRect);
+                ++addedCount;
+            }
 
-  uint32_t currentClipIndex = NO_CLIP;
-};
+            return addedCount;
+        }
+
+        /* TODO move in a debug file for unit test
+        void debugChainage(const std::vector<Rectangle>& rectangles) {
+            std::cout << "\n🔗 CHAÎNAGE DES RECTANGLES (taille: " << rectangles.size() << ")\n";
+            std::cout << "============================================================\n";
+
+            for (size_t rectIndex = 0; rectIndex < rectangles.size(); ++rectIndex) {
+                const auto& rect = rectangles[rectIndex];
+
+                if (rect.flags.z < 0.0f) {
+                    std::cout << "[" << std::setw(2) << rectIndex << "] NO_CLIP\n";
+                    continue;
+                }
+
+                std::cout << "[" << std::setw(2) << rectIndex << "] flags={"
+                          << rect.flags.x << "," << rect.flags.y << ","
+                          << rect.flags.z << "} → ";
+
+                // 🔥 Parcours sécurisé de la chaîne
+                std::set<int32_t> visited;  // Détection de cycles
+                int32_t current = rect.flags.z;
+
+                while (current >= 0 && static_cast<size_t>(current) < rectangles.size()) {
+                    if (visited.count(current)) {
+                        std::cout << "[CYCLE! " << current << "] ";
+                        break;
+                    }
+                    visited.insert(current);
+
+                    const auto& clipRect = rectangles[current];
+                    std::cout << current;
+
+                    if (clipRect.flags.y > 0.0f) {
+                        std::cout << "(CLIP)";
+                    }
+                    std::cout << "→";
+
+                    current = clipRect.flags.z;
+                }
+
+                std::cout << "NO_CLIP\n";
+            }
+
+            std::cout << "============================================================\n\n";
+        }
+        */
+
+        /// TODO Make it unusable by user
+        /// @brief Flush batched rectangles to GPU and issue one instanced draw.
+        void draw(const glm::mat4 projection) {
+
+            glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            if (rectangles.empty()) {
+                return;
+            }
+
+            if (ssbo == 0 || vao == 0) {
+                if (ssbo == 0) {
+                    Log::error("draw(...) aborted, invalid OpenGL objects (ssbo is uninitialized).");
+                }
+                if (vao == 0) {
+                    Log::error("draw(...) aborted, invalid OpenGL objects (vao is uninitialized).");
+                }
+
+                rectangles.clear();
+                return;
+            }
+
+            for (auto &rect : rectangles) {
+                sanitizeRectangle(rect);
+            }
+
+            // debugChainage(rectangles); //TODO enclose with test
+
+            if (!reserveSsboCapacity(rectangles.size())) {
+                Log::error("draw(...) aborted, failed to reserve ssbo capacity.");
+                rectangles.clear();
+                return;
+            }
+
+            const std::size_t rectBytes = rectangles.size() * sizeof(Rectangle);
+            glNamedBufferSubData(ssbo, 0, rectBytes, rectangles.data());
+            // Draw
+            shader.use();
+            shader.set("uProjection", projection);
+
+            // bind ssbo
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
+            glBindVertexArray(vao);
+
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 6, rectangles.size());
+
+            rectangles.clear();
+        }
+
+        /// @brief Set clear color used by `draw`.
+        void setBackgroundColor(const glm::vec4 &color) {
+            bgColor = color;
+            sanitizeColor(bgColor);
+        }
+
+    private:
+        static constexpr std::size_t initialSsboCapacity = 1024u;
+
+        [[nodiscard]] bool reserveSsboCapacity(std::size_t requiredInstances) {
+            if (requiredInstances == 0u) {
+                return true;
+            }
+            if (requiredInstances <= ssboCapacityInstances) {
+                return true;
+            }
+
+            // Grow with power-of-two strategy to keep reallocations rare in real-time
+            // rendering. This avoids per-frame stalls while still accepting bursty
+            // dynamic rectangle counts.
+			std::size_t newCapacity = std::max(ssboCapacityInstances, initialSsboCapacity);
+            while (newCapacity < requiredInstances) {
+                if (newCapacity > (std::numeric_limits<size_t>::max() / 2u)) {
+                    Log::error("reserveSsboCapacity(...) overflow.");
+                    return false;
+                }
+                newCapacity *= 2u;
+            }
+
+            const std::size_t allocationBytes = newCapacity * sizeof(Rectangle);
+            if (allocationBytes / sizeof(Rectangle) != newCapacity) {
+                Log::error("reserveSsboCapacity(...) overflow during byte computation.");
+                return false;
+            }
+
+            glNamedBufferData(ssbo, allocationBytes, nullptr, GL_DYNAMIC_DRAW);
+            ssboCapacityInstances = newCapacity;
+            return true;
+        }
+
+        std::vector<Rectangle> rectangles;
+        TextRasterizer textRasterizer{};
+
+        glm::vec4 bgColor = glm::vec4{1.0f};
+        Shader shader;
+
+        GLuint vao = 0;
+        GLuint ssbo = 0;
+		std::size_t ssboCapacityInstances = 0;
+
+		std::uint32_t currentClipIndex = NO_CLIP;
+    };
 } // namespace mka::graphic
