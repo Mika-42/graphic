@@ -20,9 +20,9 @@ BreakBeforeBraces: Attach
 # =========================
 NamespaceIndentation: All   # <-- super important pour ton cas
 
-AccessModifierOffset: -2    # public / private / protected légèrement décalés
+AccessModifierOffset: -4    # public / private / protected légèrement décalés
 
-IndentAccessModifiers: true
+IndentAccessModifiers: false
 
 # =========================
 # IF / ELSE / CONTROL FLOW

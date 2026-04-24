@@ -6,6 +6,7 @@ module;
 #include "debug.hpp"
 #include "stb_image.h"
 export module mka.graphic.opengl.rectangle;
+import mka.graphic.log;
 
 //OpenGL
 export namespace mka::graphic {
@@ -54,7 +55,7 @@ export namespace mka::graphic {
 	/// @brief Load an RGBA texture and return its bindless texture handle.
 	glm::uvec2 loadTexture(const char* path) {
 		if (path == nullptr) {
-			DEBUG_LOG("loadTexture called with null path pointer.");
+			Log::warn("loadTexture(...) ignored, invalid path (null).");
 			return glm::uvec2(0);
 		}
 
@@ -63,11 +64,11 @@ export namespace mka::graphic {
 
 		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
 		if (!data) {
-			DEBUG_LOG("Failed to load texture: " + std::string(path));
+			Log::warn("loadTexture(...) ignored, invalid path ({}).", path);
 			return glm::uvec2(0);
 		}
 		if (width <= 0 || height <= 0) {
-			DEBUG_LOG("Invalid texture dimensions for: " + std::string(path));
+			Log::warn("loadTexture(...) ignored, invalid texture dimensions ({}).", path);
 			stbi_image_free(data);
 			return glm::uvec2(0);
 		}
@@ -75,7 +76,7 @@ export namespace mka::graphic {
 		GLuint tex = 0;
 		glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 		if (tex == 0) {
-			DEBUG_LOG("glCreateTextures returned 0 for: " + std::string(path));
+			Log::warn("loadTexture(...) ignored, OpenGL failed to create texture ({}).", path);
 			stbi_image_free(data);
 			return glm::uvec2(0);
 		}
@@ -101,13 +102,12 @@ export namespace mka::graphic {
 
 		uint64_t handle = glGetTextureHandleARB(tex);
 		if (handle == 0) {
-			DEBUG_LOG("glGetTextureHandleARB returned null handle for: " + std::string(path));
+			Log::warn("loadTexture(...) ignored, OpenGL failed to get texture handle ARB ({}).", path);
 			glDeleteTextures(1, &tex);
 			return glm::uvec2(0);
 		}
 		glMakeTextureHandleResidentARB(handle);
-
-		DEBUG_LOG("Texture loaded: " + std::string(path) + " (" + std::to_string(width) + "x" + std::to_string(height) + ")");
+		Log::debug("loadTexture(...) succed : {} ({}x{}).", path, width, height);
 		return glm::uvec2(handle & 0xFFFFFFFFu, handle >> 32u);
 	}
 }

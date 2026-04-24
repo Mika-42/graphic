@@ -26,6 +26,8 @@ import mka.graphic.mouse;
 import mka.graphic.opengl.renderer;
 import mka.graphic.view;
 import mka.graphic.event;
+import mka.graphic.log;
+
 /// @brief Keep OpenGL viewport in sync with framebuffer size.
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
   glViewport(0, 0, width, height);
@@ -286,24 +288,29 @@ public:
   void setBackgroundColor(const glm::vec4 &color) { bgColor = color; }
 
   void setRoot(std::shared_ptr<View> root) {
-	if(!root) { return; }
-    rootView = std::make_shared<RootView>(); // TODO check if .reset() should be better
-    rootView->addRoot(root);
+	if(!root) {
+		Log::warn("root view is null, setRoot(...) ignored.");
+		return; 
+	}
+	
+	rootView = std::make_shared<RootView>();
+
+	rootView->addRoot(root);
   }
 
 private:
   void render(const MouseEventView &mouse, const KeyboardEventView &keyboard,
               const Time & /*time*/) {
 
-    if (!renderer) {
-      DEBUG_LOG("renderer is not initialized.");
-      return;
+    if (!renderer) { 
+		Log::fatal("renderer is uninitialized, render(...) ignored.");
+	  return;
     }
 	
     renderer->setBackgroundColor(bgColor);
 
     if (!rootView) {
-      DEBUG_LOG("root view is not set.");
+		Log::fatal("root view is null, render(...) ignored.");
       return;
     }
 
