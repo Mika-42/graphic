@@ -3,7 +3,6 @@ module;
 #include "glad.h"
 #include <glm/ext/vector_uint2.hpp>
 #include <glm/glm.hpp>
-#include "debug.hpp"
 #include "stb_image.h"
 export module mka.graphic.opengl.rectangle;
 import mka.graphic.log;

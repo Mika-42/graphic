@@ -1,5 +1,4 @@
 module;
-#include "debug.hpp"
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <limits>
