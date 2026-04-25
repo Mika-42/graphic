@@ -8,10 +8,6 @@
 + contain = in shape + in clip
 + add canva
 
-### view
-
-+ send event in method
-
 ### Layout
 
 + make an abstract class for layout (layout shouldn't be views)

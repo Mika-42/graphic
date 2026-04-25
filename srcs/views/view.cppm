@@ -29,12 +29,16 @@ export namespace mka::graphic {
 			Event<const MouseEventView&> MouseEnter;
 			Event<const MouseEventView&> MouseLeave;
 			Event<const MouseEventView&> MouseMove;
-			Event<> AddChild;
-			Event<> RemoveChild;
-			Event<const glm::vec2&> PositionChange;
-			Event<const glm::vec2&> SizeChange;
-			Event<const bool> VisibilityChange;
-			Event<const glm::vec2&> Overflows;
+			Event<> ChildAdded;
+			Event<> ChildRemoved;
+			Event<const glm::vec2&> PositionChanged;
+			Event<const glm::vec2&> SizeChanged;
+			Event<const glm::vec4&> RadiusChanged;
+			Event<const bool> VisibilityChanged;
+			Event<const bool> KeyboardFocused;
+			Event<const bool> ClipChanged;
+			Event<const glm::vec2&> OverflowsDetected;
+			Event<const glm::vec2&> ScrollChanged;
 
         public: // parent/children management
             [[nodiscard]] virtual const View *getParent() const noexcept final { return parent; }
@@ -45,7 +49,7 @@ export namespace mka::graphic {
                     children.emplace_back(child);
                     markDirty();
 					
-					AddChild.send();
+					ChildAdded.send();
                 }
             }
 
@@ -62,7 +66,7 @@ export namespace mka::graphic {
                     children.erase(it);
                     markDirty();
 					
-					RemoveChild.send();
+					ChildRemoved.send();
                 }
             }
 
@@ -113,7 +117,7 @@ export namespace mka::graphic {
         public: // setters
             void setPosition(const glm::vec2 &p) {
                 if (!isEq(p, relativePosition)) {
-					PositionChange.send(p);
+					PositionChanged.send(p);
 				}
                 relativePosition = p;
                 markDirty();
@@ -121,7 +125,7 @@ export namespace mka::graphic {
 
             void setSize(const glm::vec2 &s) {	
                 if (!isEq(s, glm::vec2(geometry.z, geometry.w))) {
-					SizeChange.send(s);
+					SizeChanged.send(s);
 				}
 
                 geometry.z = sanitizeFloat(s.x);
@@ -131,24 +135,57 @@ export namespace mka::graphic {
 
             void setVisible(bool v) {
                 if (visible != v) {
-					VisibilityChange.send(v);
+					VisibilityChanged.send(v);
 				}
 
                 visible = v;
             }
 
-            void setKeyboardFocus(bool v) { keyboardFocus = v; }
+            void setKeyboardFocus(bool v) { 
+				if(keyboardFocus != v) {
+					KeyboardFocused.send(v);
+				}
+				keyboardFocus = v; 
+			}
 
             void setClip(bool enabled) {
+				if(isClip() != enabled) {
+					ClipChanged.send(enabled);
+				}
+
                 clipRect.flags.y = enabled ? CLIP : 0.0f;
                 markDirty();
             }
 
-            void setRadius(const glm::vec4 &radius) { clipRect.radius = radius; }
+            void setRadius(const glm::vec4 &radius) {
+				if(clipRect.radius != radius) {
+					RadiusChanged.send(radius);
+				}
 
-            void setScroll(const glm::vec2 &s) { scrollOffset = s; }
-            void setScrollX(float x) { scrollOffset.x = x; }
-            void setScrollY(float y) { scrollOffset.y = y; }
+				clipRect.radius = radius; 
+			}
+
+            void setScroll(const glm::vec2 &s) { 
+				if(scrollOffset != s) {
+					ScrollChanged.send(scrollOffset);
+				}
+
+				scrollOffset = s;
+			}
+            void setScrollX(float x) { 
+				if(scrollOffset.x != x) {
+					ScrollChanged.send(scrollOffset);
+				}
+		
+				scrollOffset.x = x; 
+			}
+            void setScrollY(float y) { 
+				if(scrollOffset.y != y) {
+					ScrollChanged.send(scrollOffset);
+				}
+				
+				scrollOffset.y = y; 
+			}
 
             virtual void draw(Renderer &) {} // TODO make it virtual pure
 
@@ -258,7 +295,7 @@ export namespace mka::graphic {
 
 
 				if(overflows.x > 0.0f || overflows.y > 0.0f) {
-					Overflows.send(overflows);
+					OverflowsDetected.send(overflows);
 				} 
 			}
 
