@@ -25,6 +25,17 @@ export namespace mka::graphic {
             View() = default;
             virtual ~View() = default;
 
+		public: //events
+			Event<const MouseEventView&> MouseEnter;
+			Event<const MouseEventView&> MouseLeave;
+			Event<const MouseEventView&> MouseMove;
+			Event<> AddChild;
+			Event<> RemoveChild;
+			Event<const glm::vec2&> PositionChange;
+			Event<const glm::vec2&> SizeChange;
+			Event<const bool> VisibilityChange;
+			Event<const glm::vec2&> Overflows;
+
         public: // parent/children management
             [[nodiscard]] virtual const View *getParent() const noexcept final { return parent; }
 
@@ -33,8 +44,8 @@ export namespace mka::graphic {
                     child->parent = this;
                     children.emplace_back(child);
                     markDirty();
-
-                    event::send(this, event::view_add_child);
+					
+					AddChild.send();
                 }
             }
 
@@ -50,8 +61,8 @@ export namespace mka::graphic {
                     (*it)->clipRect.flags.z = NO_CLIP;
                     children.erase(it);
                     markDirty();
-
-                    event::send(this, event::view_remove_child);
+					
+					RemoveChild.send();
                 }
             }
 
@@ -102,16 +113,16 @@ export namespace mka::graphic {
         public: // setters
             void setPosition(const glm::vec2 &p) {
                 if (!isEq(p, relativePosition)) {
-                    event::send(this, event::view_position_changed);
-                }
+					PositionChange.send(p);
+				}
                 relativePosition = p;
                 markDirty();
             }
 
             void setSize(const glm::vec2 &s) {	
                 if (!isEq(s, glm::vec2(geometry.z, geometry.w))) {
-                    event::send(this, event::view_size_changed);
-                }
+					SizeChange.send(s);
+				}
 
                 geometry.z = sanitizeFloat(s.x);
                 geometry.w = sanitizeFloat(s.y);
@@ -120,8 +131,8 @@ export namespace mka::graphic {
 
             void setVisible(bool v) {
                 if (visible != v) {
-                    event::send(this, event::view_visibility_changed);
-                }
+					VisibilityChange.send(v);
+				}
 
                 visible = v;
             }
@@ -174,19 +185,7 @@ export namespace mka::graphic {
                 }
             }
 
-        public:
-            virtual void onMouseEnter(const MouseEventView & /*mouse*/) {
-                mouseFocus = true;
-                event::send(this, event::mouse_enter);
-            }
-            virtual void onMouseLeave(const MouseEventView & /*mouse*/) {
-                mouseFocus = false;
-                event::send(this, event::mouse_leave);
-            }
-            virtual void onMouseMove(const MouseEventView & /*mouse*/) {
-                event::send(this, event::mouse_move);
-            }
-
+		public:
             virtual void onKeyboardEvent(const KeyboardEventView & /*keyboard*/) {}
 
             virtual bool contain(const MouseEventView &mouse) { return clipContain(mouse); }
@@ -256,7 +255,12 @@ export namespace mka::graphic {
                 // Overflow total (gauche + droite, haut + bas)
                 overflows = {std::max(0.0f, minX - geometry.x) + std::max(0.0f, maxX - contRight),
                              std::max(0.0f, minY - geometry.y) + std::max(0.0f, maxY - contBottom)};
-            }
+
+
+				if(overflows.x > 0.0f || overflows.y > 0.0f) {
+					Overflows.send(overflows);
+				} 
+			}
 
         private:
             View *parent = nullptr;

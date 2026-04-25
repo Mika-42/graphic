@@ -7,7 +7,6 @@ BUILD_DIR := build
 # Modules (ordre IMPORTANT)
 MODULES := \
 	$(SRC_DIR)/log.cppm \
-	$(SRC_DIR)/events/event_def.cppm \
 	$(SRC_DIR)/events/event.cppm \
 	$(SRC_DIR)/primitives/rectangle.cppm \
 	$(SRC_DIR)/sanitize.cppm \

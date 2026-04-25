@@ -58,10 +58,10 @@ export namespace mka::graphic {
 			return glm::uvec2(0);
 		}
 
-		int width, height, channels;
+		std::int32_t width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
 
-		unsigned char* data = stbi_load(path, &width, &height, &channels, 4);
+		std::uint8_t* data = stbi_load(path, &width, &height, &channels, 4);
 		if (!data) {
 			Log::warn("loadTexture(...) ignored, invalid path ({}).", path);
 			return glm::uvec2(0);
@@ -99,7 +99,7 @@ export namespace mka::graphic {
 
 		stbi_image_free(data);
 
-		uint64_t handle = glGetTextureHandleARB(tex);
+		std::size_t handle = glGetTextureHandleARB(tex);
 		if (handle == 0) {
 			Log::warn("loadTexture(...) ignored, OpenGL failed to get texture handle ARB ({}).", path);
 			glDeleteTextures(1, &tex);

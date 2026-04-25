@@ -12,6 +12,7 @@ import mka.graphic.view.stackview;
 import mka.graphic.view.gridview;
 import mka.graphic.sanitize;
 import mka.graphic.event;
+import mka.graphic.log;
 
 using namespace mka::graphic;
 
@@ -99,11 +100,11 @@ class A : public View {
 			return (distance(aa, mouse.position()) <= mouse.cursorRadius());
 		}
 
-		void onEnter() {
+		void onEnter(const MouseEventView&) {
 			aa.backgroundColorA = aa.backgroundColorB = glm::vec4(1.0f, 0.0f, 0.5f, 1.0f);
 		}
 
-		void onLeave() {
+		void onLeave(const MouseEventView&) {
 			aa.backgroundColorA = aa.backgroundColorB = cc;
 		}
 
@@ -198,8 +199,9 @@ int main() {
   root->addChild(clip1);
   root->addChild(rectE);
 
-  event::link(rectE.get(), event::mouse_enter, rectD.get(), &A::onEnter);
-  event::link(rectE.get(), event::mouse_leave, rectD.get(), &A::onLeave);
+  auto l1 = event::link(*rectE.get(), &View::MouseEnter, *rectD.get(), &A::onEnter);
+  auto l2 = event::link(*rectE.get(), &View::MouseEnter, [&](const MouseEventView&){ Log::debug("Hi !"); });
+  auto l3 = event::link(*rectE.get(), &View::MouseLeave, *rectD.get(), &A::onLeave);
 
   /*
     HIERARCHIE FINALE:

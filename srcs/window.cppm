@@ -143,6 +143,9 @@ struct Time {
  */
 class Window {
 public:
+	Event<> AppClose;
+
+public:
   Window(size_t width, size_t height, const std::string &name,
          std::unique_ptr<Context> ctx)
       : size(width, height), name(name), ctx(std::move(ctx)), window(nullptr),
@@ -269,7 +272,7 @@ public:
 
       ctx->swapBuffers();
     }
-	event::send(this, event::app_close);
+	AppClose.send();
 
     state = State::Stopped;
     return 0;
@@ -339,17 +342,17 @@ private:
 
 		if (newTop != prevTop) {
 			if (prevTop) { 
-				prevTop->onMouseLeave(mouse);
+				prevTop->MouseLeave.send(mouse);
 			}
 
 			focusedView = newTop;
-			newTop->onMouseEnter(mouse);
+			newTop->MouseEnter.send(mouse);
 		} 
 
-		newTop->onMouseMove(mouse);
+		newTop->MouseMove.send(mouse);
 
 	} else if (prevTop) {
-		prevTop->onMouseLeave(mouse);
+		prevTop->MouseLeave.send(mouse);
 		focusedView = nullptr;
 	}
   }
