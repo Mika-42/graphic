@@ -1,0 +1,80 @@
+\doxysection{srcs/\+opengl/\+uniform.cppm File Reference}
+\hypertarget{uniform_8cppm}{}\label{uniform_8cppm}\index{srcs/opengl/uniform.cppm@{srcs/opengl/uniform.cppm}}
+
+
+C++20 module implementation for {\ttfamily uniform}.  
+
+
+{\ttfamily \+\#include $<$vector$>$}\newline
+{\ttfamily \+\#include $<$string$>$}\newline
+{\ttfamily \+\#include "{}glad.\+h"{}}\newline
+{\ttfamily \+\#include $<$glm/\+glm.\+hpp$>$}\newline
+{\ttfamily \+\#include $<$glm/\+gtc/\+type\+\_\+ptr.\+hpp$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01float_01_4}{mka::\+graphic::\+\+Uniform$<$ float $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01int_01_4}{mka::\+graphic::\+\+Uniform$<$ int $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01unsigned_01int_01_4}{mka::\+graphic::\+\+Uniform$<$ unsigned int $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01bool_01_4}{mka::\+graphic::\+\+Uniform$<$ bool $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1vec2_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+vec2 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1vec3_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+vec3 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1vec4_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+vec4 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1ivec2_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+ivec2 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1ivec3_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+ivec3 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1ivec4_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+ivec4 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1uvec2_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+uvec2 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1uvec3_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+uvec3 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1uvec4_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+uvec4 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1mat2_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+mat2 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1mat3_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+mat3 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01glm_1_1mat4_01_4}{mka::\+graphic::\+\+Uniform$<$ glm::\+mat4 $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01std_1_1vector_3_01float_01_4_01_4}{mka::\+graphic::\+\+Uniform$<$ std::\+vector$<$ float $>$ $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01std_1_1vector_3_01glm_1_1vec3_01_4_01_4}{mka::\+graphic::\+\+Uniform$<$ std::\+vector$<$ glm::\+vec3 $>$ $>$}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Uniform_3_01std_1_1vector_3_01glm_1_1vec4_01_4_01_4}{mka::\+graphic::\+\+Uniform$<$ std::\+vector$<$ glm::\+vec4 $>$ $>$}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename T$>$ }\\void \doxymbox{\hyperlink{uniform_8cppm_a866218a4d1df4c26e31c0af02894a4d8}{mka::\+graphic::\+gl\+Uniform}} (GLuint program, GLint location, const T \&value)
+\begin{DoxyCompactList}\small\item\em Generic entry point used by {\ttfamily \doxylink{classmka_1_1graphic_1_1Shader_a68a149b478ee8ef1098225cb6ac3406e}{Shader::\+set}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+C++20 module implementation for {\ttfamily uniform}. 
+
+
+
+\label{doc-func-members}
+\Hypertarget{uniform_8cppm_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{uniform_8cppm_a866218a4d1df4c26e31c0af02894a4d8}\index{uniform.cppm@{uniform.cppm}!glUniform@{glUniform}}
+\index{glUniform@{glUniform}!uniform.cppm@{uniform.cppm}}
+\doxysubsubsection{\texorpdfstring{glUniform()}{glUniform()}}
+{\footnotesize\ttfamily \label{uniform_8cppm_a866218a4d1df4c26e31c0af02894a4d8} 
+template$<$typename T$>$ \\
+void mka::\+graphic::\+gl\+Uniform (\begin{DoxyParamCaption}\item[{GLuint}]{program}{, }\item[{GLint}]{location}{, }\item[{const T \&}]{value}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [export]}}
+
+
+
+Generic entry point used by {\ttfamily Shader::\+set}. 
+
+Compilation fails if no {\ttfamily Uniform\texorpdfstring{$<$}{<}T\texorpdfstring{$>$}{>}} specialization exists, making unsupported uniform types explicit at compile-\/time. 

@@ -1,0 +1,55 @@
+\doxysection{srcs/\+window.cppm File Reference}
+\hypertarget{window_8cppm}{}\label{window_8cppm}\index{srcs/window.cppm@{srcs/window.cppm}}
+
+
+C++20 module implementation for {\ttfamily window}.  
+
+
+{\ttfamily \+\#include $<$GLFW/\+glfw3.\+h$>$}\newline
+{\ttfamily \+\#include $<$algorithm$>$}\newline
+{\ttfamily \+\#include $<$glm/\+glm.\+hpp$>$}\newline
+{\ttfamily \+\#include $<$glm/\+gtc/\+matrix\+\_\+transform.\+hpp$>$}\newline
+{\ttfamily \+\#include $<$iterator$>$}\newline
+{\ttfamily \+\#include $<$memory$>$}\newline
+{\ttfamily \+\#include $<$random$>$}\newline
+{\ttfamily \+\#include $<$vector$>$}\newline
+{\ttfamily \+\#include $<$ranges$>$}\newline
+{\ttfamily import mka.\+graphic.\+event;}\newline
+{\ttfamily import mka.\+graphic.\+view;}\newline
+{\ttfamily import mka.\+graphic.\+opengl.\+renderer;}\newline
+{\ttfamily import mka.\+graphic.\+log;}\newline
+{\ttfamily import mka.\+graphic.\+mouse;}\newline
+{\ttfamily import mka.\+graphic.\+keyboard;}\newline
+{\ttfamily import mka.\+graphic.\+keyboardview;}\newline
+{\ttfamily import mka.\+graphic.\+mouseview;}\newline
+{\ttfamily import mka.\+graphic.\+context;}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1RootView}{mka::\+graphic::\+\+Root\+View}}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Time}{mka::\+graphic::\+\+Time}}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1Window}{mka::\+graphic::\+\+Window}}
+\begin{DoxyCompactList}\small\item\em Base window abstraction hosting the render loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}\label{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f} 
+enum class \doxymbox{\hyperlink{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}{mka::\+graphic::\+\+State}} \{ {\bfseries Inited}
+, {\bfseries Running}
+, {\bfseries Stopped}
+, {\bfseries Terminated}
+ \}
+\begin{DoxyCompactList}\small\item\em High-\/level runtime state of a window instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{window_8cppm_ab91fbed4c8d5a5f48318bbefaa4f47b5}\label{window_8cppm_ab91fbed4c8d5a5f48318bbefaa4f47b5} 
+void {\bfseries framebuffer\+\_\+size\+\_\+callback} (GLFWwindow \texorpdfstring{$\ast$}{*}, int width, int height)
+\begin{DoxyCompactList}\small\item\em Keep Open\+GL viewport in sync with framebuffer size. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+C++20 module implementation for {\ttfamily window}. 
+

@@ -1,0 +1,47 @@
+\doxysection{mka::\+graphic::\+Mouse\+Event Class Reference}
+\hypertarget{classmka_1_1graphic_1_1MouseEvent}{}\label{classmka_1_1graphic_1_1MouseEvent}\index{mka::graphic::MouseEvent@{mka::graphic::MouseEvent}}
+
+
+Mutable mouse state snapshot shared with {\ttfamily \doxylink{classmka_1_1graphic_1_1Window}{Window}} views.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_a5e53d7c8cbca83bfc19406330fd489a1}\label{classmka_1_1graphic_1_1MouseEvent_a5e53d7c8cbca83bfc19406330fd489a1} 
+bool {\bfseries is\+Pressed} (\doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{Mouse\+Button}} btn) const
+\begin{DoxyCompactList}\small\item\em Return true when the button is currently pressed. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_a044660e52dd0dbff68658b48f29248b7}\label{classmka_1_1graphic_1_1MouseEvent_a044660e52dd0dbff68658b48f29248b7} 
+bool {\bfseries is\+Released} (\doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{Mouse\+Button}} btn) const
+\begin{DoxyCompactList}\small\item\em Return true when the button is currently released. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_ab2c75e2ac26b78ac06f309f5cbb7791f}\label{classmka_1_1graphic_1_1MouseEvent_ab2c75e2ac26b78ac06f309f5cbb7791f} 
+bool {\bfseries is\+Scroll\+Up} (\doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{Mouse\+Button}} btn) const
+\begin{DoxyCompactList}\small\item\em Return true if the latest wheel event was upward. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_a065ff8c9ec62526264e1135c6c03ffbf}\label{classmka_1_1graphic_1_1MouseEvent_a065ff8c9ec62526264e1135c6c03ffbf} 
+bool {\bfseries is\+Scroll\+Down} (\doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{Mouse\+Button}} btn) const
+\begin{DoxyCompactList}\small\item\em Return true if the latest wheel event was downward. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_aaa192d9090e0a8136b8fd2a3499ef042}\label{classmka_1_1graphic_1_1MouseEvent_aaa192d9090e0a8136b8fd2a3499ef042} 
+void {\bfseries set} (\doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{Mouse\+Button}} button, \doxymbox{\hyperlink{mouse_8cppm_a99937c979228ab1c079ca5d80fb9ddd5}{Mouse\+State}} state)
+\begin{DoxyCompactList}\small\item\em Update one button/\+wheel state. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_aae1421d8bba232b5e6072c5a264e7d0e}\label{classmka_1_1graphic_1_1MouseEvent_aae1421d8bba232b5e6072c5a264e7d0e} 
+glm::\+vec2 {\bfseries scroll} = \{0.\+0, 0.\+0\}
+\begin{DoxyCompactList}\small\item\em Last wheel delta from GLFW scroll callback. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_a97e6834088adddaa1eff037b45473bcc}\label{classmka_1_1graphic_1_1MouseEvent_a97e6834088adddaa1eff037b45473bcc} 
+glm::\+vec2 {\bfseries position} = \{-\/99999.\+0, -\/99999.\+0\}
+\begin{DoxyCompactList}\small\item\em Last cursor position in window coordinates. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1MouseEvent_a75cf731fd454df268cb483ece213e6c9}\label{classmka_1_1graphic_1_1MouseEvent_a75cf731fd454df268cb483ece213e6c9} 
+float {\bfseries cursor\+Radius} = 16.\+0f
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Mutable mouse state snapshot shared with {\ttfamily \doxylink{classmka_1_1graphic_1_1Window}{Window}} views. 
+
+The state is updated by GLFW callbacks in {\ttfamily \doxylink{classmka_1_1graphic_1_1Window}{Window}} and read from user-\/facing {\ttfamily Window::\+\+Mouse\+Event\+View} in the render loop. 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+inputs/\+\doxymbox{\hyperlink{mouse_8cppm}{mouse.\+cppm}}\end{DoxyCompactItemize}

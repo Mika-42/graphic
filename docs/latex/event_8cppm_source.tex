@@ -1,0 +1,106 @@
+\doxysection{event.\+cppm}
+\hypertarget{event_8cppm_source}{}\label{event_8cppm_source}\index{srcs/events/event.cppm@{srcs/events/event.cppm}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{keyword}{module};}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <exception>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <forward\_list>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{export}\ \textcolor{keyword}{module}\ \doxymbox{\hyperlink{module__mka_8graphic_8event}{mka.graphic.event}};}
+\DoxyCodeLine{00010\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.graphic.log}};}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{export}\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{class\ }Event\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::shared\_ptr<std::function<void(Args...)>>\ Link;}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ Event()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ send(\textcolor{keyword}{const}\ Args\ \&...args)\ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ cleanup\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ \&lnk\_weak\ :\ links)\ \{}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ \&lnk\_function\ =\ lnk\_weak.lock())\ \{}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*lnk\_function)(args...);}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ weak\ pointer\ expired,\ do\ a\ cleanup\ round}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cleanup\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cleanup)\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ links.remove\_if([](\textcolor{keyword}{auto}\ lnk)\ \{\ \textcolor{keywordflow}{return}\ lnk.expired();\ \});}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ Link\ link(std::function<\textcolor{keywordtype}{void}(Args...)>\ fn)\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ lnk\ =\ std::make\_shared<std::function<void(Args...)>>(fn);}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ links.emplace\_front(lnk);}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ lnk;}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ Link\ link(T\ *instance,\ \textcolor{keywordtype}{void}\ (T::*method)(Args...))\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ link([=](Args...\ args)\ \{\ (instance-\/>*method)(args...);\ \});}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ unlink(Link\ lnk)\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ links.remove\_if([\&](\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ \&lnk\_weak)\ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ sp\ =\ lnk\_weak.lock();}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ sp\ \&\&\ sp\ ==\ lnk;}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ std::forward\_list<std::weak\_ptr<std::function<void(Args...)>>>\ links;}
+\DoxyCodeLine{00055\ \ \ \ \ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{export}\ \textcolor{keyword}{namespace\ }mka::graphic::event\ \{}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ LINK\ (emitter\ →\ receiver)}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ EmitterClass,\ \textcolor{keyword}{typename}\ OwnerClass,\ \textcolor{keyword}{typename}\ ReceiverClass,\ \textcolor{keyword}{typename}...\ EventArgs>}
+\DoxyCodeLine{00063\ \textcolor{keyword}{auto}\ link(}
+\DoxyCodeLine{00064\ \ \ \ \ EmitterClass\&\ sender,}
+\DoxyCodeLine{00065\ \ \ \ \ Event<EventArgs...>\ OwnerClass::*event\_ptr,}
+\DoxyCodeLine{00066\ \ \ \ \ ReceiverClass\&\ receiver,}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{void}\ (ReceiverClass::*method)(EventArgs...))\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{auto}\&\ event\_ref\ =\ sender.*event\_ptr;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{return}\ event\_ref.link(}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ [\&sender,\ \&receiver,\ method](EventArgs...\ args)\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ (receiver.*method)(args...);}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00074\ \ \ \ \ );}
+\DoxyCodeLine{00075\ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ EmitterClass,\ \textcolor{keyword}{typename}\ OwnerClass,\ \textcolor{keyword}{typename}\ Fn,\ \textcolor{keyword}{typename}...\ EventArgs>}
+\DoxyCodeLine{00078\ \textcolor{keyword}{auto}\ link(EmitterClass\&\ sender,\ Event<EventArgs...>\ OwnerClass::*event\_ptr,\ Fn\&\&\ fn)\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{return}\ (sender.*event\_ptr).link(std::forward<Fn>(fn));}
+\DoxyCodeLine{00080\ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{comment}{//\ SEND}}
+\DoxyCodeLine{00083\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ EmitterClass,\ \textcolor{keyword}{typename}...\ EventArgs>}
+\DoxyCodeLine{00084\ \textcolor{keywordtype}{void}\ send(}
+\DoxyCodeLine{00085\ \ \ \ \ EmitterClass\&\ sender,}
+\DoxyCodeLine{00086\ \ \ \ \ Event<EventArgs...>\ EmitterClass::*event\_ptr,}
+\DoxyCodeLine{00087\ \ \ \ \ EventArgs...\ args)\ \{}
+\DoxyCodeLine{00088\ \ \ \ \ (sender.*event\_ptr).send(args...);}
+\DoxyCodeLine{00089\ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{comment}{//\ UNLINK}}
+\DoxyCodeLine{00092\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ EmitterClass,\ \textcolor{keyword}{typename}...\ EventArgs>}
+\DoxyCodeLine{00093\ \textcolor{keywordtype}{void}\ unlink(}
+\DoxyCodeLine{00094\ \ \ \ \ EmitterClass\&\ sender,}
+\DoxyCodeLine{00095\ \ \ \ \ Event<EventArgs...>\ EmitterClass::*event\_ptr,}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keyword}{typename}\ Event<EventArgs...>::Link\ lnk)\ \{}
+\DoxyCodeLine{00097\ \ \ \ \ (sender.*event\_ptr).unlink(lnk);}
+\DoxyCodeLine{00098\ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic::event}}
+
+\end{DoxyCode}

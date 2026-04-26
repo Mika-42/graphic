@@ -1,0 +1,174 @@
+\doxysection{mka.\+graphic.\+keyboard Module Reference}
+\hypertarget{module__mka_8graphic_8keyboard}{}\label{module__mka_8graphic_8keyboard}\index{mka.graphic.keyboard Module Reference@{mka.graphic.keyboard Module Reference}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1KeyboardEvent}{mka::\+graphic::\+\+Keyboard\+Event}}
+\begin{DoxyCompactList}\small\item\em Keyboard state table synchronized once per frame from GLFW. \end{DoxyCompactList}\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{mka::\+graphic::\+\+Keyboard\+Event::\+\+Cast\+Element}}
+\begin{DoxyCompactList}\small\item\em Mapping between GLFW key code, engine key and human-\/readable name. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{keyboard_8cppm_a187510343f029acb861942cbf1f8a091}\label{keyboard_8cppm_a187510343f029acb861942cbf1f8a091} 
+enum class \doxymbox{\hyperlink{keyboard_8cppm_a187510343f029acb861942cbf1f8a091}{mka::\+graphic::\+\+Key\+State}} \{ {\bfseries Pressed}
+, {\bfseries Released}
+ \}
+\begin{DoxyCompactList}\small\item\em Runtime state of a keyboard key. \end{DoxyCompactList}\item 
+\Hypertarget{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}\label{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c} 
+enum class \doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{mka::\+graphic::\+\+Key}} \{ \newline
+{\bfseries Space}
+, {\bfseries Apostrophe}
+, {\bfseries Comma}
+, {\bfseries Minus}
+, \newline
+{\bfseries Period}
+, {\bfseries Slash}
+, {\bfseries Num0}
+, {\bfseries Num1}
+, \newline
+{\bfseries Num2}
+, {\bfseries Num3}
+, {\bfseries Num4}
+, {\bfseries Num5}
+, \newline
+{\bfseries Num6}
+, {\bfseries Num7}
+, {\bfseries Num8}
+, {\bfseries Num9}
+, \newline
+{\bfseries Semicolon}
+, {\bfseries Equal}
+, {\bfseries A}
+, {\bfseries B}
+, \newline
+{\bfseries C}
+, {\bfseries D}
+, {\bfseries E}
+, {\bfseries F}
+, \newline
+{\bfseries G}
+, {\bfseries H}
+, {\bfseries I}
+, {\bfseries J}
+, \newline
+{\bfseries K}
+, {\bfseries L}
+, {\bfseries M}
+, {\bfseries N}
+, \newline
+{\bfseries O}
+, {\bfseries P}
+, {\bfseries Q}
+, {\bfseries R}
+, \newline
+{\bfseries S}
+, {\bfseries T}
+, {\bfseries U}
+, {\bfseries V}
+, \newline
+{\bfseries W}
+, {\bfseries X}
+, {\bfseries Y}
+, {\bfseries Z}
+, \newline
+{\bfseries LBracket}
+, {\bfseries Backslash}
+, {\bfseries RBracket}
+, {\bfseries Grave\+Accent}
+, \newline
+{\bfseries Escape}
+, {\bfseries Enter}
+, {\bfseries Tab}
+, {\bfseries Backspace}
+, \newline
+{\bfseries Insert}
+, {\bfseries Delete}
+, {\bfseries Right}
+, {\bfseries Left}
+, \newline
+{\bfseries Down}
+, {\bfseries Up}
+, {\bfseries Page\+Up}
+, {\bfseries Page\+Down}
+, \newline
+{\bfseries Home}
+, {\bfseries End}
+, {\bfseries Caps\+Lock}
+, {\bfseries Scroll\+Lock}
+, \newline
+{\bfseries Num\+Lock}
+, {\bfseries Print\+Screen}
+, {\bfseries Pause}
+, {\bfseries F1}
+, \newline
+{\bfseries F2}
+, {\bfseries F3}
+, {\bfseries F4}
+, {\bfseries F5}
+, \newline
+{\bfseries F6}
+, {\bfseries F7}
+, {\bfseries F8}
+, {\bfseries F9}
+, \newline
+{\bfseries F10}
+, {\bfseries F11}
+, {\bfseries F12}
+, {\bfseries F13}
+, \newline
+{\bfseries F14}
+, {\bfseries F15}
+, {\bfseries F16}
+, {\bfseries F17}
+, \newline
+{\bfseries F18}
+, {\bfseries F19}
+, {\bfseries F20}
+, {\bfseries F21}
+, \newline
+{\bfseries F22}
+, {\bfseries F23}
+, {\bfseries F24}
+, {\bfseries F25}
+, \newline
+{\bfseries Numpad0}
+, {\bfseries Numpad1}
+, {\bfseries Numpad2}
+, {\bfseries Numpad3}
+, \newline
+{\bfseries Numpad4}
+, {\bfseries Numpad5}
+, {\bfseries Numpad6}
+, {\bfseries Numpad7}
+, \newline
+{\bfseries Numpad8}
+, {\bfseries Numpad9}
+, {\bfseries Numpad\+Decimal}
+, {\bfseries Numpad\+Divide}
+, \newline
+{\bfseries Numpad\+Multiply}
+, {\bfseries Numpad\+Subtract}
+, {\bfseries Numpad\+Add}
+, {\bfseries Numpad\+Enter}
+, \newline
+{\bfseries Numpad\+Equal}
+, {\bfseries Left\+Shift}
+, {\bfseries Left\+Ctrl}
+, {\bfseries Left\+Alt}
+, \newline
+{\bfseries Left\+Super}
+, {\bfseries Right\+Shift}
+, {\bfseries Right\+Ctrl}
+, {\bfseries Right\+Alt}
+, \newline
+{\bfseries Right\+Super}
+, {\bfseries Menu}
+, {\bfseries Unknown}
+ \}
+\begin{DoxyCompactList}\small\item\em Internal key identifier used by the engine. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file srcs/\+inputs/\+\doxymbox{\hyperlink{keyboard_8cppm}{keyboard.\+cppm}}
+\begin{DoxyCompactList}\small\item\em C++20 module implementation for {\ttfamily keyboard}. \end{DoxyCompactList}\end{DoxyCompactItemize}

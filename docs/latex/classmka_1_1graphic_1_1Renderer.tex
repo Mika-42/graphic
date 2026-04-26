@@ -1,0 +1,56 @@
+\doxysection{mka::\+graphic::\+Renderer Class Reference}
+\hypertarget{classmka_1_1graphic_1_1Renderer}{}\label{classmka_1_1graphic_1_1Renderer}\index{mka::graphic::Renderer@{mka::graphic::Renderer}}
+
+
+Instanced rectangle renderer with optional text support.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Renderer_aa2dc6d739f7c8131e7971439f0638ec8}\label{classmka_1_1graphic_1_1Renderer_aa2dc6d739f7c8131e7971439f0638ec8} 
+std::\+uint32\+\_\+t {\bfseries add} (\doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}} \&r)
+\item 
+std::\+size\+\_\+t \doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer_a38d2669b8362a1664e606cd0adfe1697}{add}} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1Text}{Text}} \&text)
+\begin{DoxyCompactList}\small\item\em Build text using the rectangle pipeline (1 glyph == 1 rectangle). \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer_ae31bbafb9f7796986356c0d71dfbdb15}{draw}} (const glm::\+mat4 projection)
+\begin{DoxyCompactList}\small\item\em Flush batched rectangles to GPU and issue one instanced draw. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Renderer_aec944e66ed3b0aec01d0dca6de60b999}\label{classmka_1_1graphic_1_1Renderer_aec944e66ed3b0aec01d0dca6de60b999} 
+void {\bfseries set\+Background\+Color} (const glm::\+vec4 \&color)
+\begin{DoxyCompactList}\small\item\em Set clear color used by {\ttfamily \doxylink{classmka_1_1graphic_1_1Renderer_ae31bbafb9f7796986356c0d71dfbdb15}{draw}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Instanced rectangle renderer with optional text support. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1Renderer_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1Renderer_a38d2669b8362a1664e606cd0adfe1697}\index{mka::graphic::Renderer@{mka::graphic::Renderer}!add@{add}}
+\index{add@{add}!mka::graphic::Renderer@{mka::graphic::Renderer}}
+\doxysubsubsection{\texorpdfstring{add()}{add()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Renderer_a38d2669b8362a1664e606cd0adfe1697} 
+std::\+size\+\_\+t mka::\+graphic::\+\+Renderer::\+add (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structmka_1_1graphic_1_1Text}{Text}} \&}]{text}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Build text using the rectangle pipeline (1 glyph == 1 rectangle). 
+
+\begin{DoxyReturn}{Returns}
+Number of generated rectangle instances. 
+\end{DoxyReturn}
+\Hypertarget{classmka_1_1graphic_1_1Renderer_ae31bbafb9f7796986356c0d71dfbdb15}\index{mka::graphic::Renderer@{mka::graphic::Renderer}!draw@{draw}}
+\index{draw@{draw}!mka::graphic::Renderer@{mka::graphic::Renderer}}
+\doxysubsubsection{\texorpdfstring{draw()}{draw()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Renderer_ae31bbafb9f7796986356c0d71dfbdb15} 
+void mka::\+graphic::\+\+Renderer::\+draw (\begin{DoxyParamCaption}\item[{const glm::\+mat4}]{projection}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Flush batched rectangles to GPU and issue one instanced draw. 
+
+TODO Make it unusable by user 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{renderer_8cppm}{renderer.\+cppm}}\end{DoxyCompactItemize}

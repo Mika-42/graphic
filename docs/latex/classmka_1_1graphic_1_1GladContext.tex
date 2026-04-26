@@ -1,0 +1,115 @@
+\doxysection{mka::\+graphic::\+Glad\+Context Class Reference}
+\hypertarget{classmka_1_1graphic_1_1GladContext}{}\label{classmka_1_1graphic_1_1GladContext}\index{mka::graphic::GladContext@{mka::graphic::GladContext}}
+
+
+Open\+GL context implementation using GLAD.  
+
+
+Inheritance diagram for mka::\+graphic::\+Glad\+Context:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classmka_1_1graphic_1_1GladContext}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_af25ade212b61e7c05da3a3aaf9e0dd16}{init}} (GLFWwindow \texorpdfstring{$\ast$}{*}window) override
+\begin{DoxyCompactList}\small\item\em Initialize backend state for a given native window. \end{DoxyCompactList}\item 
+std::\+string \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a31820fbdd0a1ae751c40c1ceae3661a9}{get\+Name}} () const override
+\begin{DoxyCompactList}\small\item\em Return a human-\/readable backend name. \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a8ac2d55a1deff4ce635618f1a63a8569}{get\+API}} () const override
+\begin{DoxyCompactList}\small\item\em Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a6ef93c9f23779bd8f5de6153c61648f7}{make\+Current}} () override
+\begin{DoxyCompactList}\small\item\em Make this context current on the calling thread. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a6839182e0a0f831366d668036ef032b0}{swap\+Buffers}} () override
+\begin{DoxyCompactList}\small\item\em Present the current frame. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+GLFWwindow \texorpdfstring{$\ast$}{*} {\bfseries window} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Open\+GL context implementation using GLAD. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1GladContext_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1GladContext_a8ac2d55a1deff4ce635618f1a63a8569}\index{mka::graphic::GladContext@{mka::graphic::GladContext}!getAPI@{getAPI}}
+\index{getAPI@{getAPI}!mka::graphic::GladContext@{mka::graphic::GladContext}}
+\doxysubsubsection{\texorpdfstring{getAPI()}{getAPI()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1GladContext_a8ac2d55a1deff4ce635618f1a63a8569} 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} mka::\+graphic::\+\+Glad\+Context::\+get\+API (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1GladContext_a31820fbdd0a1ae751c40c1ceae3661a9}\index{mka::graphic::GladContext@{mka::graphic::GladContext}!getName@{getName}}
+\index{getName@{getName}!mka::graphic::GladContext@{mka::graphic::GladContext}}
+\doxysubsubsection{\texorpdfstring{getName()}{getName()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1GladContext_a31820fbdd0a1ae751c40c1ceae3661a9} 
+std::\+string mka::\+graphic::\+\+Glad\+Context::\+get\+Name (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return a human-\/readable backend name. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1GladContext_af25ade212b61e7c05da3a3aaf9e0dd16}\index{mka::graphic::GladContext@{mka::graphic::GladContext}!init@{init}}
+\index{init@{init}!mka::graphic::GladContext@{mka::graphic::GladContext}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1GladContext_af25ade212b61e7c05da3a3aaf9e0dd16} 
+bool mka::\+graphic::\+\+Glad\+Context::\+init (\begin{DoxyParamCaption}\item[{GLFWwindow \texorpdfstring{$\ast$}{*}}]{window}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Initialize backend state for a given native window. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1GladContext_a6ef93c9f23779bd8f5de6153c61648f7}\index{mka::graphic::GladContext@{mka::graphic::GladContext}!makeCurrent@{makeCurrent}}
+\index{makeCurrent@{makeCurrent}!mka::graphic::GladContext@{mka::graphic::GladContext}}
+\doxysubsubsection{\texorpdfstring{makeCurrent()}{makeCurrent()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1GladContext_a6ef93c9f23779bd8f5de6153c61648f7} 
+void mka::\+graphic::\+\+Glad\+Context::\+make\+Current (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Make this context current on the calling thread. 
+
+
+
+Reimplemented from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1GladContext_a6839182e0a0f831366d668036ef032b0}\index{mka::graphic::GladContext@{mka::graphic::GladContext}!swapBuffers@{swapBuffers}}
+\index{swapBuffers@{swapBuffers}!mka::graphic::GladContext@{mka::graphic::GladContext}}
+\doxysubsubsection{\texorpdfstring{swapBuffers()}{swapBuffers()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1GladContext_a6839182e0a0f831366d668036ef032b0} 
+void mka::\+graphic::\+\+Glad\+Context::\+swap\+Buffers (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Present the current frame. 
+
+
+
+Reimplemented from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000}{mka::\+graphic::\+\+Context}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{context_8cppm}{context.\+cppm}}\end{DoxyCompactItemize}

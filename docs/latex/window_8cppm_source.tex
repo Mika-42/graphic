@@ -1,0 +1,380 @@
+\doxysection{window.\+cppm}
+\hypertarget{window_8cppm_source}{}\label{window_8cppm_source}\index{srcs/window.cppm@{srcs/window.cppm}}
+\doxymbox{\hyperlink{window_8cppm}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{module};}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <GLFW/glfw3.h>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <glm/glm.hpp>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <glm/gtc/matrix\_transform.hpp>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <random>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <ranges>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{export}\ \textcolor{keyword}{module}\ \doxymbox{\hyperlink{module__mka_8graphic_8window}{mka.graphic.window}};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{export}\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8context}{mka.graphic.context}};\ \ \ \ \ \ \textcolor{comment}{//\ TODO\ check\ if\ usefull\ to\ export}}
+\DoxyCodeLine{00020\ \textcolor{keyword}{export}\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8mouseview}{mka.graphic.mouseview}};\ \ \ \ \textcolor{comment}{//\ TODO\ check\ if\ usefull\ to\ export}}
+\DoxyCodeLine{00021\ \textcolor{keyword}{export}\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8keyboardview}{mka.graphic.keyboardview}};\ \textcolor{comment}{//\ TODO\ check\ if\ usefull\ to\ export}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8keyboard}{mka.graphic.keyboard}};}
+\DoxyCodeLine{00024\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8mouse}{mka.graphic.mouse}};}
+\DoxyCodeLine{00025\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8renderer}{mka.graphic.opengl.renderer}};}
+\DoxyCodeLine{00026\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8view}{mka.graphic.view}};}
+\DoxyCodeLine{00027\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8event}{mka.graphic.event}};}
+\DoxyCodeLine{00028\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.graphic.log}};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00031\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{window_8cppm_ab91fbed4c8d5a5f48318bbefaa4f47b5}{framebuffer\_size\_callback}}(GLFWwindow\ *\ \textcolor{comment}{/*window*/},\ \textcolor{keywordtype}{int}\ width,\ \textcolor{keywordtype}{int}\ height)\ \{}
+\DoxyCodeLine{00032\ \ \ glViewport(0,\ 0,\ width,\ height);}
+\DoxyCodeLine{00033\ \}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00036\ \textcolor{keyword}{class\ }RootView\ final:\ \textcolor{keyword}{private}\ View\ \{}
+\DoxyCodeLine{00037\ \textcolor{keyword}{public}:\ \textcolor{comment}{//\ expose\ base\ method}}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \textcolor{keyword}{using\ }View::getSize;}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \textcolor{keyword}{using\ }View::getOverflows;\ }
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \textcolor{keyword}{using\ }View::isKeyboardFocused;}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{using\ }View::isMouseFocused;}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ RootView()\ :\ View()\ \{\}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{void}\ addRoot(std::shared\_ptr<View>\ child)\ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\ \&\&\ children.empty())\ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ View::addChild(child);}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00051\ \ \ \ \ \}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//-\/-\/-\/\ NOTE\ :\ everything\ under,\ (public/private/protected)\ do\ not\ exist\ for\ child\ trying\ to\ access\ by\ parent}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{void}\ updateRoot(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}}\ \&renderer)\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ updateChild(renderer);}
+\DoxyCodeLine{00055\ \ \ \ \ \}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordtype}{void}\ setRootSize(\textcolor{keyword}{const}\ glm::vec2\&\ g)\ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ setPosition(glm::vec2(0.0f));}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ setSize(g);}
+\DoxyCodeLine{00060\ \ \ \ \ \}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{//\ Nouvelle\ méthode\ publique\ :\ trie\ TOUS\ les\ enfants\ visibles}}
+\DoxyCodeLine{00063\ \ \ \textcolor{keywordtype}{void}\ topoZSort()\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ sortedViews.clear();}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ child\ :\ getChildren())\ \{}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child\ \&\&\ child-\/>isVisible())\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ topoZSortRecursive(child.get());}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00070\ \ \ \ \ \}}
+\DoxyCodeLine{00071\ \ \ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ std::vector<View*>\&\ getHoveredViews(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{MouseEventView}}\&\ mouse)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ hovered.clear();}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ std::function<void(View*)>\ collect\ =\ [\&](View*\ node)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!node)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00077\ \ \ \ \ }
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ child\ :\ node-\/>getChildren())\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!child\ ||\ !child-\/>isVisible())\ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child-\/>isClip()\ \&\&\ !child-\/>clipContain(mouse))\ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (child-\/>contain(mouse))\ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ hovered.push\_back(child.get());}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ collect(child.get());}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ }
+\DoxyCodeLine{00095\ \ \ \ \ \ \ collect(children[0].get());}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ hovered;\ \ \textcolor{comment}{//\ Top-\/most\ =\ hovered.back()\ !}}
+\DoxyCodeLine{00097\ \ \ \ \ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{void}\ draw(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}}\ \&)\ \{\}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{comment}{//\ Méthode\ récursive\ privée}}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{void}\ topoZSortRecursive(View*\ view)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{if}\ (!view\ ||\ !view-\/>isVisible())\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00105\ \ \ \ \ }
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{comment}{//\ Trier\ les\ enfants\ par\ zIndex}}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{auto}\&\ ch\ =\ view-\/>getChildren();}
+\DoxyCodeLine{00108\ \ \ \ \ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{comment}{//\ Parcours\ récursif\ des\ enfants}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ child\ :\ ch)\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ topoZSortRecursive(child.get());}
+\DoxyCodeLine{00112\ \ \ \ \ \}}
+\DoxyCodeLine{00113\ \ \ \ \ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{//\ Ajouter\ le\ noeud\ courant\ (post-\/order)}}
+\DoxyCodeLine{00115\ \ \ \ \ sortedViews.push\_back(view);}
+\DoxyCodeLine{00116\ \ \ \}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00119\ \ \ std::vector<View*>\ sortedViews;\ \ \textcolor{comment}{//\ public\ pour\ accès\ externe\ si\ besoin}}
+\DoxyCodeLine{00120\ \ \ std::vector<View*>\ hovered;}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \};}
+\DoxyCodeLine{00123\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{keyword}{export}\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00128\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}{State}}\ \{\ Inited,\ Running,\ Stopped,\ Terminated\ \};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structmka_1_1graphic_1_1Time}{Time}}\ \{}
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{double}\ now\ =\ 0.0;\ \ \ }
+\DoxyCodeLine{00132\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structmka_1_1graphic_1_1Time_a23814a6b1136155ed02b6a665ba25902}{delta}}\ =\ 0.0;\ }
+\DoxyCodeLine{00133\ \};}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00144\ \textcolor{keyword}{class\ }Window\ \{}
+\DoxyCodeLine{00145\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00146\ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event<>}}\ AppClose;}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00149\ \ \ Window(\textcolor{keywordtype}{size\_t}\ width,\ \textcolor{keywordtype}{size\_t}\ height,\ \textcolor{keyword}{const}\ std::string\ \&name,}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ std::unique\_ptr<Context>\ ctx)}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ :\ size(width,\ height),\ name(name),\ ctx(std::move(ctx)),\ window(\textcolor{keyword}{nullptr}),}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ mouseEventView(mouseEvent),\ keyboardEventView(keyboardEvent)\ \{}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordflow}{if}\ (!glfwInit())\ \{}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ state\ =\ State::Terminated;}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00156\ \ \ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ state\ =\ State::Inited;}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordflow}{switch}\ (this-\/>ctx-\/>getAPI())\ \{}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordflow}{case}\ API::OpenGL:}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ glfwWindowHint(GLFW\_CLIENT\_API,\ GLFW\_OPENGL\_API);}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ glfwWindowHint(GLFW\_CONTEXT\_VERSION\_MAJOR,\ 4);}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ glfwWindowHint(GLFW\_CONTEXT\_VERSION\_MINOR,\ 1);}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ glfwWindowHint(GLFW\_OPENGL\_PROFILE,\ GLFW\_OPENGL\_CORE\_PROFILE);}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordflow}{case}\ API::Vulkan:}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ glfwWindowHint(GLFW\_CLIENT\_API,\ GLFW\_NO\_API);}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{case}\ API::None:}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ glfwWindowHint(GLFW\_CLIENT\_API,\ GLFW\_NO\_API);}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00177\ \ \ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ glfwWindowHint(GLFW\_STENCIL\_BITS,\ 8);}
+\DoxyCodeLine{00180\ \ \ \ \ window\ =}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ glfwCreateWindow(size.x,\ size.y,\ this-\/>name.c\_str(),\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordflow}{if}\ (!window)\ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ state\ =\ State::Terminated;}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ glfwTerminate();}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00187\ \ \ \ \ \}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ glfwSetWindowUserPointer(window,\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00190\ \ \ \ \ glfwSetFramebufferSizeCallback(window,\ \doxymbox{\hyperlink{window_8cppm_ab91fbed4c8d5a5f48318bbefaa4f47b5}{framebuffer\_size\_callback}});}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ glfwSetWindowSizeCallback(window,\ [](GLFWwindow\ *win,\ \textcolor{keywordtype}{int}\ w,\ \textcolor{keywordtype}{int}\ h)\ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ Window\ *self\ =\ \textcolor{keyword}{static\_cast<}Window\ *\textcolor{keyword}{>}(glfwGetWindowUserPointer(win));}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ self-\/>orthographicProjection\ =}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ glm::ortho(0.0f,\ \textcolor{keywordtype}{float}(w),\ \textcolor{keywordtype}{float}(h),\ 0.0f,\ -\/1.0f,\ 1.0f);}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ self-\/>size\ =\ glm::vec2(w,\ h);}
+\DoxyCodeLine{00197\ \ \ \ \ \});}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ glfwSetCursorPosCallback(window,\ [](GLFWwindow\ *win,\ \textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y)\ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ Window\ *self\ =\ \textcolor{keyword}{static\_cast<}Window\ *\textcolor{keyword}{>}(glfwGetWindowUserPointer(win));}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ self-\/>mouseEvent.\doxymbox{\hyperlink{classmka_1_1graphic_1_1MouseEvent_a97e6834088adddaa1eff037b45473bcc}{position}}\ =\ glm::vec2(x,\ y);}
+\DoxyCodeLine{00202\ \ \ \ \ \});}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ glfwSetScrollCallback(}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ window,\ [](GLFWwindow\ *win,\ \textcolor{keywordtype}{double}\ xOffset,\ \textcolor{keywordtype}{double}\ yOffset)\ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ Window\ *self\ =\ \textcolor{keyword}{static\_cast<}Window\ *\textcolor{keyword}{>}(glfwGetWindowUserPointer(win));}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ self-\/>mouseEvent.\doxymbox{\hyperlink{classmka_1_1graphic_1_1MouseEvent_aae1421d8bba232b5e6072c5a264e7d0e}{scroll}}\ =\ glm::vec2(xOffset,\ yOffset);}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yOffset\ >\ 0)}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ self-\/>mouseEvent.\doxymbox{\hyperlink{classmka_1_1graphic_1_1MouseEvent_aaa192d9090e0a8136b8fd2a3499ef042}{set}}(MouseButton::Middle,\ MouseState::ScrollUp);}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yOffset\ <\ 0)}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ self-\/>mouseEvent.\doxymbox{\hyperlink{classmka_1_1graphic_1_1MouseEvent_aaa192d9090e0a8136b8fd2a3499ef042}{set}}(MouseButton::Middle,\ MouseState::ScrollDown);}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ glfwSetMouseButtonCallback(}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ window,\ [](GLFWwindow\ *win,\ \textcolor{keywordtype}{int}\ button,\ \textcolor{keywordtype}{int}\ action,\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*mods*/})\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ Window\ *self\ =\ \textcolor{keyword}{static\_cast<}Window\ *\textcolor{keyword}{>}(glfwGetWindowUserPointer(win));}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{mouse_8cppm_a99937c979228ab1c079ca5d80fb9ddd5}{MouseState}}\ state\ =\ (action\ ==\ GLFW\_PRESS)\ ?\ MouseState::Pressed}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ MouseState::Released;}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{MouseButton}}\ btn;}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (button)\ \{}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GLFW\_MOUSE\_BUTTON\_LEFT:}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ btn\ =\ MouseButton::Left;}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GLFW\_MOUSE\_BUTTON\_MIDDLE:}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ btn\ =\ MouseButton::Middle;}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GLFW\_MOUSE\_BUTTON\_RIGHT:}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ btn\ =\ MouseButton::Right;}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ self-\/>mouseEvent.\doxymbox{\hyperlink{classmka_1_1graphic_1_1MouseEvent_aaa192d9090e0a8136b8fd2a3499ef042}{set}}(btn,\ state);}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{if}\ (!this-\/>ctx\ ||\ !this-\/>ctx-\/>init(window))\ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ state\ =\ State::Terminated;}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00243\ \ \ \ \ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \ \ glEnable(GL\_BLEND);}
+\DoxyCodeLine{00246\ \ \ \ \ glBlendFunc(GL\_SRC\_ALPHA,\ GL\_ONE\_MINUS\_SRC\_ALPHA);}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ renderer\ =\ std::make\_unique<Renderer>();}
+\DoxyCodeLine{00249\ \ \ \}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Window_a81e95ffa781692bed285818f8d6d4210}{run}}()\ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordflow}{if}\ (state\ !=\ State::Inited)}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \ \ \ \ state\ =\ State::Running;}
+\DoxyCodeLine{00257\ \ \ \ \ lastTime\ =\ glfwGetTime();}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keywordflow}{while}\ (!glfwWindowShouldClose(window))\ \{}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ glfwPollEvents();}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \ \ \ \ \ \ handleKeyboard();}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ current\ =\ glfwGetTime();}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ time.delta\ =\ (current\ -\/\ lastTime)\ *\ 1000.0;}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ time.now\ =\ current\ *\ 1000.0;}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ lastTime\ =\ current;}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \ \ \ \ ctx-\/>makeCurrent();}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ \ \ render(mouseEventView,\ keyboardEventView,\ time);}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \ \ \ \ ctx-\/>swapBuffers();}
+\DoxyCodeLine{00274\ \ \ \ \ \}}
+\DoxyCodeLine{00275\ \ \ \ \ AppClose.send();}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \ \ state\ =\ State::Stopped;}
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00279\ \ \ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Window}{\string~Window}}()\ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keywordflow}{if}\ (window)\ \{}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ glfwDestroyWindow(window);}
+\DoxyCodeLine{00284\ \ \ \ \ \}}
+\DoxyCodeLine{00285\ \ \ \ \ glfwTerminate();}
+\DoxyCodeLine{00286\ \ \ \}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \ \ \textcolor{keyword}{const}\ State\ \&getState()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ state;\ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{keywordtype}{void}\ setBackgroundColor(\textcolor{keyword}{const}\ glm::vec4\ \&color)\ \{\ bgColor\ =\ color;\ \}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \textcolor{keywordtype}{void}\ setRoot(std::shared\_ptr<View>\ root)\ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{keywordflow}{if}(!root)\ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{Log::warn}}(\textcolor{stringliteral}{"{}root\ view\ is\ null,\ setRoot(...)\ ignored."{}});}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};\ }
+\DoxyCodeLine{00296\ \ \ \ \ \}}
+\DoxyCodeLine{00297\ \ \ \ \ }
+\DoxyCodeLine{00298\ \ \ \ \ rootView\ =\ std::make\_shared<RootView>();}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ rootView-\/>addRoot(root);}
+\DoxyCodeLine{00301\ \ \ \}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00304\ \ \ \textcolor{keywordtype}{void}\ render(\textcolor{keyword}{const}\ MouseEventView\ \&mouse,\ \textcolor{keyword}{const}\ KeyboardEventView\ \&keyboard,}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Time\ \&\ \textcolor{comment}{/*time*/})\ \{}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keywordflow}{if}\ (!renderer)\ \{\ }
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}{Log::fatal}}(\textcolor{stringliteral}{"{}renderer\ is\ uninitialized,\ render(...)\ ignored."{}});}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00310\ \ \ \ \ \}}
+\DoxyCodeLine{00311\ \ \ \ \ }
+\DoxyCodeLine{00312\ \ \ \ \ renderer-\/>setBackgroundColor(bgColor);}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{keywordflow}{if}\ (!rootView)\ \{}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}{Log::fatal}}(\textcolor{stringliteral}{"{}root\ view\ is\ null,\ render(...)\ ignored."{}});}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00317\ \ \ \ \ \}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \ \ rootView-\/>setRootSize(size);}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \ \ rootView-\/>topoZSort();}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \&view\ :\ rootView-\/>sortedViews)\ \{}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (view\ \&\&\ view-\/>isKeyboardFocused())\ \{}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ view-\/>onKeyboardEvent(keyboard);}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00327\ \ \ \ \ \}}
+\DoxyCodeLine{00328\ \ \ \ \ }
+\DoxyCodeLine{00329\ \ \ \ \ rootView-\/>updateRoot(*renderer);}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \ \ handleMouse(mouse);}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \ \ renderer-\/>draw(orthographicProjection);}
+\DoxyCodeLine{00334\ \ \ \}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ \textcolor{keywordtype}{void}\ handleMouse(\textcolor{keyword}{const}\ MouseEventView\&\ mouse)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{keyword}{auto}\&\ hits\ =\ rootView-\/>getHoveredViews(mouse);}
+\DoxyCodeLine{00338\ \ \ \ \ View*\ prevTop\ =\ focusedView;}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordflow}{if}(!hits.empty())\ \{}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ View*\ newTop\ =\ hits.back();}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (newTop\ !=\ prevTop)\ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (prevTop)\ \{\ }
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ prevTop-\/>MouseLeave.send(mouse);}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ focusedView\ =\ newTop;}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ newTop-\/>MouseEnter.send(mouse);}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \}\ }
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ newTop-\/>MouseMove.send(mouse);}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (prevTop)\ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ prevTop-\/>MouseLeave.send(mouse);}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ focusedView\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00357\ \ \ \ \ \}}
+\DoxyCodeLine{00358\ \ \ \}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00361\ \ \ glm::vec2\ size\ =\ \{0.0,\ 0.0\};}
+\DoxyCodeLine{00362\ \ \ glm::mat4\ orthographicProjection\ =\ glm::mat4(1.0f);}
+\DoxyCodeLine{00363\ \ \ glm::vec4\ bgColor\ =\ glm::vec4(1.0f);}
+\DoxyCodeLine{00364\ \ \ std::string\ name;}
+\DoxyCodeLine{00365\ \ \ std::unique\_ptr<Context>\ ctx\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00366\ \ \ \doxymbox{\hyperlink{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}{State}}\ state\ =\ State::Terminated;}
+\DoxyCodeLine{00367\ \ \ GLFWwindow\ *window\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00368\ \ \ MouseEvent\ mouseEvent;}
+\DoxyCodeLine{00369\ \ \ KeyboardEvent\ keyboardEvent;}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ MouseEventView\ mouseEventView;}
+\DoxyCodeLine{00372\ \ \ KeyboardEventView\ keyboardEventView;}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \textcolor{keywordtype}{double}\ lastTime\ =\ 0.0;}
+\DoxyCodeLine{00375\ \ \ Time\ time;}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ std::unique\_ptr<Renderer>\ renderer;}
+\DoxyCodeLine{00378\ \ \ std::shared\_ptr<RootView>\ rootView\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ View*\ focusedView\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00381\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00382\ \ \ \textcolor{keywordtype}{void}\ handleKeyboard()\ \{}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \&i\ :\ keyboardEvent.castTable)\ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ i.state\ =\ glfwGetKey(window,\ i.glfw)\ ==\ GLFW\_RELEASE\ ?\ KeyState::Released}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ KeyState::Pressed;}
+\DoxyCodeLine{00386\ \ \ \ \ \}}
+\DoxyCodeLine{00387\ \ \ \}}
+\DoxyCodeLine{00388\ \};}
+\DoxyCodeLine{00389\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic}}
+
+\end{DoxyCode}

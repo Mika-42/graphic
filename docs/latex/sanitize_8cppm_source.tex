@@ -1,0 +1,78 @@
+\doxysection{sanitize.\+cppm}
+\hypertarget{sanitize_8cppm_source}{}\label{sanitize_8cppm_source}\index{srcs/sanitize.cppm@{srcs/sanitize.cppm}}
+\doxymbox{\hyperlink{sanitize_8cppm}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{module};}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <glm/glm.hpp>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00008\ \textcolor{keyword}{export}\ \textcolor{keyword}{module}\ \doxymbox{\hyperlink{module__mka_8graphic_8sanitize}{mka.graphic.sanitize}};}
+\DoxyCodeLine{00009\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8rectangle}{mka.graphic.opengl.rectangle}};}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{export}\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sanitize_8cppm_aba5d66161bd446a6a1b108e3fc8f5978}{sanitizeGeometry}}(glm::vec4\&\ g)\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 4;\ i++)\ \{}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::isfinite(g[i]))\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ g[i]\ =\ 0.0f;}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ width\ /\ height\ >=\ 0}}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ g.z\ =\ glm::max(g.z,\ 0.0f);}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ g.w\ =\ glm::max(g.w,\ 0.0f);}
+\DoxyCodeLine{00024\ \ \ \ \ \}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sanitize_8cppm_a15027ef663dd5785ddab6d85488cea82}{sanitizeRadius}}(glm::vec4\&\ radius,\ \textcolor{keyword}{const}\ glm::vec2\&\ size)\ \{}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ maxRadius\ =\ glm::min(size.x,\ size.y)\ *\ 0.5f;}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ radius\ =\ glm::clamp(radius,\ glm::vec4(0.0f),\ glm::vec4(maxRadius));}
+\DoxyCodeLine{00031\ \ \ \ \ \}}
+\DoxyCodeLine{00032\ \ \ \ \ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}{sanitizeColor}}(glm::vec4\&\ color)\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 4;\ i++)\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::isfinite(color[i]))\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ color[i]\ =\ 0.0f;}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ color\ =\ glm::clamp(color,\ glm::vec4(0.0f),\ glm::vec4(1.0f));}
+\DoxyCodeLine{00042\ \ \ \ \ \}}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825}{sanitizeFloat}}(\textcolor{keywordtype}{float}\ v,\ \textcolor{keywordtype}{float}\ minValue\ =\ 0.0f)\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::isfinite(v))\ \textcolor{keywordflow}{return}\ minValue;}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ glm::max(v,\ minValue);}
+\DoxyCodeLine{00048\ \ \ \ \ \}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sanitize_8cppm_a010dabc1a6b27df95639a4674d519175}{sanitizeBorderThickness}}(\textcolor{keywordtype}{float}\&\ thickness)\ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ thickness\ =\ \doxymbox{\hyperlink{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825}{sanitizeFloat}}(thickness,\ 0.0f);}
+\DoxyCodeLine{00053\ \ \ \ \ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sanitize_8cppm_aadc5e626b01e9e6db4a8d8e0af395f20}{sanitizeShadow}}(glm::vec2\&\ shadowOffset,\ \textcolor{keywordtype}{float}\&\ shadowSoftness,\ \textcolor{keywordtype}{float}\&\ shadowSpread)\ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ shadowSoftness\ =\ \doxymbox{\hyperlink{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825}{sanitizeFloat}}(shadowSoftness,\ 0.001f);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ shadowSpread\ \ \ =\ \doxymbox{\hyperlink{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825}{sanitizeFloat}}(shadowSpread,\ 0.0f);}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ i++)\ \{}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::isfinite(shadowOffset[i]))\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ shadowOffset[i]\ =\ 0.0f;}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00065\ \ \ \ \ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{sanitize_8cppm_af0c8b002a216bfa3d9896e88ab1e6ec4}{sanitizeRectangle}}(\doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}}\ \&r)\ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_aba5d66161bd446a6a1b108e3fc8f5978}{sanitizeGeometry}}(r.geometry);}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_a15027ef663dd5785ddab6d85488cea82}{sanitizeRadius}}(r.radius,\ glm::vec2(r.geometry.z,\ r.geometry.w));}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}{sanitizeColor}}(r.backgroundColorA);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}{sanitizeColor}}(r.backgroundColorB);}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}{sanitizeColor}}(r.borderColor);}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}{sanitizeColor}}(r.shadowColor);}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_aadc5e626b01e9e6db4a8d8e0af395f20}{sanitizeShadow}}(r.shadowOffset,\ r.params.y,\ r.params.z);}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_a010dabc1a6b27df95639a4674d519175}{sanitizeBorderThickness}}(r.params.w);}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ r.params.x\ =\ std::fmod(r.params.x,\ 360.0f);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (r.params.x\ <\ 0.0f)\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ r.params.x\ +=\ 360.0f;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \}}
+
+\end{DoxyCode}

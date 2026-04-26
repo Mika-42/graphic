@@ -1,0 +1,560 @@
+\doxysection{renderer.\+cppm}
+\hypertarget{renderer_8cppm_source}{}\label{renderer_8cppm_source}\index{srcs/renderer.cppm@{srcs/renderer.cppm}}
+\doxymbox{\hyperlink{renderer_8cppm}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{module};}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#define\ STB\_IMAGE\_IMPLEMENTATION}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}stb\_image.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}glad.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <glm/glm.hpp>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <iomanip>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <set>}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{export}\ \textcolor{keyword}{module}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8renderer}{mka.graphic.opengl.renderer}};}
+\DoxyCodeLine{00025\ \textcolor{keyword}{export}\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8rectangle}{mka.graphic.opengl.rectangle}};\ \textcolor{comment}{//\ TODO\ rm\ export}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{export}\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8text}{mka.graphic.opengl.text}};\ \ \ \ \ \ \textcolor{comment}{//\ TODO\ rm\ export}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8text_8rasterizer}{mka.graphic.opengl.text.rasterizer}};}
+\DoxyCodeLine{00028\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8shader}{mka.graphic.opengl.shader}};}
+\DoxyCodeLine{00029\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8sanitize}{mka.graphic.sanitize}};}
+\DoxyCodeLine{00030\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.graphic.log}};}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{namespace\ }\{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Shader\ sources\ stay\ in\ C++\ to\ keep\ module\ self-\/contained.}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{comment}{//\ The\ GLSL\ code\ is\ organized\ with\ helper\ functions\ so\ future\ effects\ can\ be}}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{comment}{//\ added\ without\ turning\ \`{}main()`\ into\ a\ monolith.}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *kRendererVertexShader\ =\ R\textcolor{stringliteral}{"{}(}}
+\DoxyCodeLine{00037\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \#version\ 460\ core}}
+\DoxyCodeLine{00038\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \#extension\ GL\_ARB\_bindless\_texture\ :\ require}}
+\DoxyCodeLine{00039\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00040\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ uint\ FLAG\_TEXT\ =\ 1u\ <<\ 0;}}
+\DoxyCodeLine{00041\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00042\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ float\ MIN\_RECT\_SIZE\ =\ 0.0001;}}
+\DoxyCodeLine{00043\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00044\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ struct\ Rect\ \{}}
+\DoxyCodeLine{00045\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ geometry;\ //\ xy\ =\ pos,\ zw\ =\ size}}
+\DoxyCodeLine{00046\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ radius;}}
+\DoxyCodeLine{00047\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ backgroundColorA;}}
+\DoxyCodeLine{00048\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ backgroundColorB;}}
+\DoxyCodeLine{00049\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ borderColor;}}
+\DoxyCodeLine{00050\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ shadowColor;}}
+\DoxyCodeLine{00051\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ params;}}
+\DoxyCodeLine{00052\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ flags;}}
+\DoxyCodeLine{00053\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ shadowOffset;}}
+\DoxyCodeLine{00054\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ uvec2\ texture;}}
+\DoxyCodeLine{00055\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \};}}
+\DoxyCodeLine{00056\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00057\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ layout(std430,\ binding\ =\ 0)\ buffer\ Rects\ \{}}
+\DoxyCodeLine{00058\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ Rect\ rects[];}}
+\DoxyCodeLine{00059\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \};}}
+\DoxyCodeLine{00060\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00061\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ out\ vec2\ localPoint;}}
+\DoxyCodeLine{00062\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ out\ vec2\ rectSize;}}
+\DoxyCodeLine{00063\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ out\ vec2\ texCoord;}}
+\DoxyCodeLine{00064\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ flat\ out\ uvec2\ textureHandle;}}
+\DoxyCodeLine{00065\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ flat\ out\ uint\ v\_InstanceID;}}
+\DoxyCodeLine{00066\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ out\ vec2\ worldPoint;}}
+\DoxyCodeLine{00067\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ uniform\ mat4\ uProjection;}}
+\DoxyCodeLine{00068\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00069\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ vec2\ unitQuadVertex(const\ int\ vertexId)\ \{}}
+\DoxyCodeLine{00070\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ quad[6]\ =\ vec2[](}}
+\DoxyCodeLine{00071\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2(0.0,\ 0.0),}}
+\DoxyCodeLine{00072\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2(1.0,\ 0.0),}}
+\DoxyCodeLine{00073\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2(1.0,\ 1.0),}}
+\DoxyCodeLine{00074\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2(0.0,\ 0.0),}}
+\DoxyCodeLine{00075\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2(1.0,\ 1.0),}}
+\DoxyCodeLine{00076\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2(0.0,\ 1.0)}}
+\DoxyCodeLine{00077\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ );}}
+\DoxyCodeLine{00078\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ quad[vertexId];}}
+\DoxyCodeLine{00079\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00080\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00081\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ vec2\ computeShadowPadding(const\ Rect\ r)\ \{}}
+\DoxyCodeLine{00082\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shadowExtent\ =\ max(r.params.y,\ 0.0)\ +\ max(r.params.z,\ 0.0);}}
+\DoxyCodeLine{00083\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ abs(r.shadowOffset)\ +\ vec2(shadowExtent\ +\ 1.0);}}
+\DoxyCodeLine{00084\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00085\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00086\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ vec2\ computeTexCoord(const\ Rect\ r,\ vec2\ aPos,\ vec2\ localPosition)\ \{}}
+\DoxyCodeLine{00087\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (r.flags.x\ >\ 0.0)\ \{}}
+\DoxyCodeLine{00088\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ aPos;}}
+\DoxyCodeLine{00089\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00090\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ //\ Build\ UVs\ from\ the\ original\ rectangle\ space\ so\ shadow\ padding\ never}}
+\DoxyCodeLine{00091\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ //\ changes\ texture\ scale\ when\ softness/spread\ animate\ in\ real\ time.}}
+\DoxyCodeLine{00092\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ rectSpacePoint\ =\ localPosition\ +\ (0.5\ *\ r.geometry.zw);}}
+\DoxyCodeLine{00093\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ safeRectSize\ =\ max(r.geometry.zw,\ vec2(MIN\_RECT\_SIZE));}}
+\DoxyCodeLine{00094\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ rectSpacePoint\ /\ safeRectSize;}}
+\DoxyCodeLine{00095\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00096\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00097\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ void\ main()\ \{}}
+\DoxyCodeLine{00098\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ Rect\ r\ =\ rects[gl\_InstanceID];}}
+\DoxyCodeLine{00099\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ aPos\ =\ unitQuadVertex(gl\_VertexID);}}
+\DoxyCodeLine{00100\ \textcolor{stringliteral}{\ }}
+\DoxyCodeLine{00101\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ pad\ =\ computeShadowPadding(r);}}
+\DoxyCodeLine{00102\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ expandedSize\ =\ r.geometry.zw\ +\ 2.0\ *\ pad;}}
+\DoxyCodeLine{00103\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ expandedPos\ =\ r.geometry.xy\ -\/\ pad;}}
+\DoxyCodeLine{00104\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00105\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ worldPos\ =\ expandedPos\ +\ aPos\ *\ expandedSize;}}
+\DoxyCodeLine{00106\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ localPoint\ =\ (-\/pad\ +\ aPos\ *\ expandedSize)\ -\/\ (0.5\ *\ r.geometry.zw);}}
+\DoxyCodeLine{00107\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ worldPoint\ =\ worldPos;}}
+\DoxyCodeLine{00108\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00109\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ textureHandle\ =\ r.texture;}}
+\DoxyCodeLine{00110\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ rectSize\ =\ r.geometry.zw;}}
+\DoxyCodeLine{00111\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ texCoord\ =\ computeTexCoord(r,\ aPos,\ localPoint);}}
+\DoxyCodeLine{00112\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ v\_InstanceID\ =\ uint(gl\_InstanceID);}}
+\DoxyCodeLine{00113\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ gl\_Position\ =\ uProjection\ *\ vec4(worldPos,\ 0.0,\ 1.0);}}
+\DoxyCodeLine{00114\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00115\ \textcolor{stringliteral}{\ \ \ \ )"{};}}
+\DoxyCodeLine{00116\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00117\ \textcolor{stringliteral}{\ \ \ \ }\textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *kRendererFragmentShader\ =\ R\textcolor{stringliteral}{"{}(}}
+\DoxyCodeLine{00118\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \#version\ 460\ core}}
+\DoxyCodeLine{00119\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \#extension\ GL\_ARB\_bindless\_texture\ :\ require}}
+\DoxyCodeLine{00120\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \#extension\ GL\_ARB\_shader\_stencil\_export\ :\ enable}}
+\DoxyCodeLine{00121\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00122\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ uint\ FLAG\_TEXT\ =\ 1u\ <<\ 0;}}
+\DoxyCodeLine{00123\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ uint\ FLAG\_CLIP\ =\ 1u\ <<\ 1;}}
+\DoxyCodeLine{00124\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00125\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ uint\ MAX\_CLIP\_DEPTH\ =\ 16;}}
+\DoxyCodeLine{00126\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ uint\ NO\_CLIP\ =\ 0xFFFFFFFFu;}}
+\DoxyCodeLine{00127\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00128\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ float\ AA\_WIDTH\ =\ 0.5;}}
+\DoxyCodeLine{00129\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ float\ MIN\_GRADIENT\_EXTENT\ =\ 0.0001;}}
+\DoxyCodeLine{00130\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ const\ float\ MIN\_SHADOW\_SOFTNESS\ =\ 0.001;}}
+\DoxyCodeLine{00131\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00132\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ struct\ Rect\ \{}}
+\DoxyCodeLine{00133\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ geometry;\ //\ xy\ =\ pos,\ zw\ =\ size}}
+\DoxyCodeLine{00134\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ radius;}}
+\DoxyCodeLine{00135\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ backgroundColorA;}}
+\DoxyCodeLine{00136\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ backgroundColorB;}}
+\DoxyCodeLine{00137\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ borderColor;}}
+\DoxyCodeLine{00138\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ shadowColor;}}
+\DoxyCodeLine{00139\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ params;}}
+\DoxyCodeLine{00140\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ flags;}}
+\DoxyCodeLine{00141\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ shadowOffset;}}
+\DoxyCodeLine{00142\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ uvec2\ texture;}}
+\DoxyCodeLine{00143\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \};}}
+\DoxyCodeLine{00144\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00145\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ layout(std430,\ binding\ =\ 0)\ buffer\ Rects\ \{}}
+\DoxyCodeLine{00146\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ Rect\ rects[];}}
+\DoxyCodeLine{00147\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \};}}
+\DoxyCodeLine{00148\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ in\ vec2\ worldPoint;}}
+\DoxyCodeLine{00149\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ in\ vec2\ localPoint;}}
+\DoxyCodeLine{00150\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ in\ vec2\ rectSize;}}
+\DoxyCodeLine{00151\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ in\ vec2\ texCoord;}}
+\DoxyCodeLine{00152\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ flat\ in\ uvec2\ textureHandle;\ \ \ \ }}
+\DoxyCodeLine{00153\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ flat\ in\ uint\ v\_InstanceID;}}
+\DoxyCodeLine{00154\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00155\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ out\ vec4\ FragColor;}}
+\DoxyCodeLine{00156\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{00157\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ float\ sdRoundedBox(vec2\ p,\ vec2\ halfExtents,\ vec4\ cornerRadius)\ \{}}
+\DoxyCodeLine{00158\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ cornerRadius.xy\ =\ (p.x\ >\ 0.0)\ ?\ cornerRadius.xy\ :\ cornerRadius.zw;}}
+\DoxyCodeLine{00159\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ cornerRadius.x\ =\ (p.y\ >\ 0.0)\ ?\ cornerRadius.x\ :\ cornerRadius.y;}}
+\DoxyCodeLine{00160\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ q\ =\ abs(p)\ -\/\ halfExtents\ +\ cornerRadius.x;}}
+\DoxyCodeLine{00161\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ min(max(q.x,\ q.y),\ 0.0)\ +\ length(max(q,\ 0.0))\ -\/\ cornerRadius.x;}}
+\DoxyCodeLine{00162\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00163\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00164\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ vec4\ computeGradientFill(vec2\ p,\ vec4\ A,\ vec4\ B,\ float\ angle)\ \{}}
+\DoxyCodeLine{00165\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{00166\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ angleRad\ =\ radians(angle);}}
+\DoxyCodeLine{00167\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ gradientDir\ =\ vec2(cos(angleRad),\ sin(angleRad));}}
+\DoxyCodeLine{00168\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ gradientExtent\ =\ max(dot(abs(gradientDir),\ rectSize\ *\ 0.5),\ MIN\_GRADIENT\_EXTENT);}}
+\DoxyCodeLine{00169\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ t\ =\ clamp((dot(p,\ gradientDir)\ /\ gradientExtent)\ *\ 0.5\ +\ 0.5,\ 0.0,\ 1.0);}}
+\DoxyCodeLine{00170\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ mix(A,\ B,\ t);}}
+\DoxyCodeLine{00171\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00172\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00173\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ float\ computeShadowAlpha(vec2\ p,\ vec4\ radius,\ vec2\ shadowOffset,\ float\ shadowSpread,\ float\ shadowSoftness)\ \{}}
+\DoxyCodeLine{00174\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ shadowPoint\ =\ p\ -\/\ shadowOffset;}}
+\DoxyCodeLine{00175\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shadowDist\ =\ sdRoundedBox(shadowPoint,\ (rectSize\ *\ 0.5)\ +\ vec2(shadowSpread),\ radius);}}
+\DoxyCodeLine{00176\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ safeSoftness\ =\ max(shadowSoftness,\ MIN\_SHADOW\_SOFTNESS);}}
+\DoxyCodeLine{00177\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ clamp(1.0\ -\/\ smoothstep(-\/safeSoftness,\ safeSoftness,\ shadowDist),\ 0.0,\ 1.0);}}
+\DoxyCodeLine{00178\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00179\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00180\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ vec4\ resolveBaseFill(vec4\ gradientFill,\ bool\ hasTexture)\ \{}}
+\DoxyCodeLine{00181\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (!hasTexture)\ \{}}
+\DoxyCodeLine{00182\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ gradientFill;}}
+\DoxyCodeLine{00183\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00184\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00185\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ sampler2D\ rectTexture\ =\ sampler2D(textureHandle);}}
+\DoxyCodeLine{00186\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ sampled\ =\ texture(rectTexture,\ texCoord);}}
+\DoxyCodeLine{00187\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (sampled.a\ >\ 0.0)\ \{}}
+\DoxyCodeLine{00188\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ //\ Glyph\ textures\ are\ premultiplied\ on\ upload\ to\ avoid\ filtering\ fringes.}}
+\DoxyCodeLine{00189\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sampled.rgb\ /=\ sampled.a;}}
+\DoxyCodeLine{00190\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00191\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ vec4(mix(sampled.rgb,\ gradientFill.rgb,\ gradientFill.a),\ sampled.a);}}
+\DoxyCodeLine{00192\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00193\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00194\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ float\ clipping()\ \{}}
+\DoxyCodeLine{00195\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ int\ index\ =\ int(rects[v\_InstanceID].flags.z);}}
+\DoxyCodeLine{00196\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00197\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ alpha\ =\ 1.0;}}
+\DoxyCodeLine{00198\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ uint\ depth\ =\ 0;}}
+\DoxyCodeLine{00199\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00200\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ while(index\ >=\ 0\ \&\&\ depth\ <=\ MAX\_CLIP\_DEPTH)\ \{}}
+\DoxyCodeLine{00201\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{00202\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Rect\ r\ =\ rects[index];}}
+\DoxyCodeLine{00203\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00204\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(r.flags.y\ >\ 0.0)\ \{}}
+\DoxyCodeLine{00205\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vec2\ parentLocalPoint\ =\ worldPoint\ -\/\ (r.geometry.xy\ +\ 0.5\ *\ r.geometry.zw);}}
+\DoxyCodeLine{00206\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ float\ dist\ =\ sdRoundedBox(parentLocalPoint,\ r.geometry.zw\ *\ 0.5,\ r.radius);}}
+\DoxyCodeLine{00207\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alpha\ *=\ smoothstep(AA\_WIDTH,\ -\/AA\_WIDTH,\ dist);}}
+\DoxyCodeLine{00208\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00209\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (alpha\ <\ 0.01)\ return\ 0.0;}}
+\DoxyCodeLine{00210\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00211\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{00212\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ int(r.flags.z);}}
+\DoxyCodeLine{00213\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{00214\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ depth++;}}
+\DoxyCodeLine{00215\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00216\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00217\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ return\ alpha;}}
+\DoxyCodeLine{00218\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00219\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00220\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ void\ main()\ \{}}
+\DoxyCodeLine{00221\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00222\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ Rect\ r\ =\ rects[v\_InstanceID];}}
+\DoxyCodeLine{00223\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec2\ p\ =\ localPoint;}}
+\DoxyCodeLine{00224\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00225\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ clipAlpha\ =\ 1.0;}}
+\DoxyCodeLine{00226\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ }}
+\DoxyCodeLine{00227\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ clipAlpha\ =\ clipping();}}
+\DoxyCodeLine{00228\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (clipAlpha\ <\ 0.01)\ discard;}}
+\DoxyCodeLine{00229\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00230\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ gradientFill\ =\ computeGradientFill(p,\ r.backgroundColorA,\ r.backgroundColorB,\ r.params.x);}}
+\DoxyCodeLine{00231\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ dist\ =\ sdRoundedBox(p,\ r.geometry.zw\ *\ 0.5,\ r.radius);}}
+\DoxyCodeLine{00232\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00233\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ bool\ hasTexture\ =\ any(notEqual(textureHandle,\ uvec2(0u)));}}
+\DoxyCodeLine{00234\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ bool\ hasRoundedCorners\ =\ any(greaterThan(r.radius,\ vec4(0.0)));}}
+\DoxyCodeLine{00235\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ bool\ hasBorder\ =\ r.params.w\ >\ 0.0;}}
+\DoxyCodeLine{00236\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ bool\ useShapeMask\ =\ hasRoundedCorners\ ||\ hasBorder\ ||\ !hasTexture;}}
+\DoxyCodeLine{00237\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00238\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shapeAlpha\ =\ smoothstep(AA\_WIDTH,\ -\/AA\_WIDTH,\ dist);}}
+\DoxyCodeLine{00239\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ borderInner\ =\ smoothstep(AA\_WIDTH,\ -\/AA\_WIDTH,\ dist\ +\ r.params.w);}}
+\DoxyCodeLine{00240\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ borderMask\ =\ useShapeMask\ ?\ clamp(shapeAlpha\ -\/\ borderInner,\ 0.0,\ 1.0)\ :\ 0.0;}}
+\DoxyCodeLine{00241\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00242\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ baseFill\ =\ resolveBaseFill(gradientFill,\ hasTexture);}}
+\DoxyCodeLine{00243\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec4\ shapeColor\ =\ mix(baseFill,\ r.borderColor,\ borderMask);}}
+\DoxyCodeLine{00244\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shapeCoverage\ =\ useShapeMask\ ?\ max(shapeAlpha,\ borderMask)\ :\ 1.0;}}
+\DoxyCodeLine{00245\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shapeAlphaCombined\ =\ clamp(shapeColor.a\ *\ shapeCoverage,\ 0.0,\ 1.0);}}
+\DoxyCodeLine{00246\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00247\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shadowAlpha\ =\ computeShadowAlpha(p,\ r.radius,\ r.shadowOffset,\ r.params.z,\ r.params.y);}}
+\DoxyCodeLine{00248\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ shadowCombinedAlpha\ =\ clamp(r.shadowColor.a\ *\ shadowAlpha,\ 0.0,\ 1.0);}}
+\DoxyCodeLine{00249\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ visibleShadow\ =\ shadowCombinedAlpha\ *\ (1.0\ -\/\ shapeAlphaCombined);}}
+\DoxyCodeLine{00250\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ float\ outAlpha\ =\ shapeAlphaCombined\ +\ visibleShadow;}}
+\DoxyCodeLine{00251\ \textcolor{stringliteral}{}}
+\DoxyCodeLine{00252\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec3\ premulRgb\ =\ (shapeColor.rgb\ *\ shapeAlphaCombined)\ +\ (r.shadowColor.rgb\ *\ visibleShadow);}}
+\DoxyCodeLine{00253\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ vec3\ outRgb\ =\ (outAlpha\ >\ 0.0)\ ?\ (premulRgb\ /\ outAlpha)\ :\ vec3(0.0);}}
+\DoxyCodeLine{00254\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \ \ \ \ FragColor\ =\ vec4(outRgb,\ outAlpha\ *\ clipAlpha);}}
+\DoxyCodeLine{00255\ \textcolor{stringliteral}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00256\ \textcolor{stringliteral}{\ \ \ \ )"{};}}
+\DoxyCodeLine{00257\ \textcolor{stringliteral}{\}\ }\textcolor{comment}{//\ namespace}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{//\ OpenGL}}
+\DoxyCodeLine{00260\ \textcolor{keyword}{export}\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keyword}{class\ }Renderer\ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ Renderer()\ \{}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\textcolor{stringliteral}{"{}Renderer(),\ init\ started."{}});}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{Log::getContext}}(),\ \textcolor{stringliteral}{"{}vertex:\ \ \ \{\}"{}},\ shader.addScript(kRendererVertexShader,\ ShaderType::Vertex));}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{Log::getContext}}(),\ \textcolor{stringliteral}{"{}fragment:\ \{\}"{}},}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ shader.addScript(kRendererFragmentShader,\ ShaderType::Fragment));}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ shader.link();}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ empty\ vao\ (without\ it\ doesn't\ work...)}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ glCreateVertexArrays(1,\ \&vao);}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vao\ ==\ 0)\ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}Renderer(),\ OpenGL\ failed\ to\ create\ vertex\ array\ (vao)."{}});}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ create\ an\ ssbo}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ glCreateBuffers(1,\ \&ssbo);}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ssbo\ ==\ 0)\ \{}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}Renderer(),\ OpenGL\ failed\ to\ create\ buffer\ (ssbo)."{}});}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ rectangles.reserve(initialSsboCapacity);}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!reserveSsboCapacity(initialSsboCapacity))\ \{}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}Renderer(),\ failed\ to\ reserve\ initial\ capacity\ (ssbo)."{}});}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\textcolor{stringliteral}{"{}Renderer(),\ init\ completed."{}});}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \string~Renderer()\ \{}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ssbo\ !=\ 0)\ \{}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glDeleteBuffers(1,\ \&ssbo);}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vao\ !=\ 0)\ \{}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glDeleteVertexArrays(1,\ \&vao);}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ std::uint32\_t\ add(\doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}}\ \&r)\ \{}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ rectangles.emplace\_back(r);}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ rectangles.size()\ -\/\ 1;\ \textcolor{comment}{//\ index}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ std::size\_t\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer_a38d2669b8362a1664e606cd0adfe1697}{add}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structmka_1_1graphic_1_1Text}{Text}}\ \&text)\ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structmka_1_1graphic_1_1Text}{Text}}\ sanitizedText\ =\ text;}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ sanitizeText(sanitizedText);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Text\ colors\ are\ now\ fully\ controlled\ by\ gradientColorA/B.}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ a\ solid\ color,\ caller\ can\ simply\ set\ A\ ==\ B.}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec4\ textGradientA\ =\ sanitizedText.gradientColorA;}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec4\ textGradientB\ =\ sanitizedText.gradientColorB;}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sanitizedText.content.empty())\ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\textcolor{stringliteral}{"{}add(...),\ empty\ text."{}});}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}}\ glyphTemplate\{\};}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ glyphTemplate.geometry\ =\ \{sanitizedText.position.x,\ sanitizedText.position.y,\ sanitizedText.fontSize,}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sanitizedText.fontSize\};}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ glyphTemplate.backgroundColorA\ =\ textGradientA;}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ glyphTemplate.backgroundColorB\ =\ textGradientB;}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ glyphTemplate.params.x\ =\ sanitizedText.gradientAngle;}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ glyphTemplate.flags.x\ =\ TEXT;}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ addedCount\ =\ 0;}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ cursorX\ =\ sanitizedText.position.x;}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::uint32\_t\ pixelSize\ =\ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(sanitizedText.fontSize);}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<Rectangle>\ glyphRects;}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ glyphRects.reserve(sanitizedText.content.size());}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structmka_1_1graphic_1_1TextLineMetrics}{TextLineMetrics}}\ lineMetrics\{\};}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!textRasterizer.getLineMetrics(sanitizedText.font,\ pixelSize,\ lineMetrics))\ \{}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{Log::warn}}(\textcolor{stringliteral}{"{}add(...),\ failed\ to\ get\ text\ line\ metrics\ for\ font\ \{\}."{}},\ sanitizedText.font);}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \`{}position`\ remains\ the\ top-\/left\ anchor\ of\ the\ text\ block.}}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ We\ derive\ a\ single\ bottom\ line\ from\ font\ metrics\ so\ every\ glyph\ ends\ on}}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ the\ same\ Y.}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ lineBottomY\ =\ sanitizedText.position.y\ +\ lineMetrics.lineHeight;}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{char}\ c\ :\ sanitizedText.content)\ \{}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structmka_1_1graphic_1_1TextGlyph}{TextGlyph}}\ *glyph\ =}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ textRasterizer.getOrCreateGlyph(sanitizedText.font,\ \textcolor{keyword}{static\_cast<}std::uint8\_t\textcolor{keyword}{>}(c),\ pixelSize);}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (glyph\ ==\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{Log::warn}}(\textcolor{stringliteral}{"{}add(...),\ missing\ glyph\ for\ codepoint:\ \{:02X\}"{}},\ \textcolor{keyword}{static\_cast<}std::uint8\_t\textcolor{keyword}{>}(c));}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}}\ glyphRect\ =\ glyphTemplate;}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.geometry.x\ =\ cursorX\ +\ glyph-\/>bearing.x;}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Keep\ top-\/left\ rectangle\ placement\ but\ align\ all\ glyph\ bottoms\ on\ the}}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ same\ line.\ This\ avoids\ per-\/glyph\ vertical\ drift\ with\ symbols/accented}}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ characters.}}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.geometry.y\ =\ lineBottomY\ -\/\ glyph-\/>size.y;}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.geometry.z\ =\ glyph-\/>size.x;}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.geometry.w\ =\ glyph-\/>size.y;}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.texture\ =\ glyph-\/>texture;}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.flags.x\ =\ TEXT;}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRects.push\_back(std::move(glyphRect));}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Advance\ comes\ from\ font\ metrics\ to\ preserve\ spacing/kerning\ quality.}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursorX\ +=\ glyph-\/>advance\ +\ sanitizedText.letterSpacing;}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (glyphRects.empty())\ \{}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{Log::warn}}(\textcolor{stringliteral}{"{}add(...),\ failed\ to\ generate\ glyph."{}});}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ angleRad\ =\ glm::radians(sanitizedText.gradientAngle);}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec2\ gradientDir\ =\ \{std::cos(angleRad),\ std::sin(angleRad)\};}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ globalMinProjection\ =\ std::numeric\_limits<float>::max();}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ globalMaxProjection\ =\ std::numeric\_limits<float>::lowest();}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}}\ \&glyphRect\ :\ glyphRects)\ \{}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec2\ center\ =\ \{glyphRect.geometry.x\ +\ (glyphRect.geometry.z\ *\ 0.5f),}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.geometry.y\ +\ (glyphRect.geometry.w\ *\ 0.5f)\};}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec2\ halfSize\ =\ \{glyphRect.geometry.z\ *\ 0.5f,\ glyphRect.geometry.w\ *\ 0.5f\};}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Keep\ CPU-\/side\ gradient\ projection\ identical\ to\ the\ fragment\ shader:}}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ projection\ range\ must\ account\ for\ both\ axis\ contributions\ when\ angle\ is}}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ diagonal.}}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ projectionExtent\ =\ std::max(glm::dot(glm::abs(gradientDir),\ halfSize),\ 0.0001f);}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ centerProjection\ =\ glm::dot(center,\ gradientDir);}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ globalMinProjection\ =\ std::min(globalMinProjection,\ centerProjection\ -\/\ projectionExtent);}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ globalMaxProjection\ =\ std::max(globalMaxProjection,\ centerProjection\ +\ projectionExtent);}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ projectionRange\ =\ std::max(globalMaxProjection\ -\/\ globalMinProjection,\ 0.0001f);}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}}\ \&glyphRect\ :\ glyphRects)\ \{}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec2\ center\ =\ \{glyphRect.geometry.x\ +\ (glyphRect.geometry.z\ *\ 0.5f),}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.geometry.y\ +\ (glyphRect.geometry.w\ *\ 0.5f)\};}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ glm::vec2\ halfSize\ =\ \{glyphRect.geometry.z\ *\ 0.5f,\ glyphRect.geometry.w\ *\ 0.5f\};}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ projectionExtent\ =\ std::max(glm::dot(glm::abs(gradientDir),\ halfSize),\ 0.0001f);}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ centerProjection\ =\ glm::dot(center,\ gradientDir);}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ localMinProjection\ =\ centerProjection\ -\/\ projectionExtent;}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ localMaxProjection\ =\ centerProjection\ +\ projectionExtent;}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ tA\ =\ glm::clamp((localMinProjection\ -\/\ globalMinProjection)\ /\ projectionRange,\ 0.0f,\ 1.0f);}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ tB\ =\ glm::clamp((localMaxProjection\ -\/\ globalMinProjection)\ /\ projectionRange,\ 0.0f,\ 1.0f);}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.backgroundColorA\ =\ glm::mix(textGradientA,\ textGradientB,\ tA);}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ glyphRect.backgroundColorB\ =\ glm::mix(textGradientA,\ textGradientB,\ tB);}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ add(glyphRect);}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++addedCount;}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ addedCount;}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ TODO\ move\ in\ a\ debug\ file\ for\ unit\ test}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ \ \ \ \ \ void\ debugChainage(const\ std::vector<Rectangle>\&\ rectangles)\ \{}}
+\DoxyCodeLine{00421\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}\(\backslash\)n🔗\ CHAÎNAGE\ DES\ RECTANGLES\ (taille:\ "{}\ <<\ rectangles.size()\ <<\ "{})\(\backslash\)n"{};}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}============================================================\(\backslash\)n"{};}}
+\DoxyCodeLine{00423\ \textcolor{comment}{}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ for\ (size\_t\ rectIndex\ =\ 0;\ rectIndex\ <\ rectangles.size();\ ++rectIndex)\ \{}}
+\DoxyCodeLine{00425\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ auto\&\ rect\ =\ rectangles[rectIndex];}}
+\DoxyCodeLine{00426\ \textcolor{comment}{}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (rect.flags.z\ <\ 0.0f)\ \{}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}["{}\ <<\ std::setw(2)\ <<\ rectIndex\ <<\ "{}]\ NO\_CLIP\(\backslash\)n"{};}}
+\DoxyCodeLine{00429\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ continue;}}
+\DoxyCodeLine{00430\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00431\ \textcolor{comment}{}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}["{}\ <<\ std::setw(2)\ <<\ rectIndex\ <<\ "{}]\ flags=\{"{}}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ rect.flags.x\ <<\ "{},"{}\ <<\ rect.flags.y\ <<\ "{},"{}}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ rect.flags.z\ <<\ "{}\}\ →\ "{};}}
+\DoxyCodeLine{00435\ \textcolor{comment}{}}
+\DoxyCodeLine{00436\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ //\ 🔥\ Parcours\ sécurisé\ de\ la\ chaîne}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::set<int32\_t>\ visited;\ \ //\ Détection\ de\ cycles}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int32\_t\ current\ =\ rect.flags.z;}}
+\DoxyCodeLine{00439\ \textcolor{comment}{}}
+\DoxyCodeLine{00440\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ while\ (current\ >=\ 0\ \&\&\ static\_cast<size\_t>(current)\ <\ rectangles.size())\ \{}}
+\DoxyCodeLine{00441\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (visited.count(current))\ \{}}
+\DoxyCodeLine{00442\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}[CYCLE!\ "{}\ <<\ current\ <<\ "{}]\ "{};}}
+\DoxyCodeLine{00443\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ break;}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ visited.insert(current);}}
+\DoxyCodeLine{00446\ \textcolor{comment}{}}
+\DoxyCodeLine{00447\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ auto\&\ clipRect\ =\ rectangles[current];}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ current;}}
+\DoxyCodeLine{00449\ \textcolor{comment}{}}
+\DoxyCodeLine{00450\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (clipRect.flags.y\ >\ 0.0f)\ \{}}
+\DoxyCodeLine{00451\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}(CLIP)"{};}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00453\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}→"{};}}
+\DoxyCodeLine{00454\ \textcolor{comment}{}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ current\ =\ clipRect.flags.z;}}
+\DoxyCodeLine{00456\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00457\ \textcolor{comment}{}}
+\DoxyCodeLine{00458\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}NO\_CLIP\(\backslash\)n"{};}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00460\ \textcolor{comment}{}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ "{}============================================================\(\backslash\)n\(\backslash\)n"{};}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer_ae31bbafb9f7796986356c0d71dfbdb15}{draw}}(\textcolor{keyword}{const}\ glm::mat4\ projection)\ \{}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ glClearColor(bgColor.r,\ bgColor.g,\ bgColor.b,\ bgColor.a);}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ \ \ glClear(GL\_COLOR\_BUFFER\_BIT);}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rectangles.empty())\ \{}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ssbo\ ==\ 0\ ||\ vao\ ==\ 0)\ \{}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ssbo\ ==\ 0)\ \{}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}draw(...)\ aborted,\ invalid\ OpenGL\ objects\ (ssbo\ is\ uninitialized)."{}});}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (vao\ ==\ 0)\ \{}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}draw(...)\ aborted,\ invalid\ OpenGL\ objects\ (vao\ is\ uninitialized)."{}});}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rectangles.clear();}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ \&rect\ :\ rectangles)\ \{}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_af0c8b002a216bfa3d9896e88ab1e6ec4}{sanitizeRectangle}}(rect);}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ debugChainage(rectangles);\ //TODO\ enclose\ with\ test}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!reserveSsboCapacity(rectangles.size()))\ \{}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}draw(...)\ aborted,\ failed\ to\ reserve\ ssbo\ capacity."{}});}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rectangles.clear();}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::size\_t\ rectBytes\ =\ rectangles.size()\ *\ \textcolor{keyword}{sizeof}(\doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}});}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ glNamedBufferSubData(ssbo,\ 0,\ rectBytes,\ rectangles.data());}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Draw}}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ shader.use();}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ shader.set(\textcolor{stringliteral}{"{}uProjection"{}},\ projection);}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ bind\ ssbo}}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ glBindBufferBase(GL\_SHADER\_STORAGE\_BUFFER,\ 0,\ ssbo);}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ glBindVertexArray(vao);}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ glDrawArraysInstanced(GL\_TRIANGLES,\ 0,\ 6,\ rectangles.size());}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ rectangles.clear();}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer_aec944e66ed3b0aec01d0dca6de60b999}{setBackgroundColor}}(\textcolor{keyword}{const}\ glm::vec4\ \&color)\ \{}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \ \ \ \ bgColor\ =\ color;}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}{sanitizeColor}}(bgColor);}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::size\_t\ initialSsboCapacity\ =\ 1024u;}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ [[nodiscard]]\ \textcolor{keywordtype}{bool}\ reserveSsboCapacity(std::size\_t\ requiredInstances)\ \{}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (requiredInstances\ ==\ 0u)\ \{}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (requiredInstances\ <=\ ssboCapacityInstances)\ \{}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Grow\ with\ power-\/of-\/two\ strategy\ to\ keep\ reallocations\ rare\ in\ real-\/time}}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ rendering.\ This\ avoids\ per-\/frame\ stalls\ while\ still\ accepting\ bursty}}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ dynamic\ rectangle\ counts.}}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \ \ \ \ std::size\_t\ newCapacity\ =\ std::max(ssboCapacityInstances,\ initialSsboCapacity);}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (newCapacity\ <\ requiredInstances)\ \{}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (newCapacity\ >\ (std::numeric\_limits<size\_t>::max()\ /\ 2u))\ \{}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}reserveSsboCapacity(...)\ overflow."{}});}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ newCapacity\ *=\ 2u;}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::size\_t\ allocationBytes\ =\ newCapacity\ *\ \textcolor{keyword}{sizeof}(Rectangle);}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (allocationBytes\ /\ \textcolor{keyword}{sizeof}(Rectangle)\ !=\ newCapacity)\ \{}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}reserveSsboCapacity(...)\ overflow\ during\ byte\ computation."{}});}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00549\ }
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ glNamedBufferData(ssbo,\ allocationBytes,\ \textcolor{keyword}{nullptr},\ GL\_DYNAMIC\_DRAW);}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ ssboCapacityInstances\ =\ newCapacity;}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ std::vector<Rectangle>\ rectangles;}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ TextRasterizer\ textRasterizer\{\};}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ glm::vec4\ bgColor\ =\ glm::vec4\{1.0f\};}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ Shader\ shader;}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ GLuint\ vao\ =\ 0;}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ GLuint\ ssbo\ =\ 0;}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ std::size\_t\ ssboCapacityInstances\ =\ 0;}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ std::uint32\_t\ currentClipIndex\ =\ NO\_CLIP;}
+\DoxyCodeLine{00566\ \ \ \ \ \};}
+\DoxyCodeLine{00567\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic}}
+
+\end{DoxyCode}

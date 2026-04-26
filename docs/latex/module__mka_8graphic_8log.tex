@@ -1,0 +1,89 @@
+\doxysection{mka.\+graphic.\+log Module Reference}
+\hypertarget{module__mka_8graphic_8log}{}\label{module__mka_8graphic_8log}\index{mka.graphic.log Module Reference@{mka.graphic.log Module Reference}}
+
+
+{\bfseries{Log system}} -\/ Colored, contextual logging with statistics  
+
+
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log}{mka::\+graphic::\+\+Log}}
+\begin{DoxyCompactList}\small\item\em \doxylink{classmka_1_1graphic_1_1Log}{Log} system providing various colored log level. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+{\bfseries{Log system}} -\/ Colored, contextual logging with statistics 
+
+{\bfseries{Log Levels}} (by severity):\+ 
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Level  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Color  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}DEBUG-\/only  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+Trace  &Cyan  &✅  &Fine-\/grained tracing  \\
+Debug  &Blue  &✅  &Debug information  \\
+Info  &Green  &❌  &General information  \\
+Warn  &Yellow  &❌  &Warnings  \\
+Error  &Red  &❌  &Recoverable errors  \\
+Fatal  &Magenta  &❌  &Fatal errors (program abort)  \\
+\end{DoxyTable}
+
+
+{\bfseries{Output Format}}:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[LEVEL]\ [filename:line\ function]\ |\ message}
+
+\end{DoxyCode}
+
+
+Exemple of use:\+ \begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.graphic.log}};}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }mka::graphic;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ is\_null\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}{Log::trace}}(\textcolor{stringliteral}{"{}pointer\ is\ null\ ?\ \{\}."{}},\ is\_null);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[TRACE]\ pointer\ is\ null\ ?\ true."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}{Log::trace}}(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{Log::getContext}}(),\ \textcolor{stringliteral}{"{}pointer\ is\ null\ ?\ \{\}."{}},\ is\_null);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[TRACE]\ main.cpp:10\ main\ |\ pointer\ is\ null\ ?\ true."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\textcolor{stringliteral}{"{}init\ engine\ failed."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[DEBUG]\ init\ engine\ failed."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{Log::getContext}}(),\ \textcolor{stringliteral}{"{}function\ foo(...)\ sucessfully\ reached."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[DEBUG]\ main.cpp:16\ main\ |\ function\ foo(...)\ sucessfully\ reached."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a28c0bd01f8caba11165cd3a489b2cee7}{Log::info}}(\textcolor{stringliteral}{"{}my\_module\ sucessfully\ load\ data."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[INFO\ ]\ my\_module\ sucessfully\ load\ data."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{Log::warn}}(\textcolor{stringliteral}{"{}unused\ cached\ value."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[WARN\ ]\ unused\ cached\ value."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}failed\ to\ parse\ string"{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[ERROR]\ failed\ to\ parse\ string."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}{Log::fatal}}(\textcolor{stringliteral}{"{}data\ type\ mismatch."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[FATAL]\ data\ type\ mismatch."{}}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ exit\ immediately\ of\ the\ program\ (crash)}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+\end{DoxyParagraph}
+\begin{DoxyNote}{Note}
+
+\begin{DoxyItemize}
+\item {\bfseries{Trace/\+\+Debug}}:\+ Only active when {\ttfamily DEBUG} is defined
+\item {\bfseries{Fatal}}:\+ Calls {\ttfamily std::\+abort()} immediately
+\item {\bfseries{Colors}}:\+ ANSI escape codes (works in most modern terminals) 
+\end{DoxyItemize}
+\end{DoxyNote}
+\doxysubsubsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file srcs/\+\doxymbox{\hyperlink{log_8cppm}{log.\+cppm}}
+\end{DoxyCompactItemize}

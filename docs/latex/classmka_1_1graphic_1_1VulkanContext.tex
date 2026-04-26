@@ -1,0 +1,90 @@
+\doxysection{mka::\+graphic::\+Vulkan\+Context Class Reference}
+\hypertarget{classmka_1_1graphic_1_1VulkanContext}{}\label{classmka_1_1graphic_1_1VulkanContext}\index{mka::graphic::VulkanContext@{mka::graphic::VulkanContext}}
+
+
+Placeholder Vulkan context implementation.  
+
+
+Inheritance diagram for mka::\+graphic::\+Vulkan\+Context:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classmka_1_1graphic_1_1VulkanContext}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \doxymbox{\hyperlink{classmka_1_1graphic_1_1VulkanContext_a77e406f27eaf54b1666451c8b069a4c9}{init}} (GLFWwindow \texorpdfstring{$\ast$}{*}) override
+\begin{DoxyCompactList}\small\item\em Initialize backend state for a given native window. \end{DoxyCompactList}\item 
+std::\+string \doxymbox{\hyperlink{classmka_1_1graphic_1_1VulkanContext_a0f366a8226d438be02f1d763348d1a93}{get\+Name}} () const override
+\begin{DoxyCompactList}\small\item\em Return a human-\/readable backend name. \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} \doxymbox{\hyperlink{classmka_1_1graphic_1_1VulkanContext_a05faadb70a8f204448900729125c816a}{get\+API}} () const override
+\begin{DoxyCompactList}\small\item\em Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2}{make\+Current}} ()
+\begin{DoxyCompactList}\small\item\em Make this context current on the calling thread. \end{DoxyCompactList}\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000}{swap\+Buffers}} ()
+\begin{DoxyCompactList}\small\item\em Present the current frame. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+GLFWwindow \texorpdfstring{$\ast$}{*} {\bfseries window} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Placeholder Vulkan context implementation. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1VulkanContext_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1VulkanContext_a05faadb70a8f204448900729125c816a}\index{mka::graphic::VulkanContext@{mka::graphic::VulkanContext}!getAPI@{getAPI}}
+\index{getAPI@{getAPI}!mka::graphic::VulkanContext@{mka::graphic::VulkanContext}}
+\doxysubsubsection{\texorpdfstring{getAPI()}{getAPI()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1VulkanContext_a05faadb70a8f204448900729125c816a} 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} mka::\+graphic::\+\+Vulkan\+Context::\+get\+API (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1VulkanContext_a0f366a8226d438be02f1d763348d1a93}\index{mka::graphic::VulkanContext@{mka::graphic::VulkanContext}!getName@{getName}}
+\index{getName@{getName}!mka::graphic::VulkanContext@{mka::graphic::VulkanContext}}
+\doxysubsubsection{\texorpdfstring{getName()}{getName()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1VulkanContext_a0f366a8226d438be02f1d763348d1a93} 
+std::\+string mka::\+graphic::\+\+Vulkan\+Context::\+get\+Name (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return a human-\/readable backend name. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1VulkanContext_a77e406f27eaf54b1666451c8b069a4c9}\index{mka::graphic::VulkanContext@{mka::graphic::VulkanContext}!init@{init}}
+\index{init@{init}!mka::graphic::VulkanContext@{mka::graphic::VulkanContext}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1VulkanContext_a77e406f27eaf54b1666451c8b069a4c9} 
+bool mka::\+graphic::\+\+Vulkan\+Context::\+init (\begin{DoxyParamCaption}\item[{GLFWwindow \texorpdfstring{$\ast$}{*}}]{window}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Initialize backend state for a given native window. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894}{mka::\+graphic::\+\+Context}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{context_8cppm}{context.\+cppm}}\end{DoxyCompactItemize}

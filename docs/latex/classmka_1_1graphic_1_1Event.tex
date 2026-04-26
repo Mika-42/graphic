@@ -1,0 +1,28 @@
+\doxysection{mka::\+graphic::\+Event\texorpdfstring{$<$}{<} Args \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classmka_1_1graphic_1_1Event}{}\label{classmka_1_1graphic_1_1Event}\index{mka::graphic::Event$<$ Args $>$@{mka::graphic::Event$<$ Args $>$}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Event_a21313f11a22205a6cb2132e5a1b491c1}\label{classmka_1_1graphic_1_1Event_a21313f11a22205a6cb2132e5a1b491c1} 
+typedef std::\+shared\+\_\+ptr$<$ std::\+function$<$ void(Args...)$>$ $>$ {\bfseries Link}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Event_a3d149f51bcca70529ea974e6752770c0}\label{classmka_1_1graphic_1_1Event_a3d149f51bcca70529ea974e6752770c0} 
+void {\bfseries send} (const Args \&...args)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Event_ac97c779281ec779b36e21592517878f1}\label{classmka_1_1graphic_1_1Event_ac97c779281ec779b36e21592517878f1} 
+Link {\bfseries link} (std::\+function$<$ void(Args...)$>$ fn)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Event_a2a0f3e207c0dd0c5a20b70b1bccd4d3a}\label{classmka_1_1graphic_1_1Event_a2a0f3e207c0dd0c5a20b70b1bccd4d3a} 
+{\footnotesize template$<$typename T$>$ }\\Link {\bfseries link} (T \texorpdfstring{$\ast$}{*}instance, void(T::\+\texorpdfstring{$\ast$}{*}method)(Args...))
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Event_a464edc497e591d9e888fda465565aedc}\label{classmka_1_1graphic_1_1Event_a464edc497e591d9e888fda465565aedc} 
+void {\bfseries unlink} (Link lnk)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+events/\+event.\+cppm\end{DoxyCompactItemize}

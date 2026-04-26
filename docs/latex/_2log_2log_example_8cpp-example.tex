@@ -1,0 +1,43 @@
+\doxysection{/\+log/\+log\+\_\+example.\+cpp}
+\hypertarget{_2log_2log_example_8cpp-example}{}\label{_2log_2log_example_8cpp-example}Log system.
+
+Log system
+
+
+\begin{DoxyCodeInclude}{0}
+\DoxyCodeLine{\textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.graphic.log}};}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }mka::graphic;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ is\_null\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\ \ \ \ Log::trace(\{\},\ \textcolor{stringliteral}{"{}pointer\ is\ null\ ?\ \{\}."{}},\ is\_null);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[TRACE]\ pointer\ is\ null\ ?\ true."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ Log::trace(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{Log::getContext}}(),\ \textcolor{stringliteral}{"{}pointer\ is\ null\ ?\ \{\}."{}},\ is\_null);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[TRACE]\ main.cpp:10\ main\ |\ pointer\ is\ null\ ?\ true."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ Log::debug(\{\},\ \textcolor{stringliteral}{"{}init\ engine\ failed."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[DEBUG]\ init\ engine\ failed."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ Log::debug(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{Log::getContext}}(),\ \textcolor{stringliteral}{"{}function\ foo(...)\ sucessfully\ reached."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[DEBUG]\ main.cpp:16\ main\ |\ function\ foo(...)\ sucessfully\ reached."{}}}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ Log::info(\textcolor{stringliteral}{"{}my\_module\ sucessfully\ load\ data."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[INFO\ ]\ my\_module\ sucessfully\ load\ data."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ Log::warn(\textcolor{stringliteral}{"{}unused\ cached\ value."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[WARN\ ]\ unused\ cached\ value."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ Log::error(\textcolor{stringliteral}{"{}failed\ to\ parse\ string"{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[ERROR]\ failed\ to\ parse\ string."{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ Log::fatal(\textcolor{stringliteral}{"{}data\ type\ mismatch."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[FATAL]\ data\ type\ mismatch."{}}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ exit\ immediately\ of\ the\ program\ (crash)}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCodeInclude}
+ 

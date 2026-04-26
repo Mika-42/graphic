@@ -1,0 +1,51 @@
+\doxysection{mka.\+graphic.\+window Module Reference}
+\hypertarget{module__mka_8graphic_8window}{}\label{module__mka_8graphic_8window}\index{mka.graphic.window Module Reference@{mka.graphic.window Module Reference}}
+\doxysubsubsection*{Exported Modules}
+\begin{DoxyCompactItemize}
+\item 
+module {\bfseries mka.\+graphic.\+mouseview}
+\item 
+module {\bfseries mka.\+graphic.\+keyboardview}
+\item 
+module \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.\+graphic.\+log}}
+\begin{DoxyCompactList}\small\item\em {\bfseries{Log system}} -\/ Colored, contextual logging with statistics \end{DoxyCompactList}\item 
+module {\bfseries mka.\+graphic.\+context}
+\item 
+module {\bfseries mka.\+graphic.\+opengl.\+renderer}
+\item 
+module {\bfseries mka.\+graphic.\+keyboard}
+\item 
+module {\bfseries mka.\+graphic.\+mouse}
+\item 
+module {\bfseries mka.\+graphic.\+view}
+\item 
+module {\bfseries mka.\+graphic.\+event}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1Time}{mka::\+graphic::\+\+Time}}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1Window}{mka::\+graphic::\+\+Window}}
+\begin{DoxyCompactList}\small\item\em Base window abstraction hosting the render loop. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}\label{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f} 
+enum class \doxymbox{\hyperlink{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}{mka::\+graphic::\+\+State}} \{ {\bfseries Inited}
+, {\bfseries Running}
+, {\bfseries Stopped}
+, {\bfseries Terminated}
+ \}
+\begin{DoxyCompactList}\small\item\em High-\/level runtime state of a window instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{window_8cppm_ab91fbed4c8d5a5f48318bbefaa4f47b5}\label{window_8cppm_ab91fbed4c8d5a5f48318bbefaa4f47b5} 
+void {\bfseries framebuffer\+\_\+size\+\_\+callback} (GLFWwindow \texorpdfstring{$\ast$}{*}, int width, int height)
+\begin{DoxyCompactList}\small\item\em Keep Open\+GL viewport in sync with framebuffer size. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file srcs/\+\doxymbox{\hyperlink{window_8cppm}{window.\+cppm}}
+\begin{DoxyCompactList}\small\item\em C++20 module implementation for {\ttfamily window}. \end{DoxyCompactList}\end{DoxyCompactItemize}

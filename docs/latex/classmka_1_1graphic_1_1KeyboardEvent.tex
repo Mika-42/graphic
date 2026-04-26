@@ -1,0 +1,61 @@
+\doxysection{mka::\+graphic::\+Keyboard\+Event Class Reference}
+\hypertarget{classmka_1_1graphic_1_1KeyboardEvent}{}\label{classmka_1_1graphic_1_1KeyboardEvent}\index{mka::graphic::KeyboardEvent@{mka::graphic::KeyboardEvent}}
+
+
+Keyboard state table synchronized once per frame from GLFW.  
+
+
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{Cast\+Element}}
+\begin{DoxyCompactList}\small\item\em Mapping between GLFW key code, engine key and human-\/readable name. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_a9e6d4f71c808e1fd1c0a15a09d98f7ca}\label{classmka_1_1graphic_1_1KeyboardEvent_a9e6d4f71c808e1fd1c0a15a09d98f7ca} 
+\doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{Cast\+Element}} \texorpdfstring{$\ast$}{*} {\bfseries get} (size\+\_\+t glfw)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_af9f3850b2cae23dcdf03e61c808ac60f}\label{classmka_1_1graphic_1_1KeyboardEvent_af9f3850b2cae23dcdf03e61c808ac60f} 
+\doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{Cast\+Element}} \texorpdfstring{$\ast$}{*} {\bfseries get} (\doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{Key}} key)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_afb4e2bff1554e4609370272e3bff79df}\label{classmka_1_1graphic_1_1KeyboardEvent_afb4e2bff1554e4609370272e3bff79df} 
+const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{Cast\+Element}} \texorpdfstring{$\ast$}{*} {\bfseries get} (size\+\_\+t glfw) const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_a63e7226918c9682cc0311b82821568e2}\label{classmka_1_1graphic_1_1KeyboardEvent_a63e7226918c9682cc0311b82821568e2} 
+const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{Cast\+Element}} \texorpdfstring{$\ast$}{*} {\bfseries get} (\doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{Key}} key) const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_af075505022efded5dbfca8d576cd34c6}\label{classmka_1_1graphic_1_1KeyboardEvent_af075505022efded5dbfca8d576cd34c6} 
+const std::\+string {\bfseries get\+Name} (\doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{Key}} key) const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_a6460ee5fd6d91a421b77d0f61448a909}\label{classmka_1_1graphic_1_1KeyboardEvent_a6460ee5fd6d91a421b77d0f61448a909} 
+bool {\bfseries is\+Pressed} (\doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{Key}} key) const
+\begin{DoxyCompactList}\small\item\em Return true when {\ttfamily key} is currently pressed. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_aaa0d57329a17d6ec1454b3587052389a}\label{classmka_1_1graphic_1_1KeyboardEvent_aaa0d57329a17d6ec1454b3587052389a} 
+bool {\bfseries is\+Released} (\doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{Key}} key) const
+\begin{DoxyCompactList}\small\item\em Return true when {\ttfamily key} is currently released. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_acc47ff7be93bd489bfef30870e9509e3}\label{classmka_1_1graphic_1_1KeyboardEvent_acc47ff7be93bd489bfef30870e9509e3} 
+std::\+vector$<$ \doxymbox{\hyperlink{keyboard_8cppm_a04bac14695b1fb032709f12fcc4cca7c}{Key}} $>$ {\bfseries pressed\+Keys} () const
+\begin{DoxyCompactList}\small\item\em Return a compact list of all keys currently pressed. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_a7eaf8d2b270797ad5a01dedf118bc5b5}\label{classmka_1_1graphic_1_1KeyboardEvent_a7eaf8d2b270797ad5a01dedf118bc5b5} 
+std::\+array$<$ \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEvent_1_1CastElement}{Cast\+Element}}, KEY\+\_\+\+COUNT $>$ {\bfseries cast\+Table}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1KeyboardEvent_a1c3ba19c29d98ff283a8f0a9370c7591}\label{classmka_1_1graphic_1_1KeyboardEvent_a1c3ba19c29d98ff283a8f0a9370c7591} 
+static constexpr int {\bfseries KEY\+\_\+\+COUNT} = 121
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Keyboard state table synchronized once per frame from GLFW. 
+
+{\ttfamily Window::\+handle\+Keyboard()} updates each entry so render code can query stable key states without touching GLFW directly. 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+inputs/\+\doxymbox{\hyperlink{keyboard_8cppm}{keyboard.\+cppm}}\end{DoxyCompactItemize}

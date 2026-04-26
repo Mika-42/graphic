@@ -1,0 +1,37 @@
+\doxysection{mka.\+graphic.\+context Module Reference}
+\hypertarget{module__mka_8graphic_8context}{}\label{module__mka_8graphic_8context}\index{mka.graphic.context Module Reference@{mka.graphic.context Module Reference}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}
+\begin{DoxyCompactList}\small\item\em Base interface for a graphics context implementation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{context_8cppm_af83c0131c3ee1f18458047a17565eb15}\label{context_8cppm_af83c0131c3ee1f18458047a17565eb15} 
+enum class \doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{mka::\+graphic::\+\+API}} \{ \newline
+{\bfseries None}
+, {\bfseries Open\+GL}
+, {\bfseries Vulkan}
+, {\bfseries DirectX}
+, \newline
+{\bfseries Metal}
+ \}
+\begin{DoxyCompactList}\small\item\em Rendering backend abstraction used by the windowing layer. \end{DoxyCompactList}\item 
+\Hypertarget{context_8cppm_a6be13b2e83a3b0e8508ef94098ce12ae}\label{context_8cppm_a6be13b2e83a3b0e8508ef94098ce12ae} 
+enum class \doxymbox{\hyperlink{context_8cppm_a6be13b2e83a3b0e8508ef94098ce12ae}{mka::\+graphic::\+\+Loader}} \{ {\bfseries None}
+, {\bfseries Glad}
+, {\bfseries Glew}
+ \}
+\begin{DoxyCompactList}\small\item\em Open\+GL function loader selection. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{context_8cppm_ab11adb63e989e709f95bd203790161e8}\label{context_8cppm_ab11adb63e989e709f95bd203790161e8} 
+std::\+unique\+\_\+ptr$<$ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{Context}} $>$ {\bfseries mka::\+graphic::\+create\+Context} (\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} api, \doxymbox{\hyperlink{context_8cppm_a6be13b2e83a3b0e8508ef94098ce12ae}{Loader}} loader=Loader::\+\+None)
+\begin{DoxyCompactList}\small\item\em Create a concrete context from a backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} + loader pair. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file srcs/\+\doxymbox{\hyperlink{context_8cppm}{context.\+cppm}}
+\begin{DoxyCompactList}\small\item\em C++20 module implementation for {\ttfamily context}. \end{DoxyCompactList}\end{DoxyCompactItemize}

@@ -1,0 +1,44 @@
+\doxysection{Minimal\+App Class Reference}
+\hypertarget{classMinimalApp}{}\label{classMinimalApp}\index{MinimalApp@{MinimalApp}}
+Inheritance diagram for Minimal\+App:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classMinimalApp}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classMinimalApp_ab3485510b85b72fa341c819f97b27a75}\label{classMinimalApp_ab3485510b85b72fa341c819f97b27a75} 
+{\bfseries Minimal\+App} (std::\+unique\+\_\+ptr$<$ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}} $>$ ctx)
+\item 
+\Hypertarget{classMinimalApp_a131b40011e49000e56ae9581e017e07d}\label{classMinimalApp_a131b40011e49000e56ae9581e017e07d} 
+void {\bfseries render} (const glm::\+vec2 \&size, const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&, const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEventView}{Keyboard\+Event\+View}} \&keyboard, const \doxymbox{\hyperlink{structmka_1_1graphic_1_1Time}{Time}} \&time) override
+\item 
+\Hypertarget{classMinimalApp_ad492905347f5bee90be293016f8b858b}\label{classMinimalApp_ad492905347f5bee90be293016f8b858b} 
+void {\bfseries move\+Dot} (gl::\+\+Rectangle \&dot, const glm::\+vec2 \&p)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Window}{mka::\+graphic::\+\+Window}}}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Window} (size\+\_\+t width, size\+\_\+t height, const std::\+string \&name, std::\+unique\+\_\+ptr$<$ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{Context}} $>$ ctx)
+\item 
+int {\bfseries run} ()
+\begin{DoxyCompactList}\small\item\em Run the blocking frame loop until close. \end{DoxyCompactList}\item 
+const \doxymbox{\hyperlink{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}{State}} \& {\bfseries get\+State} () const
+\item 
+void {\bfseries set\+Background\+Color} (const glm::\+vec4 \&color)
+\item 
+void {\bfseries set\+Root} (std::\+shared\+\_\+ptr$<$ \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{View}} $>$ root)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Public Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Window}{mka::\+graphic::\+\+Window}}}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries App\+Close}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+example/\+luciole.\+cpp\end{DoxyCompactItemize}

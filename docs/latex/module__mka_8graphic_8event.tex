@@ -1,0 +1,27 @@
+\doxysection{mka.\+graphic.\+event Module Reference}
+\hypertarget{module__mka_8graphic_8event}{}\label{module__mka_8graphic_8event}\index{mka.graphic.event Module Reference@{mka.graphic.event Module Reference}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{mka::\+graphic::\+\+Event$<$ Args $>$}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{event_8cppm_a2957e00079a7fc0be0227ea2fc406e77}\label{event_8cppm_a2957e00079a7fc0be0227ea2fc406e77} 
+{\footnotesize template$<$typename Emitter\+Class, typename Owner\+Class, typename Receiver\+Class, typename... Event\+Args$>$ }\\auto {\bfseries mka::\+graphic::\+event::\+link} (Emitter\+Class \&sender, \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ Event\+Args... $>$ Owner\+Class::\+\texorpdfstring{$\ast$}{*}event\+\_\+ptr, Receiver\+Class \&receiver, void(Receiver\+Class::\+\texorpdfstring{$\ast$}{*}method)(Event\+Args...))
+\item 
+\Hypertarget{event_8cppm_aaa2ebe7e978852263d081cdce5d9b909}\label{event_8cppm_aaa2ebe7e978852263d081cdce5d9b909} 
+{\footnotesize template$<$typename Emitter\+Class, typename Owner\+Class, typename Fn, typename... Event\+Args$>$ }\\auto {\bfseries mka::\+graphic::\+event::\+link} (Emitter\+Class \&sender, \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ Event\+Args... $>$ Owner\+Class::\+\texorpdfstring{$\ast$}{*}event\+\_\+ptr, Fn \&\&fn)
+\item 
+\Hypertarget{event_8cppm_aed50c3891071d317ab611dc8e90190e3}\label{event_8cppm_aed50c3891071d317ab611dc8e90190e3} 
+{\footnotesize template$<$typename Emitter\+Class, typename... Event\+Args$>$ }\\void {\bfseries mka::\+graphic::\+event::\+send} (Emitter\+Class \&sender, \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ Event\+Args... $>$ Emitter\+Class::\+\texorpdfstring{$\ast$}{*}event\+\_\+ptr, Event\+Args... args)
+\item 
+\Hypertarget{event_8cppm_adf8abd54aed8c9364a360035a7979c93}\label{event_8cppm_adf8abd54aed8c9364a360035a7979c93} 
+{\footnotesize template$<$typename Emitter\+Class, typename... Event\+Args$>$ }\\void {\bfseries mka::\+graphic::\+event::\+unlink} (Emitter\+Class \&sender, \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ Event\+Args... $>$ Emitter\+Class::\+\texorpdfstring{$\ast$}{*}event\+\_\+ptr, typename \doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ Event\+Args... $>$::\+\+Link lnk)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Files}
+\begin{DoxyCompactItemize}
+\item 
+file srcs/\+events/\+{\bfseries event.\+cppm}
+\end{DoxyCompactItemize}

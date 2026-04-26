@@ -1,0 +1,90 @@
+\doxysection{mka::\+graphic::\+Metal\+Context Class Reference}
+\hypertarget{classmka_1_1graphic_1_1MetalContext}{}\label{classmka_1_1graphic_1_1MetalContext}\index{mka::graphic::MetalContext@{mka::graphic::MetalContext}}
+
+
+Placeholder Metal context implementation.  
+
+
+Inheritance diagram for mka::\+graphic::\+Metal\+Context:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classmka_1_1graphic_1_1MetalContext}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \doxymbox{\hyperlink{classmka_1_1graphic_1_1MetalContext_ac0b360079e17bc31ae33db4923752291}{init}} (GLFWwindow \texorpdfstring{$\ast$}{*}) override
+\begin{DoxyCompactList}\small\item\em Initialize backend state for a given native window. \end{DoxyCompactList}\item 
+std::\+string \doxymbox{\hyperlink{classmka_1_1graphic_1_1MetalContext_adf30e9df581ad8f38853c4484fc67d3c}{get\+Name}} () const override
+\begin{DoxyCompactList}\small\item\em Return a human-\/readable backend name. \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} \doxymbox{\hyperlink{classmka_1_1graphic_1_1MetalContext_ac036955c99c232d6eb27fc45536a5974}{get\+API}} () const override
+\begin{DoxyCompactList}\small\item\em Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2}{make\+Current}} ()
+\begin{DoxyCompactList}\small\item\em Make this context current on the calling thread. \end{DoxyCompactList}\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000}{swap\+Buffers}} ()
+\begin{DoxyCompactList}\small\item\em Present the current frame. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+GLFWwindow \texorpdfstring{$\ast$}{*} {\bfseries window} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Placeholder Metal context implementation. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1MetalContext_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1MetalContext_ac036955c99c232d6eb27fc45536a5974}\index{mka::graphic::MetalContext@{mka::graphic::MetalContext}!getAPI@{getAPI}}
+\index{getAPI@{getAPI}!mka::graphic::MetalContext@{mka::graphic::MetalContext}}
+\doxysubsubsection{\texorpdfstring{getAPI()}{getAPI()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1MetalContext_ac036955c99c232d6eb27fc45536a5974} 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} mka::\+graphic::\+\+Metal\+Context::\+get\+API (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1MetalContext_adf30e9df581ad8f38853c4484fc67d3c}\index{mka::graphic::MetalContext@{mka::graphic::MetalContext}!getName@{getName}}
+\index{getName@{getName}!mka::graphic::MetalContext@{mka::graphic::MetalContext}}
+\doxysubsubsection{\texorpdfstring{getName()}{getName()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1MetalContext_adf30e9df581ad8f38853c4484fc67d3c} 
+std::\+string mka::\+graphic::\+\+Metal\+Context::\+get\+Name (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return a human-\/readable backend name. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1MetalContext_ac0b360079e17bc31ae33db4923752291}\index{mka::graphic::MetalContext@{mka::graphic::MetalContext}!init@{init}}
+\index{init@{init}!mka::graphic::MetalContext@{mka::graphic::MetalContext}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1MetalContext_ac0b360079e17bc31ae33db4923752291} 
+bool mka::\+graphic::\+\+Metal\+Context::\+init (\begin{DoxyParamCaption}\item[{GLFWwindow \texorpdfstring{$\ast$}{*}}]{window}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Initialize backend state for a given native window. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894}{mka::\+graphic::\+\+Context}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{context_8cppm}{context.\+cppm}}\end{DoxyCompactItemize}

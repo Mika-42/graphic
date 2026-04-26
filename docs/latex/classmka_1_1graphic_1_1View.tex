@@ -1,0 +1,183 @@
+\doxysection{mka::\+graphic::\+View Class Reference}
+\hypertarget{classmka_1_1graphic_1_1View}{}\label{classmka_1_1graphic_1_1View}\index{mka::graphic::View@{mka::graphic::View}}
+Inheritance diagram for mka::\+graphic::\+View:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.794872cm]{classmka_1_1graphic_1_1View}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_adb873bab0fbab0ef43d9279055f2346b}\label{classmka_1_1graphic_1_1View_adb873bab0fbab0ef43d9279055f2346b} 
+enum class {\bfseries Position\+Type} :\+ uint8\+\_\+t \{ {\bfseries Relative}
+, {\bfseries Absolute}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a7fb6d9a3241ecd8c4ba635ee76a8ddc4}\label{classmka_1_1graphic_1_1View_a7fb6d9a3241ecd8c4ba635ee76a8ddc4} 
+virtual const View \texorpdfstring{$\ast$}{*} {\bfseries get\+Parent} () const noexcept final
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a86db21d2328b74cd06ddf9485787d178}\label{classmka_1_1graphic_1_1View_a86db21d2328b74cd06ddf9485787d178} 
+virtual void {\bfseries add\+Child} (std::\+shared\+\_\+ptr$<$ View $>$ child)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a98366aea0736d2a4be8a0ec4df9c5b38}\label{classmka_1_1graphic_1_1View_a98366aea0736d2a4be8a0ec4df9c5b38} 
+virtual void {\bfseries remove\+Child} (View \texorpdfstring{$\ast$}{*}child)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a16faf8309506d757ac4b440874cd213d}\label{classmka_1_1graphic_1_1View_a16faf8309506d757ac4b440874cd213d} 
+virtual const std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ \& {\bfseries get\+Children} () const noexcept final
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ad8d8554fdac21d688d7413d6aaf3c135}\label{classmka_1_1graphic_1_1View_ad8d8554fdac21d688d7413d6aaf3c135} 
+glm::\+vec2 {\bfseries get\+Position} (Position\+Type type=Position\+Type::\+\+Relative)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a232db164f8be088fff37fb833cae5d13}\label{classmka_1_1graphic_1_1View_a232db164f8be088fff37fb833cae5d13} 
+glm::\+vec2 {\bfseries get\+Size} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a25b926f16b7a126979236f6b8d36cc02}\label{classmka_1_1graphic_1_1View_a25b926f16b7a126979236f6b8d36cc02} 
+const glm::\+vec2 \& {\bfseries get\+Overflows} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ab0da2178386e1c2b2a79cd30016fd485}\label{classmka_1_1graphic_1_1View_ab0da2178386e1c2b2a79cd30016fd485} 
+const glm::\+vec2 \& {\bfseries get\+Scroll} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a5f12b12601fc29fee9a64bc0bb78e0fb}\label{classmka_1_1graphic_1_1View_a5f12b12601fc29fee9a64bc0bb78e0fb} 
+glm::\+vec4 {\bfseries get\+Clip\+Radius} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a2cfc1beada64b92194a0e9aca5900a1a}\label{classmka_1_1graphic_1_1View_a2cfc1beada64b92194a0e9aca5900a1a} 
+const int32\+\_\+t \& {\bfseries get\+Clip\+Index} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a9d7729b55fa0cd0a0e8e5252fd3b093b}\label{classmka_1_1graphic_1_1View_a9d7729b55fa0cd0a0e8e5252fd3b093b} 
+const glm::\+vec4 \& {\bfseries get\+Geometry} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a9b6ea39be4656915fc8cb8302e23948b}\label{classmka_1_1graphic_1_1View_a9b6ea39be4656915fc8cb8302e23948b} 
+const bool \& {\bfseries is\+Visible} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a4fa6b0ef74cca8c6a10c22f06e79d051}\label{classmka_1_1graphic_1_1View_a4fa6b0ef74cca8c6a10c22f06e79d051} 
+const bool \& {\bfseries is\+Keyboard\+Focused} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_aafe7218dc2783eb56a0e5073905a77b0}\label{classmka_1_1graphic_1_1View_aafe7218dc2783eb56a0e5073905a77b0} 
+const bool \& {\bfseries is\+Mouse\+Focused} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a0ea89ad77c329b29a15844462872dcac}\label{classmka_1_1graphic_1_1View_a0ea89ad77c329b29a15844462872dcac} 
+bool {\bfseries is\+Clip} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_aac2516c73e30c692fab62c79e4bdd798}\label{classmka_1_1graphic_1_1View_aac2516c73e30c692fab62c79e4bdd798} 
+void {\bfseries set\+Position} (const glm::\+vec2 \&p)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a9588f170f6fffd95ee900fea26867993}\label{classmka_1_1graphic_1_1View_a9588f170f6fffd95ee900fea26867993} 
+void {\bfseries set\+Size} (const glm::\+vec2 \&s)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a7dadac71497850c612c03c260205a842}\label{classmka_1_1graphic_1_1View_a7dadac71497850c612c03c260205a842} 
+void {\bfseries set\+Visible} (bool v)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ad70e9d7a0ee72c123390f4719d541ad2}\label{classmka_1_1graphic_1_1View_ad70e9d7a0ee72c123390f4719d541ad2} 
+void {\bfseries set\+Keyboard\+Focus} (bool v)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a11c6d3aa807e221d5d750c744270c88c}\label{classmka_1_1graphic_1_1View_a11c6d3aa807e221d5d750c744270c88c} 
+void {\bfseries set\+Clip} (bool enabled)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ae4385f363faab55fa04e3ae507c17218}\label{classmka_1_1graphic_1_1View_ae4385f363faab55fa04e3ae507c17218} 
+void {\bfseries set\+Radius} (const glm::\+vec4 \&radius)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a552e4f7407c5c0334acd75a9debb4492}\label{classmka_1_1graphic_1_1View_a552e4f7407c5c0334acd75a9debb4492} 
+void {\bfseries set\+Scroll} (const glm::\+vec2 \&s)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a48e53a322cf0132f4daacd0178f035cc}\label{classmka_1_1graphic_1_1View_a48e53a322cf0132f4daacd0178f035cc} 
+void {\bfseries set\+ScrollX} (float x)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a668c35401b2289180448e44049867cf8}\label{classmka_1_1graphic_1_1View_a668c35401b2289180448e44049867cf8} 
+void {\bfseries set\+ScrollY} (float y)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a96b44176055c0d7eb619e2ba48c7c082}\label{classmka_1_1graphic_1_1View_a96b44176055c0d7eb619e2ba48c7c082} 
+virtual void {\bfseries draw} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a3e4ba674496cbc091923219bdcd49f85}\label{classmka_1_1graphic_1_1View_a3e4ba674496cbc091923219bdcd49f85} 
+virtual void {\bfseries on\+Keyboard\+Event} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEventView}{Keyboard\+Event\+View}} \&)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ae3eec643728f0fca81ed8bbcbf99f4be}\label{classmka_1_1graphic_1_1View_ae3eec643728f0fca81ed8bbcbf99f4be} 
+virtual bool {\bfseries contain} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&mouse)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a2c8e3c4adf726d693e6790f70d1fe10e}\label{classmka_1_1graphic_1_1View_a2c8e3c4adf726d693e6790f70d1fe10e} 
+virtual bool {\bfseries clip\+Contain} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&mouse) const final
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a502884b9fddf41d038b9c2eadaa715e4}\label{classmka_1_1graphic_1_1View_a502884b9fddf41d038b9c2eadaa715e4} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Enter}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a5e103c199eb756467cddfc0dc867fff4}\label{classmka_1_1graphic_1_1View_a5e103c199eb756467cddfc0dc867fff4} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Leave}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_abe860bd9d7427cfb7f8fae3c9bd8a1a5}\label{classmka_1_1graphic_1_1View_abe860bd9d7427cfb7f8fae3c9bd8a1a5} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Move}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ae164afa239918e37564869a80592a922}\label{classmka_1_1graphic_1_1View_ae164afa239918e37564869a80592a922} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries Child\+Added}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a583c47e8301a00d395d802a0663f6bb4}\label{classmka_1_1graphic_1_1View_a583c47e8301a00d395d802a0663f6bb4} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries Child\+Removed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a3ab459006b4347ebca79d74a26182db9}\label{classmka_1_1graphic_1_1View_a3ab459006b4347ebca79d74a26182db9} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Position\+Changed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a45da4d87e96dd2925a3248abd5bab9c9}\label{classmka_1_1graphic_1_1View_a45da4d87e96dd2925a3248abd5bab9c9} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Size\+Changed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a75bfd6935d9bee9bb6ec17d02d5a4eae}\label{classmka_1_1graphic_1_1View_a75bfd6935d9bee9bb6ec17d02d5a4eae} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec4 \& $>$ {\bfseries Radius\+Changed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_aea775b28964b9158df3511c3122e3ad8}\label{classmka_1_1graphic_1_1View_aea775b28964b9158df3511c3122e3ad8} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Visibility\+Changed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a3081e8046b2aa364ed589e4c8e6c7946}\label{classmka_1_1graphic_1_1View_a3081e8046b2aa364ed589e4c8e6c7946} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Keyboard\+Focused}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a08c7b96562572ee532d1db75421bbe68}\label{classmka_1_1graphic_1_1View_a08c7b96562572ee532d1db75421bbe68} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Clip\+Changed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a8beb9743cf8821adec282a6bd21a6446}\label{classmka_1_1graphic_1_1View_a8beb9743cf8821adec282a6bd21a6446} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Overflows\+Detected}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ab9a55b2987f4880925291d4f0208faed}\label{classmka_1_1graphic_1_1View_ab9a55b2987f4880925291d4f0208faed} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Scroll\+Changed}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ac842cdd9e2ba09df19f5b7e2c4d14176}\label{classmka_1_1graphic_1_1View_ac842cdd9e2ba09df19f5b7e2c4d14176} 
+int {\bfseries z\+Index} = 0
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a8d83a004cd0842f76eec80e35a6abbb6}\label{classmka_1_1graphic_1_1View_a8d83a004cd0842f76eec80e35a6abbb6} 
+void {\bfseries update} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a661d79fdd66ec1f6f4385998dfeba6dd}\label{classmka_1_1graphic_1_1View_a661d79fdd66ec1f6f4385998dfeba6dd} 
+std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ {\bfseries get\+Sorted\+Children} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a40860adbf1500a9d7d67e4eb6b1b1736}\label{classmka_1_1graphic_1_1View_a40860adbf1500a9d7d67e4eb6b1b1736} 
+void {\bfseries update\+Child} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ac0fddfcca1649f77cc48b56db50b7c9a}\label{classmka_1_1graphic_1_1View_ac0fddfcca1649f77cc48b56db50b7c9a} 
+virtual void {\bfseries layout} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_ab3811da0c05c74e784b6a9cbceb58682}\label{classmka_1_1graphic_1_1View_ab3811da0c05c74e784b6a9cbceb58682} 
+virtual void {\bfseries mark\+Dirty} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_aeca5cb3ccb4235aa54dcd26b121b30c4}\label{classmka_1_1graphic_1_1View_aeca5cb3ccb4235aa54dcd26b121b30c4} 
+const bool \& {\bfseries is\+Dirty} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_a52f7a2fcc686e89038a65760ed98c87f}\label{classmka_1_1graphic_1_1View_a52f7a2fcc686e89038a65760ed98c87f} 
+void {\bfseries update\+Data} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_adcd5ae011064a0c453e906d2a72631b0}\label{classmka_1_1graphic_1_1View_adcd5ae011064a0c453e906d2a72631b0} 
+std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ {\bfseries children}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+views/\+view.\+cppm\end{DoxyCompactItemize}

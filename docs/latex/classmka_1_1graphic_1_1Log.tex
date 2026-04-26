@@ -1,0 +1,381 @@
+\doxysection{mka::\+graphic::\+Log Class Reference}
+\hypertarget{classmka_1_1graphic_1_1Log}{}\label{classmka_1_1graphic_1_1Log}\index{mka::graphic::Log@{mka::graphic::Log}}
+
+
+\doxylink{classmka_1_1graphic_1_1Log}{Log} system providing various colored log level.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a71d13c151143517e8569e35e38f72d6a}\label{classmka_1_1graphic_1_1Log_a71d13c151143517e8569e35e38f72d6a} 
+{\bfseries Log} (const Log \&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_ac05cb7159b81edd511689f45ffcff8a4}\label{classmka_1_1graphic_1_1Log_ac05cb7159b81edd511689f45ffcff8a4} 
+{\bfseries Log} (Log \&\&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a93313cb6eee4c79cb0c2c34db960de28}\label{classmka_1_1graphic_1_1Log_a93313cb6eee4c79cb0c2c34db960de28} 
+Log \& {\bfseries operator=} (const Log \&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a8c70c41491b112c98b653a18a8bb163b}\label{classmka_1_1graphic_1_1Log_a8c70c41491b112c98b653a18a8bb163b} 
+Log \& {\bfseries operator=} (Log \&\&)=delete
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static std::\+source\+\_\+location \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{get\+Context}} (std::\+source\+\_\+location loc=std::\+source\+\_\+location::\+current())
+\begin{DoxyCompactList}\small\item\em get the metadata of the function/\+method that call it \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Trace/\+\+Debug Logging (DEBUG-\/only)}\par
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}{trace}} (std::\+source\+\_\+location loc, std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log tracinging data with context \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{debug}} (std::\+source\+\_\+location loc, std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log debugging data with context \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a5df915323c92aa787bc766b446aee331}{trace}} (std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log tracing data without context \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_acd31c3efdb06e4371d30bf27802362dc}{debug}} (std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log debugging data without context \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Logging (Always active)}\par
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a28c0bd01f8caba11165cd3a489b2cee7}{info}} (std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log information \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{warn}} (std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log warning \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{error}} (std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log error \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename... Args$>$ }\\static void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}{fatal}} (std::\+string\+\_\+view fmt, Args \&\&...args)
+\begin{DoxyCompactList}\small\item\em log fatal error \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Statistics}\par
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a6bfeb11bbe941ab50269fd81e7fb00c6}\label{classmka_1_1graphic_1_1Log_a6bfeb11bbe941ab50269fd81e7fb00c6} 
+static size\+\_\+t {\bfseries get\+Trace\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total trace log count (DEBUG-\/only). \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a3e7c8fd27ac4b77432ee54daa5182223}\label{classmka_1_1graphic_1_1Log_a3e7c8fd27ac4b77432ee54daa5182223} 
+static size\+\_\+t {\bfseries get\+Debug\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total debug log count (DEBUG-\/only). \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a53c10b476432498bf947c97028550416}\label{classmka_1_1graphic_1_1Log_a53c10b476432498bf947c97028550416} 
+static size\+\_\+t {\bfseries get\+Info\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total info log count. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a3ba8d113d014a3386e39d4a195a96532}\label{classmka_1_1graphic_1_1Log_a3ba8d113d014a3386e39d4a195a96532} 
+static size\+\_\+t {\bfseries get\+Warn\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total warning count. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_af88a25dbe22a59f80c9c53cc46cc5cba}\label{classmka_1_1graphic_1_1Log_af88a25dbe22a59f80c9c53cc46cc5cba} 
+static size\+\_\+t {\bfseries get\+Error\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total error count. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a522dc9fd4abd56e95c8a25d09278a808}\label{classmka_1_1graphic_1_1Log_a522dc9fd4abd56e95c8a25d09278a808} 
+static size\+\_\+t {\bfseries get\+Fatal\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total fatal count. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Log_a3029c0f56eeb8d50aa22694fabf49a82}\label{classmka_1_1graphic_1_1Log_a3029c0f56eeb8d50aa22694fabf49a82} 
+static size\+\_\+t {\bfseries get\+Log\+Count} () noexcept
+\begin{DoxyCompactList}\small\item\em Get total logs across all levels. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+
+
+\doxysubsection{Detailed Description}
+\doxylink{classmka_1_1graphic_1_1Log}{Log} system providing various colored log level. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1Log_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}\index{mka::graphic::Log@{mka::graphic::Log}!debug@{debug}}
+\index{debug@{debug}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{debug()}{debug()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+debug (\begin{DoxyParamCaption}\item[{std::\+source\+\_\+location}]{loc}{, }\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log debugging data with context 
+
+
+\begin{DoxyParams}{Parameters}
+{\em loc} & current context \\
+\hline
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+this function print debugging info only if DEBUG macro is defined
+\end{DoxyNote}
+\begin{DoxySeeAlso}{See also}
+\doxylink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{get\+Context()}
+\end{DoxySeeAlso}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ v\ =\ 42;}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{getContext}}(),\ \textcolor{stringliteral}{"{}value\ ==\ 42\ ?\ \{\}."{}},\ (v\ ==\ 42));}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[DEBUG]\ main.cpp:3\ main\ |\ value\ ==\ 42\ ?\ true."{}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_acd31c3efdb06e4371d30bf27802362dc}\index{mka::graphic::Log@{mka::graphic::Log}!debug@{debug}}
+\index{debug@{debug}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{debug()}{debug()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_acd31c3efdb06e4371d30bf27802362dc} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+debug (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log debugging data without context 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+this function print debugging info only if DEBUG macro is defined
+\end{DoxyNote}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ v\ =\ 3;}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{Log::debug}}(\textcolor{stringliteral}{"{}foo(...)\ has\ returned\ \{\}."{}},\ v);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[DEBUG]\ step\ 1\ started\ ?\ true."{}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}\index{mka::graphic::Log@{mka::graphic::Log}!error@{error}}
+\index{error@{error}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{error()}{error()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+error (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log error 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename\ =\ \textcolor{stringliteral}{"{}data.txt"{}};}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{Log::error}}(\textcolor{stringliteral}{"{}Failed\ to\ open\ file:\ \{\}"{}},\ filename);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ [ERROR]\ Failed\ to\ open\ file:\ data.txt}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}\index{mka::graphic::Log@{mka::graphic::Log}!fatal@{fatal}}
+\index{fatal@{fatal}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{fatal()}{fatal()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+fatal (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log fatal error 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyWarning}{Warning}
+this function abort the program and make imposible to resume and fix the issues
+\end{DoxyWarning}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}{Log::fatal}}(\textcolor{stringliteral}{"{}Cannot\ initialize\ GPU.\ Aborting."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ [FATAL]\ Cannot\ initialize\ GPU.\ Aborting.}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ -\/>\ std::abort()\ called}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}\index{mka::graphic::Log@{mka::graphic::Log}!getContext@{getContext}}
+\index{getContext@{getContext}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{getContext()}{getContext()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be} 
+std::\+source\+\_\+location mka::\+graphic::\+\+Log::\+get\+Context (\begin{DoxyParamCaption}\item[{std::\+source\+\_\+location}]{loc}{ = {\ttfamily std:\+:\+source\+\_\+location:\+:\+current()}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+get the metadata of the function/\+method that call it 
+
+
+\begin{DoxyParams}{Parameters}
+{\em loc} & metadata of function\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+metadata given in parameter
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+the aim of this function is to be called without any parameter, deducing context is automatic.
+\end{DoxyNote}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ foo.h}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ foo\_impl()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ ctx\ =\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{getContext}}();\ \textcolor{comment}{//\ \{\ file\_name="{}foo.h"{},\ line=3,\ function\_name="{}foo\_impl"{}\ \}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ \Hypertarget{classmka_1_1graphic_1_1Log_a28c0bd01f8caba11165cd3a489b2cee7}\index{mka::graphic::Log@{mka::graphic::Log}!info@{info}}
+\index{info@{info}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{info()}{info()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_a28c0bd01f8caba11165cd3a489b2cee7} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+info (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log information 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a28c0bd01f8caba11165cd3a489b2cee7}{Log::info}}(\textcolor{stringliteral}{"{}Server\ started\ on\ port\ \{\}"{}},\ 8080);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[INFO\ ]\ Server\ started\ on\ port\ 8080"{}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}\index{mka::graphic::Log@{mka::graphic::Log}!trace@{trace}}
+\index{trace@{trace}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{trace()}{trace()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+trace (\begin{DoxyParamCaption}\item[{std::\+source\+\_\+location}]{loc}{, }\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log tracinging data with context 
+
+
+\begin{DoxyParams}{Parameters}
+{\em loc} & current context \\
+\hline
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+this function print tracing info only if DEBUG macro is defined
+\end{DoxyNote}
+\begin{DoxySeeAlso}{See also}
+\doxylink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{get\+Context()}
+\end{DoxySeeAlso}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ v\ =\ 42;}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}{Log::trace}}(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{getContext}}(),\ \textcolor{stringliteral}{"{}value\ is\ now\ \{\}."{}},\ v);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[TRACE]\ main.cpp:3\ main\ |\ value\ is\ now\ 42."{}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_a5df915323c92aa787bc766b446aee331}\index{mka::graphic::Log@{mka::graphic::Log}!trace@{trace}}
+\index{trace@{trace}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{trace()}{trace()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_a5df915323c92aa787bc766b446aee331} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+trace (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log tracing data without context 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+this function print tracing info only if DEBUG macro is defined
+\end{DoxyNote}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ v\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}{Log::trace}}(\textcolor{stringliteral}{"{}step\ 1\ started\ ?\ \{\}."{}},\ v);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[TRACE]\ step\ 1\ started\ ?\ true."{}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+\Hypertarget{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}\index{mka::graphic::Log@{mka::graphic::Log}!warn@{warn}}
+\index{warn@{warn}!mka::graphic::Log@{mka::graphic::Log}}
+\doxysubsubsection{\texorpdfstring{warn()}{warn()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926} 
+template$<$typename... Args$>$ \\
+void mka::\+graphic::\+\+Log::\+warn (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{fmt}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+log warning 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fmt} & formated string \\
+\hline
+{\em args} & arguments to complete the formated string\\
+\hline
+\end{DoxyParams}
+\begin{DoxyParagraph}{Example}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{Log::warn}}(\textcolor{stringliteral}{"{}Configuration\ file\ deprecated:\ \{\}"{}},\ old\_path);}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ output\ :\ "{}[WARN\ ]\ Configuration\ file\ deprecated:\ /etc/old.conf"{}}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ 
+\end{DoxyParagraph}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{log_8cppm}{log.\+cppm}}\end{DoxyCompactItemize}

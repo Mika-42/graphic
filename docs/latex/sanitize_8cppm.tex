@@ -1,0 +1,39 @@
+\doxysection{srcs/\+sanitize.cppm File Reference}
+\hypertarget{sanitize_8cppm}{}\label{sanitize_8cppm}\index{srcs/sanitize.cppm@{srcs/sanitize.cppm}}
+
+
+C++20 module implementation for {\ttfamily sanitize}.  
+
+
+{\ttfamily \+\#include $<$glm/\+glm.\+hpp$>$}\newline
+{\ttfamily \+\#include $<$cmath$>$}\newline
+{\ttfamily import mka.\+graphic.\+opengl.\+rectangle;}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{sanitize_8cppm_aba5d66161bd446a6a1b108e3fc8f5978}\label{sanitize_8cppm_aba5d66161bd446a6a1b108e3fc8f5978} 
+void {\bfseries mka::\+graphic::\+sanitize\+Geometry} (glm::\+vec4 \&g)
+\begin{DoxyCompactList}\small\item\em Sanitize x/\+y/\+w/\+h geometry values and clamp width/\+height to non-\/negative. \end{DoxyCompactList}\item 
+\Hypertarget{sanitize_8cppm_a15027ef663dd5785ddab6d85488cea82}\label{sanitize_8cppm_a15027ef663dd5785ddab6d85488cea82} 
+void {\bfseries mka::\+graphic::\+sanitize\+Radius} (glm::\+vec4 \&radius, const glm::\+vec2 \&size)
+\begin{DoxyCompactList}\small\item\em Clamp each corner radius to \+[0, min(width, height)/\+2]\+. \end{DoxyCompactList}\item 
+\Hypertarget{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28}\label{sanitize_8cppm_ab509253d984a05bc748e33fddfba0a28} 
+void {\bfseries mka::\+graphic::\+sanitize\+Color} (glm::\+vec4 \&color)
+\begin{DoxyCompactList}\small\item\em Clamp RGBA values to \+[0,1]\+ and reset non-\/finite values. \end{DoxyCompactList}\item 
+\Hypertarget{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825}\label{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825} 
+float {\bfseries mka::\+graphic::\+sanitize\+Float} (float v, float min\+Value=0.\+0f)
+\begin{DoxyCompactList}\small\item\em Ensure scalar is finite and above a minimum value. \end{DoxyCompactList}\item 
+\Hypertarget{sanitize_8cppm_a010dabc1a6b27df95639a4674d519175}\label{sanitize_8cppm_a010dabc1a6b27df95639a4674d519175} 
+void {\bfseries mka::\+graphic::\+sanitize\+Border\+Thickness} (float \&thickness)
+\begin{DoxyCompactList}\small\item\em Keep border thickness non-\/negative and finite. \end{DoxyCompactList}\item 
+\Hypertarget{sanitize_8cppm_aadc5e626b01e9e6db4a8d8e0af395f20}\label{sanitize_8cppm_aadc5e626b01e9e6db4a8d8e0af395f20} 
+void {\bfseries mka::\+graphic::\+sanitize\+Shadow} (glm::\+vec2 \&shadow\+Offset, float \&shadow\+Softness, float \&shadow\+Spread)
+\begin{DoxyCompactList}\small\item\em Sanitize shadow offset/\+softness/\+spread parameters. \end{DoxyCompactList}\item 
+\Hypertarget{sanitize_8cppm_af0c8b002a216bfa3d9896e88ab1e6ec4}\label{sanitize_8cppm_af0c8b002a216bfa3d9896e88ab1e6ec4} 
+void {\bfseries mka::\+graphic::\+sanitize\+Rectangle} (\doxymbox{\hyperlink{structmka_1_1graphic_1_1Rectangle}{Rectangle}} \&r)
+\begin{DoxyCompactList}\small\item\em Clamp/\+normalize rectangle attributes before uploading to the GPU. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+C++20 module implementation for {\ttfamily sanitize}. 
+

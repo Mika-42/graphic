@@ -1,0 +1,53 @@
+\doxysection{mka::\+graphic::\+Window Class Reference}
+\hypertarget{classmka_1_1graphic_1_1Window}{}\label{classmka_1_1graphic_1_1Window}\index{mka::graphic::Window@{mka::graphic::Window}}
+
+
+Base window abstraction hosting the render loop.  
+
+
+Inheritance diagram for mka::\+graphic::\+Window:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classmka_1_1graphic_1_1Window}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Window_afbf8898d1b9aee501b9b492545078732}\label{classmka_1_1graphic_1_1Window_afbf8898d1b9aee501b9b492545078732} 
+{\bfseries Window} (size\+\_\+t width, size\+\_\+t height, const std::\+string \&name, std::\+unique\+\_\+ptr$<$ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{Context}} $>$ ctx)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Window_a81e95ffa781692bed285818f8d6d4210}\label{classmka_1_1graphic_1_1Window_a81e95ffa781692bed285818f8d6d4210} 
+int {\bfseries run} ()
+\begin{DoxyCompactList}\small\item\em Run the blocking frame loop until close. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Window_a98cbd9ac821c2e486a2029189526fd63}\label{classmka_1_1graphic_1_1Window_a98cbd9ac821c2e486a2029189526fd63} 
+const \doxymbox{\hyperlink{window_8cppm_abbf61f7b39a6fcacd519ee8064660d4f}{State}} \& {\bfseries get\+State} () const
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Window_a8e960aceadecb562504f0fe2c8e1e168}\label{classmka_1_1graphic_1_1Window_a8e960aceadecb562504f0fe2c8e1e168} 
+void {\bfseries set\+Background\+Color} (const glm::\+vec4 \&color)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Window_a0f45b28c4b3a2355c1bca89f264ddf30}\label{classmka_1_1graphic_1_1Window_a0f45b28c4b3a2355c1bca89f264ddf30} 
+void {\bfseries set\+Root} (std::\+shared\+\_\+ptr$<$ \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{View}} $>$ root)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Window_a23cf9c9479f0951c3bdc7b828553608b}\label{classmka_1_1graphic_1_1Window_a23cf9c9479f0951c3bdc7b828553608b} 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries App\+Close}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Base window abstraction hosting the render loop. 
+
+Derived classes only implement {\ttfamily render()} while this class manages:\+
+\begin{DoxyItemize}
+\item GLFW init/\+teardown
+\item API-\/specific window hints
+\item \doxylink{classmka_1_1graphic_1_1Context}{Context} setup and buffer presentation
+\item Projection updates on resize 
+\end{DoxyItemize}
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{window_8cppm}{window.\+cppm}}\end{DoxyCompactItemize}

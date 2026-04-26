@@ -1,0 +1,174 @@
+\doxysection{mka::\+graphic::\+Stack\+View Class Reference}
+\hypertarget{classmka_1_1graphic_1_1StackView}{}\label{classmka_1_1graphic_1_1StackView}\index{mka::graphic::StackView@{mka::graphic::StackView}}
+Inheritance diagram for mka::\+graphic::\+Stack\+View:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classmka_1_1graphic_1_1StackView}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1StackView_a89fde5e4cbcad58fb4b2db9edc6d73ef}{draw}} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer) override
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_ad0cd85bf342ef1c88a2b4bec48ac3f10}\label{classmka_1_1graphic_1_1StackView_ad0cd85bf342ef1c88a2b4bec48ac3f10} 
+Stack\+View \& {\bfseries set\+Gap} (float v)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_a42bd951b8dbb36c3365367dfd2240fe2}\label{classmka_1_1graphic_1_1StackView_a42bd951b8dbb36c3365367dfd2240fe2} 
+Stack\+View \& {\bfseries set\+Align} (Align a)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_a3f43818427a1cad8bbf0e6b9544cc555}\label{classmka_1_1graphic_1_1StackView_a3f43818427a1cad8bbf0e6b9544cc555} 
+Stack\+View \& {\bfseries set\+Orientation} (Orientation o)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_a0a1153e089aa26551b8781bc527feea1}\label{classmka_1_1graphic_1_1StackView_a0a1153e089aa26551b8781bc527feea1} 
+Stack\+View \& {\bfseries reverse} (bool r)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_a23cb489c4cef76b1000d7edd4adcc571}\label{classmka_1_1graphic_1_1StackView_a23cb489c4cef76b1000d7edd4adcc571} 
+const float \& {\bfseries get\+Gap} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_af3de8565c8eef02c124516d17feaede3}\label{classmka_1_1graphic_1_1StackView_af3de8565c8eef02c124516d17feaede3} 
+const Align \& {\bfseries get\+Align} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_a17517173c55c6c0882c1d1f3f94616e0}\label{classmka_1_1graphic_1_1StackView_a17517173c55c6c0882c1d1f3f94616e0} 
+const Orientation \& {\bfseries get\+Orientation} ()
+\item 
+\Hypertarget{classmka_1_1graphic_1_1StackView_a158c9352d9bc66b11d5f36ccda195fea}\label{classmka_1_1graphic_1_1StackView_a158c9352d9bc66b11d5f36ccda195fea} 
+const bool \& {\bfseries is\+Reversed} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual const View \texorpdfstring{$\ast$}{*} {\bfseries get\+Parent} () const noexcept final
+\item 
+virtual void {\bfseries add\+Child} (std::\+shared\+\_\+ptr$<$ View $>$ child)
+\item 
+virtual void {\bfseries remove\+Child} (View \texorpdfstring{$\ast$}{*}child)
+\item 
+virtual const std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ \& {\bfseries get\+Children} () const noexcept final
+\item 
+glm::\+vec2 {\bfseries get\+Position} (Position\+Type type=Position\+Type::\+\+Relative)
+\item 
+glm::\+vec2 {\bfseries get\+Size} ()
+\item 
+const glm::\+vec2 \& {\bfseries get\+Overflows} ()
+\item 
+const glm::\+vec2 \& {\bfseries get\+Scroll} () const
+\item 
+glm::\+vec4 {\bfseries get\+Clip\+Radius} () const
+\item 
+const int32\+\_\+t \& {\bfseries get\+Clip\+Index} () const
+\item 
+const glm::\+vec4 \& {\bfseries get\+Geometry} () const
+\item 
+const bool \& {\bfseries is\+Visible} () const
+\item 
+const bool \& {\bfseries is\+Keyboard\+Focused} () const
+\item 
+const bool \& {\bfseries is\+Mouse\+Focused} () const
+\item 
+bool {\bfseries is\+Clip} () const
+\item 
+void {\bfseries set\+Position} (const glm::\+vec2 \&p)
+\item 
+void {\bfseries set\+Size} (const glm::\+vec2 \&s)
+\item 
+void {\bfseries set\+Visible} (bool v)
+\item 
+void {\bfseries set\+Keyboard\+Focus} (bool v)
+\item 
+void {\bfseries set\+Clip} (bool enabled)
+\item 
+void {\bfseries set\+Radius} (const glm::\+vec4 \&radius)
+\item 
+void {\bfseries set\+Scroll} (const glm::\+vec2 \&s)
+\item 
+void {\bfseries set\+ScrollX} (float x)
+\item 
+void {\bfseries set\+ScrollY} (float y)
+\item 
+virtual void {\bfseries on\+Keyboard\+Event} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEventView}{Keyboard\+Event\+View}} \&)
+\item 
+virtual bool {\bfseries contain} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&mouse)
+\item 
+virtual bool {\bfseries clip\+Contain} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&mouse) const final
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Public Types inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_adb873bab0fbab0ef43d9279055f2346b}\label{classmka_1_1graphic_1_1View_adb873bab0fbab0ef43d9279055f2346b} 
+enum class {\bfseries Position\+Type} :\+ uint8\+\_\+t \{ {\bfseries Relative}
+, {\bfseries Absolute}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Enter}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Leave}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Move}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries Child\+Added}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries Child\+Removed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Position\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Size\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec4 \& $>$ {\bfseries Radius\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Visibility\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Keyboard\+Focused}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Clip\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Overflows\+Detected}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Scroll\+Changed}
+\item 
+int {\bfseries z\+Index} = 0
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries update} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer)
+\item 
+std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ {\bfseries get\+Sorted\+Children} () const
+\item 
+void {\bfseries update\+Child} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer)
+\item 
+virtual void {\bfseries mark\+Dirty} ()
+\item 
+const bool \& {\bfseries is\+Dirty} () const
+\item 
+void {\bfseries update\+Data} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ {\bfseries children}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1StackView_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1StackView_a89fde5e4cbcad58fb4b2db9edc6d73ef}\index{mka::graphic::StackView@{mka::graphic::StackView}!draw@{draw}}
+\index{draw@{draw}!mka::graphic::StackView@{mka::graphic::StackView}}
+\doxysubsubsection{\texorpdfstring{draw()}{draw()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1StackView_a89fde5e4cbcad58fb4b2db9edc6d73ef} 
+virtual void mka::\+graphic::\+\+Stack\+View::\+draw (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&}]{renderer}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Reimplemented from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+views/\+stackview.\+cppm\end{DoxyCompactItemize}

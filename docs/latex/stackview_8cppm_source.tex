@@ -1,0 +1,223 @@
+\doxysection{stackview.\+cppm}
+\hypertarget{stackview_8cppm_source}{}\label{stackview_8cppm_source}\index{srcs/views/stackview.cppm@{srcs/views/stackview.cppm}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{keyword}{module};}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <glm/glm.hpp>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <ranges>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{export}\ \textcolor{keyword}{module}\ \doxymbox{\hyperlink{module__mka_8graphic_8view_8stackview}{mka.graphic.view.stackview}};}
+\DoxyCodeLine{00010\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8view}{mka.graphic.view}};}
+\DoxyCodeLine{00011\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8sanitize}{mka.graphic.sanitize}};}
+\DoxyCodeLine{00012\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{module__mka_8graphic_8opengl_8renderer}{mka.graphic.opengl.renderer}};}
+\DoxyCodeLine{00013\ \ \textcolor{comment}{//TODO\ check\ if\ nothing\ is\ broken\ and\ fix\ it}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ |\ \ \ \ \ C\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ |\ \ \ \ \ B\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ |\ \ \ \ \ A\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ reverse:}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ |\ \ \ \ \ A\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ |\ \ \ \ \ B\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ |\ \ \ \ \ C\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ direction:}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ |\ \ \ \ \ A\ \ \ \ \ \ \ |\ \ \ \ \ \ B\ \ \ \ \ \ |\ \ \ \ \ \ C\ \ \ \ \ \ |}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ reverse-\/direction:}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ |\ \ \ \ \ C\ \ \ \ \ \ \ |\ \ \ \ \ \ B\ \ \ \ \ \ |\ \ \ \ \ \ A\ \ \ \ \ \ |}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ align-\/left}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ |\ \ \ \ \ C\ \ |}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/+}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ |\ \ \ \ \ B\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/+}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ |\ \ \ \ \ A\ \ \ \ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ align-\/right}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ C\ \ |}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ \ \ \ \ \ +-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ B\ \ |}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A\ \ |}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ align-\/center}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ \ \ \ \ \ +-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ \ \ \ \ \ |\ \ B\ \ \ \ |}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/+-\/-\/-\/-\/-\/-\/-\/+-\/-\/-\/-\/+}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ |\ \ \ \ \ \ \ A\ \ \ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ gap:}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ |\ \ \ \ \ C\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ \ //////////////}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ |\ \ \ \ \ B\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ \ //////////////}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ |\ \ \ \ \ A\ \ \ \ \ \ \ |}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ +-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/+}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{export}\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{keyword}{enum\ class}\ Align\ \{\ Left,\ Right,\ Center,\ Top,\ Bottom\ \};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keyword}{enum\ class}\ Orientation\ \{\ Vertical,\ Horizontal\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keyword}{class\ }StackView\ :\ \textcolor{keyword}{public}\ View\ \{}
+\DoxyCodeLine{00094\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{using\ }View::setSize;}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00098\ \ \ StackView()\ :\ View()\ \{\}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ draw(\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}}\ \&renderer)\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ View::draw(renderer);}
+\DoxyCodeLine{00102\ \ \ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ StackView\ \&setGap(\textcolor{keywordtype}{float}\ v)\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ gap\ =\ \doxymbox{\hyperlink{sanitize_8cppm_aafe71c0b716aabfa744d51c600695825}{sanitizeFloat}}(v,\ 0.0f);}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00107\ \ \ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ StackView\ \&setAlign(Align\ a)\ \{}
+\DoxyCodeLine{00110\ \ \ \ \ align\ =\ a;}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00112\ \ \ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ StackView\ \&setOrientation(Orientation\ o)\ \{}
+\DoxyCodeLine{00115\ \ \ \ \ orientation\ =\ o;}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00117\ \ \ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ StackView\ \&reverse(\textcolor{keywordtype}{bool}\ r)\ \{}
+\DoxyCodeLine{00120\ \ \ \ \ reverseOrder\ =\ r;}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00122\ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ \&getGap()\ \{\ \textcolor{keywordflow}{return}\ gap;\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{const}\ Align\ \&getAlign()\ \{\ \textcolor{keywordflow}{return}\ align;\ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{const}\ Orientation\ \&getOrientation()\ \{\ \textcolor{keywordflow}{return}\ orientation;\ \}}
+\DoxyCodeLine{00129\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \&isReversed()\ \{\ \textcolor{keywordflow}{return}\ reverseOrder;\ \}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00132\ \ \ \textcolor{keywordtype}{float}\ alignOffset(\textcolor{keyword}{const}\ std::shared\_ptr<View>\ \&view)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{if}\ (!view)\ \{}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0.0f;}
+\DoxyCodeLine{00135\ \ \ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ dw\ =\ getGeometry().z\ -\/\ view-\/>getSize().x;}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ dh\ =\ getGeometry().w\ -\/\ view-\/>getSize().y;}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ isVertical\ =\ (orientation\ ==\ Orientation::Vertical);}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordflow}{switch}\ (align)\ \{}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{case}\ Align::Right:}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ dw;}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordflow}{case}\ Align::Bottom:}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ dh;}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordflow}{case}\ Align::Center:}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ isVertical\ ?\ 0.5f\ *\ dw\ :\ 0.5f\ *\ dh;}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordflow}{case}\ Align::Left:}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0.0f;}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordflow}{case}\ Align::Top:}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0.0f;}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0.0f;}
+\DoxyCodeLine{00156\ \ \ \ \ \}}
+\DoxyCodeLine{00157\ \ \ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ vlayout()\ \textcolor{keyword}{final}\ \{}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordtype}{float}\ offset\ =\ 0.0f;}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keyword}{auto}\ process\ =\ [\&](std::shared\_ptr<View>\ \&child)\ \{}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!child)\ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \ \ child-\/>setPosition(\{alignOffset(child),\ offset\});}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ offset\ +=\ child-\/>getSize().y\ +\ gap;}
+\DoxyCodeLine{00170\ \ \ \ \ \};}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{if}\ (reverseOrder)\ \{}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ std::ranges::for\_each(children\ |\ std::views::reverse,\ process);}
+\DoxyCodeLine{00174\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ std::ranges::for\_each(children,\ process);}
+\DoxyCodeLine{00176\ \ \ \ \ \}}
+\DoxyCodeLine{00177\ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ hlayout()\ \textcolor{keyword}{final}\ \{}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordtype}{float}\ offset\ =\ 0.0f;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keyword}{auto}\ process\ =\ [\&](std::shared\_ptr<View>\ \&child)\ \{}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \ \ child-\/>setPosition(\{offset,\ alignOffset(child)\});}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ offset\ +=\ child-\/>getSize().x\ +\ gap;}
+\DoxyCodeLine{00187\ \ \ \ \ \};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (reverseOrder)\ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ std::ranges::for\_each(children\ |\ std::views::reverse,\ process);}
+\DoxyCodeLine{00191\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ std::ranges::for\_each(children,\ process);}
+\DoxyCodeLine{00193\ \ \ \ \ \}}
+\DoxyCodeLine{00194\ \ \ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ layout()\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordflow}{switch}\ (orientation)\ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{case}\ Orientation::Vertical:}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ vlayout();}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{case}\ Orientation::Horizontal:}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ hlayout();}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ vlayout();}
+\DoxyCodeLine{00207\ \ \ \ \ \}}
+\DoxyCodeLine{00208\ \ \ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00211\ \ \ Align\ align\ =\ Align::Left;}
+\DoxyCodeLine{00212\ \ \ Orientation\ orientation\ =\ Orientation::Vertical;}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{float}\ gap\ =\ 0.0f;}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordtype}{bool}\ reverseOrder\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00215\ \};}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic}}
+
+\end{DoxyCode}

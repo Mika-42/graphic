@@ -1,0 +1,90 @@
+\doxysection{mka::\+graphic::\+Direct\+XContext Class Reference}
+\hypertarget{classmka_1_1graphic_1_1DirectXContext}{}\label{classmka_1_1graphic_1_1DirectXContext}\index{mka::graphic::DirectXContext@{mka::graphic::DirectXContext}}
+
+
+Placeholder DirectX context implementation.  
+
+
+Inheritance diagram for mka::\+graphic::\+Direct\+XContext:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classmka_1_1graphic_1_1DirectXContext}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \doxymbox{\hyperlink{classmka_1_1graphic_1_1DirectXContext_ae4c0d02b3ef303c801c1742aebd17951}{init}} (GLFWwindow \texorpdfstring{$\ast$}{*}) override
+\begin{DoxyCompactList}\small\item\em Initialize backend state for a given native window. \end{DoxyCompactList}\item 
+std::\+string \doxymbox{\hyperlink{classmka_1_1graphic_1_1DirectXContext_affa7d0809d1e81893709ad0468d4dc7a}{get\+Name}} () const override
+\begin{DoxyCompactList}\small\item\em Return a human-\/readable backend name. \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} \doxymbox{\hyperlink{classmka_1_1graphic_1_1DirectXContext_a4b2252d1698f3fae6b1273334c5a3c0b}{get\+API}} () const override
+\begin{DoxyCompactList}\small\item\em Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2}{make\+Current}} ()
+\begin{DoxyCompactList}\small\item\em Make this context current on the calling thread. \end{DoxyCompactList}\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000}{swap\+Buffers}} ()
+\begin{DoxyCompactList}\small\item\em Present the current frame. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context}{mka::\+graphic::\+\+Context}}}
+\begin{DoxyCompactItemize}
+\item 
+GLFWwindow \texorpdfstring{$\ast$}{*} {\bfseries window} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Placeholder DirectX context implementation. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1DirectXContext_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1DirectXContext_a4b2252d1698f3fae6b1273334c5a3c0b}\index{mka::graphic::DirectXContext@{mka::graphic::DirectXContext}!getAPI@{getAPI}}
+\index{getAPI@{getAPI}!mka::graphic::DirectXContext@{mka::graphic::DirectXContext}}
+\doxysubsubsection{\texorpdfstring{getAPI()}{getAPI()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1DirectXContext_a4b2252d1698f3fae6b1273334c5a3c0b} 
+\doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} mka::\+graphic::\+\+Direct\+XContext::\+get\+API (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1DirectXContext_affa7d0809d1e81893709ad0468d4dc7a}\index{mka::graphic::DirectXContext@{mka::graphic::DirectXContext}!getName@{getName}}
+\index{getName@{getName}!mka::graphic::DirectXContext@{mka::graphic::DirectXContext}}
+\doxysubsubsection{\texorpdfstring{getName()}{getName()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1DirectXContext_affa7d0809d1e81893709ad0468d4dc7a} 
+std::\+string mka::\+graphic::\+\+Direct\+XContext::\+get\+Name (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Return a human-\/readable backend name. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0}{mka::\+graphic::\+\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1DirectXContext_ae4c0d02b3ef303c801c1742aebd17951}\index{mka::graphic::DirectXContext@{mka::graphic::DirectXContext}!init@{init}}
+\index{init@{init}!mka::graphic::DirectXContext@{mka::graphic::DirectXContext}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1DirectXContext_ae4c0d02b3ef303c801c1742aebd17951} 
+bool mka::\+graphic::\+\+Direct\+XContext::\+init (\begin{DoxyParamCaption}\item[{GLFWwindow \texorpdfstring{$\ast$}{*}}]{window}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Initialize backend state for a given native window. 
+
+
+
+Implements \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894}{mka::\+graphic::\+\+Context}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{context_8cppm}{context.\+cppm}}\end{DoxyCompactItemize}

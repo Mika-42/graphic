@@ -1,0 +1,35 @@
+\doxysection{srcs/\+inputs/\+mouse.cppm File Reference}
+\hypertarget{mouse_8cppm}{}\label{mouse_8cppm}\index{srcs/inputs/mouse.cppm@{srcs/inputs/mouse.cppm}}
+
+
+Mouse input state model used by the window runtime.  
+
+
+{\ttfamily \+\#include $<$cstddef$>$}\newline
+{\ttfamily \+\#include $<$glm/\+glm.\+hpp$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \doxymbox{\hyperlink{classmka_1_1graphic_1_1MouseEvent}{mka::\+graphic::\+\+Mouse\+Event}}
+\begin{DoxyCompactList}\small\item\em Mutable mouse state snapshot shared with {\ttfamily \doxylink{classmka_1_1graphic_1_1Window}{Window}} views. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}\label{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7} 
+enum class \doxymbox{\hyperlink{mouse_8cppm_ac47c14ba67efa1cda2fb4e3442fed7f7}{mka::\+graphic::\+\+Mouse\+Button}} \{ {\bfseries Left}
+, {\bfseries Middle}
+, {\bfseries Right}
+ \}
+\begin{DoxyCompactList}\small\item\em Mouse buttons supported by the input layer. \end{DoxyCompactList}\item 
+\Hypertarget{mouse_8cppm_a99937c979228ab1c079ca5d80fb9ddd5}\label{mouse_8cppm_a99937c979228ab1c079ca5d80fb9ddd5} 
+enum class \doxymbox{\hyperlink{mouse_8cppm_a99937c979228ab1c079ca5d80fb9ddd5}{mka::\+graphic::\+\+Mouse\+State}} \{ {\bfseries Pressed}
+, {\bfseries Released}
+, {\bfseries Scroll\+Up}
+, {\bfseries Scroll\+Down}
+ \}
+\begin{DoxyCompactList}\small\item\em Aggregated state for each tracked mouse button. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Mouse input state model used by the window runtime. 
+

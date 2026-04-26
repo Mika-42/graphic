@@ -1,0 +1,26 @@
+\doxysection{mka::\+graphic::\+Text\+Rasterizer Class Reference}
+\hypertarget{classmka_1_1graphic_1_1TextRasterizer}{}\label{classmka_1_1graphic_1_1TextRasterizer}\index{mka::graphic::TextRasterizer@{mka::graphic::TextRasterizer}}
+
+
+Owns Free\+Type state and glyph cache for text rendering.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1TextRasterizer_aafb1f3fa38d1e26d331599a481577b10}\label{classmka_1_1graphic_1_1TextRasterizer_aafb1f3fa38d1e26d331599a481577b10} 
+bool {\bfseries get\+Line\+Metrics} (const std::\+string \&font\+Path, unsigned int pixel\+Size, \doxymbox{\hyperlink{structmka_1_1graphic_1_1TextLineMetrics}{Text\+Line\+Metrics}} \&out\+Metrics)
+\item 
+\Hypertarget{classmka_1_1graphic_1_1TextRasterizer_a379e5fbc2a27de2899aa27e871fc6a1f}\label{classmka_1_1graphic_1_1TextRasterizer_a379e5fbc2a27de2899aa27e871fc6a1f} 
+const \doxymbox{\hyperlink{structmka_1_1graphic_1_1TextGlyph}{Text\+Glyph}} \texorpdfstring{$\ast$}{*} {\bfseries get\+Or\+Create\+Glyph} (const std::\+string \&font\+Path, std::\+uint32\+\_\+t codepoint, std::\+uint32\+\_\+t pixel\+Size)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Owns Free\+Type state and glyph cache for text rendering. 
+
+\doxylink{structmka_1_1graphic_1_1Text}{Text} primitive (content/\+params) stays independent while this class handles expensive rasterization + GPU texture lifetime. 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+text\+\_\+rasterizer.\+cppm\end{DoxyCompactItemize}

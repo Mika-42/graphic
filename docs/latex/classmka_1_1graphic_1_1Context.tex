@@ -1,0 +1,117 @@
+\doxysection{mka::\+graphic::\+Context Class Reference}
+\hypertarget{classmka_1_1graphic_1_1Context}{}\label{classmka_1_1graphic_1_1Context}\index{mka::graphic::Context@{mka::graphic::Context}}
+
+
+Base interface for a graphics context implementation.  
+
+
+Inheritance diagram for mka::\+graphic::\+Context:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.230769cm]{classmka_1_1graphic_1_1Context}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual bool \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894}{init}} (GLFWwindow \texorpdfstring{$\ast$}{*}window)=0
+\begin{DoxyCompactList}\small\item\em Initialize backend state for a given native window. \end{DoxyCompactList}\item 
+virtual std::\+string \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0}{get\+Name}} () const =0
+\begin{DoxyCompactList}\small\item\em Return a human-\/readable backend name. \end{DoxyCompactList}\item 
+virtual \doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe}{get\+API}} () const =0
+\begin{DoxyCompactList}\small\item\em Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. \end{DoxyCompactList}\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2}{make\+Current}} ()
+\begin{DoxyCompactList}\small\item\em Make this context current on the calling thread. \end{DoxyCompactList}\item 
+virtual void \doxymbox{\hyperlink{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000}{swap\+Buffers}} ()
+\begin{DoxyCompactList}\small\item\em Present the current frame. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Context_a13b2efadb21bcb3d5547817d18801541}\label{classmka_1_1graphic_1_1Context_a13b2efadb21bcb3d5547817d18801541} 
+GLFWwindow \texorpdfstring{$\ast$}{*} {\bfseries window} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Base interface for a graphics context implementation. 
+
+The interface is intentionally minimal so each backend can manage initialization and per-\/frame buffer swapping in its own way. 
+
+\label{doc-func-members}
+\Hypertarget{classmka_1_1graphic_1_1Context_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe}\index{mka::graphic::Context@{mka::graphic::Context}!getAPI@{getAPI}}
+\index{getAPI@{getAPI}!mka::graphic::Context@{mka::graphic::Context}}
+\doxysubsubsection{\texorpdfstring{getAPI()}{getAPI()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Context_a0818269dffee8d4fd8835f14d02d1afe} 
+virtual \doxymbox{\hyperlink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API}} mka::\+graphic::\+\+Context::\+get\+API (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Return the backend \doxylink{context_8cppm_af83c0131c3ee1f18458047a17565eb15}{API} kind. 
+
+
+
+Implemented in \doxymbox{\hyperlink{classmka_1_1graphic_1_1DirectXContext_a4b2252d1698f3fae6b1273334c5a3c0b}{mka::\+graphic::\+\+Direct\+XContext}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a8ac2d55a1deff4ce635618f1a63a8569}{mka::\+graphic::\+\+Glad\+Context}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1GlewContext_ab3bdeef78b13ccc79464208b8f6ebec9}{mka::\+graphic::\+\+Glew\+Context}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1MetalContext_ac036955c99c232d6eb27fc45536a5974}{mka::\+graphic::\+\+Metal\+Context}}, and \doxymbox{\hyperlink{classmka_1_1graphic_1_1VulkanContext_a05faadb70a8f204448900729125c816a}{mka::\+graphic::\+\+Vulkan\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0}\index{mka::graphic::Context@{mka::graphic::Context}!getName@{getName}}
+\index{getName@{getName}!mka::graphic::Context@{mka::graphic::Context}}
+\doxysubsubsection{\texorpdfstring{getName()}{getName()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Context_ac2fecf491ce1fb274a8650587dcad8d0} 
+virtual std::\+string mka::\+graphic::\+\+Context::\+get\+Name (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Return a human-\/readable backend name. 
+
+
+
+Implemented in \doxymbox{\hyperlink{classmka_1_1graphic_1_1DirectXContext_affa7d0809d1e81893709ad0468d4dc7a}{mka::\+graphic::\+\+Direct\+XContext}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a31820fbdd0a1ae751c40c1ceae3661a9}{mka::\+graphic::\+\+Glad\+Context}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1GlewContext_ad6904338889579e12e3a71f7143bd819}{mka::\+graphic::\+\+Glew\+Context}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1MetalContext_adf30e9df581ad8f38853c4484fc67d3c}{mka::\+graphic::\+\+Metal\+Context}}, and \doxymbox{\hyperlink{classmka_1_1graphic_1_1VulkanContext_a0f366a8226d438be02f1d763348d1a93}{mka::\+graphic::\+\+Vulkan\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894}\index{mka::graphic::Context@{mka::graphic::Context}!init@{init}}
+\index{init@{init}!mka::graphic::Context@{mka::graphic::Context}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Context_a379192ec2681a358f3c2cff89fe40894} 
+virtual bool mka::\+graphic::\+\+Context::\+init (\begin{DoxyParamCaption}\item[{GLFWwindow \texorpdfstring{$\ast$}{*}}]{window}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Initialize backend state for a given native window. 
+
+
+
+Implemented in \doxymbox{\hyperlink{classmka_1_1graphic_1_1DirectXContext_ae4c0d02b3ef303c801c1742aebd17951}{mka::\+graphic::\+\+Direct\+XContext}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_af25ade212b61e7c05da3a3aaf9e0dd16}{mka::\+graphic::\+\+Glad\+Context}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1GlewContext_a598404489e67a7d2c1fff4b114ebe1ee}{mka::\+graphic::\+\+Glew\+Context}}, \doxymbox{\hyperlink{classmka_1_1graphic_1_1MetalContext_ac0b360079e17bc31ae33db4923752291}{mka::\+graphic::\+\+Metal\+Context}}, and \doxymbox{\hyperlink{classmka_1_1graphic_1_1VulkanContext_a77e406f27eaf54b1666451c8b069a4c9}{mka::\+graphic::\+\+Vulkan\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2}\index{mka::graphic::Context@{mka::graphic::Context}!makeCurrent@{makeCurrent}}
+\index{makeCurrent@{makeCurrent}!mka::graphic::Context@{mka::graphic::Context}}
+\doxysubsubsection{\texorpdfstring{makeCurrent()}{makeCurrent()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Context_abe87638590db33c89eed980803b3b6b2} 
+virtual void mka::\+graphic::\+\+Context::\+make\+Current (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Make this context current on the calling thread. 
+
+
+
+Reimplemented in \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a6ef93c9f23779bd8f5de6153c61648f7}{mka::\+graphic::\+\+Glad\+Context}}.
+
+\Hypertarget{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000}\index{mka::graphic::Context@{mka::graphic::Context}!swapBuffers@{swapBuffers}}
+\index{swapBuffers@{swapBuffers}!mka::graphic::Context@{mka::graphic::Context}}
+\doxysubsubsection{\texorpdfstring{swapBuffers()}{swapBuffers()}}
+{\footnotesize\ttfamily \label{classmka_1_1graphic_1_1Context_a12c087ef4785162fb5e5ecc0affce000} 
+virtual void mka::\+graphic::\+\+Context::\+swap\+Buffers (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Present the current frame. 
+
+
+
+Reimplemented in \doxymbox{\hyperlink{classmka_1_1graphic_1_1GladContext_a6839182e0a0f831366d668036ef032b0}{mka::\+graphic::\+\+Glad\+Context}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+\doxymbox{\hyperlink{context_8cppm}{context.\+cppm}}\end{DoxyCompactItemize}

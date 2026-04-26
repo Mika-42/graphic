@@ -1,0 +1,181 @@
+\doxysection{A Class Reference}
+\hypertarget{classA}{}\label{classA}\index{A@{A}}
+Inheritance diagram for A:\+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classA}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classA_a491fd0b4bf814e46032d4d127ca28473}\label{classA_a491fd0b4bf814e46032d4d127ca28473} 
+{\bfseries A} (glm::\+vec4 c)
+\item 
+void \doxymbox{\hyperlink{classA_af5f1366707d895fc376d422fe4a4ae58}{draw}} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer) override
+\item 
+bool \doxymbox{\hyperlink{classA_a29d5b45c6f1c17ab6e57a0cba7afb5be}{contain}} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&mouse) override
+\item 
+\Hypertarget{classA_a12daa49c602087fe65ed172f1ee14e63}\label{classA_a12daa49c602087fe65ed172f1ee14e63} 
+void {\bfseries on\+Enter} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&)
+\item 
+\Hypertarget{classA_a6d188260d5bfbd1d5e7cd4f13b64a14e}\label{classA_a6d188260d5bfbd1d5e7cd4f13b64a14e} 
+void {\bfseries on\+Leave} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&)
+\item 
+void \doxymbox{\hyperlink{classA_a8c5b53e5557f0c8b4955d543b213d7dc}{on\+Keyboard\+Event}} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEventView}{Keyboard\+Event\+View}} \&kb) override
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual const View \texorpdfstring{$\ast$}{*} {\bfseries get\+Parent} () const noexcept final
+\item 
+virtual void {\bfseries add\+Child} (std::\+shared\+\_\+ptr$<$ View $>$ child)
+\item 
+virtual void {\bfseries remove\+Child} (View \texorpdfstring{$\ast$}{*}child)
+\item 
+virtual const std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ \& {\bfseries get\+Children} () const noexcept final
+\item 
+glm::\+vec2 {\bfseries get\+Position} (Position\+Type type=Position\+Type::\+\+Relative)
+\item 
+glm::\+vec2 {\bfseries get\+Size} ()
+\item 
+const glm::\+vec2 \& {\bfseries get\+Overflows} ()
+\item 
+const glm::\+vec2 \& {\bfseries get\+Scroll} () const
+\item 
+glm::\+vec4 {\bfseries get\+Clip\+Radius} () const
+\item 
+const int32\+\_\+t \& {\bfseries get\+Clip\+Index} () const
+\item 
+const glm::\+vec4 \& {\bfseries get\+Geometry} () const
+\item 
+const bool \& {\bfseries is\+Visible} () const
+\item 
+const bool \& {\bfseries is\+Keyboard\+Focused} () const
+\item 
+const bool \& {\bfseries is\+Mouse\+Focused} () const
+\item 
+bool {\bfseries is\+Clip} () const
+\item 
+void {\bfseries set\+Position} (const glm::\+vec2 \&p)
+\item 
+void {\bfseries set\+Size} (const glm::\+vec2 \&s)
+\item 
+void {\bfseries set\+Visible} (bool v)
+\item 
+void {\bfseries set\+Keyboard\+Focus} (bool v)
+\item 
+void {\bfseries set\+Clip} (bool enabled)
+\item 
+void {\bfseries set\+Radius} (const glm::\+vec4 \&radius)
+\item 
+void {\bfseries set\+Scroll} (const glm::\+vec2 \&s)
+\item 
+void {\bfseries set\+ScrollX} (float x)
+\item 
+void {\bfseries set\+ScrollY} (float y)
+\item 
+virtual bool {\bfseries clip\+Contain} (const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&mouse) const final
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Public Types inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1View_adb873bab0fbab0ef43d9279055f2346b}\label{classmka_1_1graphic_1_1View_adb873bab0fbab0ef43d9279055f2346b} 
+enum class {\bfseries Position\+Type} :\+ uint8\+\_\+t \{ {\bfseries Relative}
+, {\bfseries Absolute}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Enter}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Leave}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \& $>$ {\bfseries Mouse\+Move}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries Child\+Added}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}} {\bfseries Child\+Removed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Position\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Size\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec4 \& $>$ {\bfseries Radius\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Visibility\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Keyboard\+Focused}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const bool $>$ {\bfseries Clip\+Changed}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Overflows\+Detected}
+\item 
+\doxymbox{\hyperlink{classmka_1_1graphic_1_1Event}{Event}}$<$ const glm::\+vec2 \& $>$ {\bfseries Scroll\+Changed}
+\item 
+int {\bfseries z\+Index} = 0
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries update} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer)
+\item 
+std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ {\bfseries get\+Sorted\+Children} () const
+\item 
+void {\bfseries update\+Child} (\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&renderer)
+\item 
+virtual void {\bfseries layout} ()
+\item 
+virtual void {\bfseries mark\+Dirty} ()
+\item 
+const bool \& {\bfseries is\+Dirty} () const
+\item 
+void {\bfseries update\+Data} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes inherited from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}}
+\begin{DoxyCompactItemize}
+\item 
+std::\+vector$<$ std::\+shared\+\_\+ptr$<$ View $>$ $>$ {\bfseries children}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{classA_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classA_a29d5b45c6f1c17ab6e57a0cba7afb5be}\index{A@{A}!contain@{contain}}
+\index{contain@{contain}!A@{A}}
+\doxysubsubsection{\texorpdfstring{contain()}{contain()}}
+{\footnotesize\ttfamily \label{classA_a29d5b45c6f1c17ab6e57a0cba7afb5be} 
+bool A::\+contain (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structmka_1_1graphic_1_1MouseEventView}{Mouse\+Event\+View}} \&}]{mouse}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Reimplemented from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}.
+
+\Hypertarget{classA_af5f1366707d895fc376d422fe4a4ae58}\index{A@{A}!draw@{draw}}
+\index{draw@{draw}!A@{A}}
+\doxysubsubsection{\texorpdfstring{draw()}{draw()}}
+{\footnotesize\ttfamily \label{classA_af5f1366707d895fc376d422fe4a4ae58} 
+void A::\+draw (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{classmka_1_1graphic_1_1Renderer}{Renderer}} \&}]{renderer}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Reimplemented from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}.
+
+\Hypertarget{classA_a8c5b53e5557f0c8b4955d543b213d7dc}\index{A@{A}!onKeyboardEvent@{onKeyboardEvent}}
+\index{onKeyboardEvent@{onKeyboardEvent}!A@{A}}
+\doxysubsubsection{\texorpdfstring{onKeyboardEvent()}{onKeyboardEvent()}}
+{\footnotesize\ttfamily \label{classA_a8c5b53e5557f0c8b4955d543b213d7dc} 
+void A::\+on\+Keyboard\+Event (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structmka_1_1graphic_1_1KeyboardEventView}{Keyboard\+Event\+View}} \&}]{kb}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Reimplemented from \doxymbox{\hyperlink{classmka_1_1graphic_1_1View}{mka::\+graphic::\+\+View}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+main.\+cpp\end{DoxyCompactItemize}

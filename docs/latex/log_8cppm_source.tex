@@ -1,0 +1,168 @@
+\doxysection{log.\+cppm}
+\hypertarget{log_8cppm_source}{}\label{log_8cppm_source}\index{srcs/log.cppm@{srcs/log.cppm}}
+\doxymbox{\hyperlink{log_8cppm}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00003\ \textcolor{keyword}{module};}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <format>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <print>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <filesystem>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <source\_location>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <string\_view>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{export}\ \textcolor{keyword}{module}\ \doxymbox{\hyperlink{module__mka_8graphic_8log}{mka.graphic.log}};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keyword}{export}\ \textcolor{keyword}{namespace\ }mka::graphic\ \{}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keyword}{class\ }Log\ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ Level\ \{\ Trace\ =\ 0,\ Debug\ =\ 1,\ Info\ =\ 2,\ Warn\ =\ 3,\ Error\ =\ 4,\ Fatal\ =\ 5\ \};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::string\_view\ colors[]\ =\ \{\textcolor{stringliteral}{"{}\(\backslash\)033[0;36m"{}},\ \textcolor{stringliteral}{"{}\(\backslash\)033[0;94m"{}},\ \textcolor{stringliteral}{"{}\(\backslash\)033[0;32m"{}},}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\(\backslash\)033[0;93m"{}},\ \textcolor{stringliteral}{"{}\(\backslash\)033[0;91m"{}},\ \textcolor{stringliteral}{"{}\(\backslash\)033[0;95m"{}}\};}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::string\_view\ reset\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[0m"{}};}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::string\_view\ bold\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[1m"{}};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ Log()\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ Log(\textcolor{keyword}{const}\ Log\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ Log(Log\ \&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ Log\ \&operator=(\textcolor{keyword}{const}\ Log\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ Log\ \&operator=(Log\ \&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \string~Log()\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aacd7b5f559c90386211955b0bb8551a3}{trace}}([[maybe\_unused]]\ std::source\_location\ loc,\ [[maybe\_unused]]\ std::string\_view\ fmt,}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Trace,\ loc,\ fmt,\ args...);}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ ++traceCount;}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_ad0b3a267d94a751758cb5f8087da8adc}{debug}}([[maybe\_unused]]\ std::source\_location\ loc,\ [[maybe\_unused]]\ std::string\_view\ fmt,}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Debug,\ loc,\ fmt,\ args...);}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ ++debugCount;}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a5df915323c92aa787bc766b446aee331}{trace}}([[maybe\_unused]]\ std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Trace,\ \{\},\ fmt,\ args...);}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ ++traceCount;}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_acd31c3efdb06e4371d30bf27802362dc}{debug}}([[maybe\_unused]]\ std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Debug,\ \{\},\ fmt,\ args...);}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ ++debugCount;}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a28c0bd01f8caba11165cd3a489b2cee7}{info}}(std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Info,\ \{\},\ fmt,\ args...);}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ ++infoCount;}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_aa3f186ab2e10063530259eca4173e926}{warn}}(std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Warn,\ \{\},\ fmt,\ args...);}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ ++warnCount;}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a045f7ff5459627d7345cd961f2df41e7}{error}}(std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Error,\ \{\},\ fmt,\ args...);}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ ++errorCount;}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53a59db376b92f430d2955fb5d2e4ba6}{fatal}}(std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ print\_colored(Level::Fatal,\ \{\},\ fmt,\ args...);}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ ++fatalCount;}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ std::cerr.flush();}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ std::abort();}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a6bfeb11bbe941ab50269fd81e7fb00c6}{getTraceCount}}()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ traceCount;\ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a3e7c8fd27ac4b77432ee54daa5182223}{getDebugCount}}()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ debugCount;\ \}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a53c10b476432498bf947c97028550416}{getInfoCount}}()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ infoCount;\ \}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a3ba8d113d014a3386e39d4a195a96532}{getWarnCount}}()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ warnCount;\ \}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_af88a25dbe22a59f80c9c53cc46cc5cba}{getErrorCount}}()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ errorCount;\ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a522dc9fd4abd56e95c8a25d09278a808}{getFatalCount}}()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ fatalCount;\ \}}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_a3029c0f56eeb8d50aa22694fabf49a82}{getLogCount}}()\ noexcept\ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ traceCount\ +\ debugCount\ +\ infoCount\ +\ warnCount\ +\ errorCount\ +\ fatalCount;}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::source\_location\ \doxymbox{\hyperlink{classmka_1_1graphic_1_1Log_adc2c00d083d8061f6431f99a60db49be}{getContext}}(std::source\_location\ loc\ =\ std::source\_location::current())\ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ loc;}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ traceCount\ =\ 0;\ }
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ debugCount\ =\ 0;\ }
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ infoCount\ \ =\ 0;\ }
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ warnCount\ \ =\ 0;\ }
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ errorCount\ =\ 0;\ }
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ fatalCount\ =\ 0;\ }
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ print\_colored(Level\ lvl,\ std::source\_location\ loc,\ std::string\_view\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\_view\ color\ =\ colors[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(lvl)];}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ std::print(std::cerr,\ \textcolor{stringliteral}{"{}\{\}\{\}[\{\}]\ "{}},\ bold,\ color,\ level\_name(lvl),\ reset);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keyword}{constexpr}\ (\textcolor{keyword}{sizeof}...(args)\ >\ 0)\ \{}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::print(std::cerr,\ \textcolor{stringliteral}{"{}\{\}"{}},\ std::vformat(fmt,\ std::make\_format\_args(args...)));}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::print(std::cerr,\ \textcolor{stringliteral}{"{}\{\}"{}},\ fmt);}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (loc.file\_name()\ \&\&\ *loc.file\_name()\ !=\ \textcolor{charliteral}{'\(\backslash\)0'})\ \{}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::print(std::cerr,\ \textcolor{stringliteral}{"{}\ \{:<20\}:\{:<4\}\ \{:<30\}\ |"{}},}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::filesystem::path(loc.file\_name()).filename().string(),\ loc.line(),}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\_view(loc.function\_name()).substr(0,\ 30));}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ std::print(std::cerr,\ \textcolor{stringliteral}{"{}\{\}\(\backslash\)n"{}},\ reset);}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::string\_view\ level\_name(Level\ lvl)\ \{}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }enum\ Level;}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (lvl)\ \{}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Trace:}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}TRACE"{}};}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Debug:}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}DEBUG"{}};}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Info:}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}INFO\ "{}};}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Warn:}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}WARN\ "{}};}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Error:}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}ERROR"{}};}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Fatal:}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}FATAL"{}};}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}UNKWN"{}};}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00418\ \ \ \ \ \};}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \}\ \textcolor{comment}{//\ namespace\ mka::graphic}}
+
+\end{DoxyCode}

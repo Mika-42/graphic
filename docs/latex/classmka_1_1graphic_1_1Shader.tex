@@ -1,0 +1,50 @@
+\doxysection{mka::\+graphic::\+Shader Class Reference}
+\hypertarget{classmka_1_1graphic_1_1Shader}{}\label{classmka_1_1graphic_1_1Shader}\index{mka::graphic::Shader@{mka::graphic::Shader}}
+
+
+Minimal Open\+GL shader program helper.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a6bac10355d230f7f9493754e6eb583bf}\label{classmka_1_1graphic_1_1Shader_a6bac10355d230f7f9493754e6eb583bf} 
+{\bfseries Shader} (const Shader \&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a12f938f986226db5f513ab2ac20486d6}\label{classmka_1_1graphic_1_1Shader_a12f938f986226db5f513ab2ac20486d6} 
+Shader \& {\bfseries operator=} (const Shader \&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a15344501f0aa22fc270855d7095c3a73}\label{classmka_1_1graphic_1_1Shader_a15344501f0aa22fc270855d7095c3a73} 
+{\bfseries Shader} (Shader \&\&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a561f40ca7d3794541a59296519f42b23}\label{classmka_1_1graphic_1_1Shader_a561f40ca7d3794541a59296519f42b23} 
+Shader \& {\bfseries operator=} (Shader \&\&)=delete
+\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a5361288b535f5744506b8d9e52f2a720}\label{classmka_1_1graphic_1_1Shader_a5361288b535f5744506b8d9e52f2a720} 
+void {\bfseries use} () const
+\begin{DoxyCompactList}\small\item\em Bind this program for subsequent draw calls. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a68a149b478ee8ef1098225cb6ac3406e}\label{classmka_1_1graphic_1_1Shader_a68a149b478ee8ef1098225cb6ac3406e} 
+void {\bfseries set} (const std::\+string \&uniform\+\_\+variable, const auto value) const
+\begin{DoxyCompactList}\small\item\em Set a uniform by name using typed specializations from {\ttfamily uniform} module. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_a4784ebacd5cea25f162fc2fb9524b306}\label{classmka_1_1graphic_1_1Shader_a4784ebacd5cea25f162fc2fb9524b306} 
+std::\+string {\bfseries add\+Script} (const std::\+string \&shader\+Code, \doxymbox{\hyperlink{shader_8cppm_ab10c4eaae73fdcb5a30d67033bd35f6e}{Shader\+Type}} type) const
+\begin{DoxyCompactList}\small\item\em Compile and attach one shader stage, returning compile log if any. \end{DoxyCompactList}\item 
+\Hypertarget{classmka_1_1graphic_1_1Shader_afecff0ac328999a06499a7568bd70f97}\label{classmka_1_1graphic_1_1Shader_afecff0ac328999a06499a7568bd70f97} 
+std::\+string {\bfseries link} () const
+\begin{DoxyCompactList}\small\item\em Link attached shader stages and return linker log on failure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Minimal Open\+GL shader program helper. 
+
+Responsibilities:\+
+\begin{DoxyItemize}
+\item create/\+delete a program object
+\item compile and attach shader scripts
+\item link and bind program
+\item dispatch typed uniform writes 
+\end{DoxyItemize}
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+srcs/\+opengl/\+\doxymbox{\hyperlink{shader_8cppm}{shader.\+cppm}}\end{DoxyCompactItemize}
