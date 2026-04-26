@@ -190,7 +190,7 @@ export namespace mka::graphic {
             virtual void draw(Renderer &) {} // TODO make it virtual pure
 
         protected: // updates
-            virtual void update(Renderer &renderer) {
+            void update(Renderer &renderer) {
                 layout();
 
                 computeOverflow();
