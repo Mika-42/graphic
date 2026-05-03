@@ -91,8 +91,6 @@ enum class Align { Left, Right, Center, Top, Bottom };
 enum class Orientation { Vertical, Horizontal };
 
 class StackView : public View {
-private:
-  using View::setSize;
 
 public:
   StackView() : View() {}
@@ -193,7 +191,7 @@ private:
     }
   }
 
-  virtual void layout() override {
+  void layout() {
 
     switch (orientation) {
     case Orientation::Vertical:

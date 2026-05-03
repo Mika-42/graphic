@@ -20,8 +20,7 @@ MODULES := \
 	$(SRC_DIR)/inputs/mouse.cppm \
 	$(SRC_DIR)/inputs/mouseview.cppm \
 	$(SRC_DIR)/views/view.cppm \
-	$(SRC_DIR)/views/stackview.cppm \
-	$(SRC_DIR)/views/gridview.cppm \
+	$(SRC_DIR)/layout/stack_layout.cppm \
 	$(SRC_DIR)/context.cppm \
 	$(SRC_DIR)/window.cppm \
 

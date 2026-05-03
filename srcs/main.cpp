@@ -8,8 +8,8 @@
 import mka.graphic.window;
 import mka.graphic.opengl.renderer;
 import mka.graphic.view;
-import mka.graphic.view.stackview;
-import mka.graphic.view.gridview;
+//import mka.graphic.view.stackview;
+//import mka.graphic.view.gridview;
 import mka.graphic.sanitize;
 import mka.graphic.event;
 import mka.graphic.log;
@@ -85,7 +85,10 @@ class A : public View {
 	
 		void draw(Renderer &renderer) override {
 
-			aa.geometry = getGeometry();
+			aa.geometry.x = getPosition(PositionType::Absolute).x;
+			aa.geometry.y = getPosition(PositionType::Absolute).y;
+			aa.geometry.z = getPrefferedSize().x;
+			aa.geometry.w = getPrefferedSize().y;
 			aa.radius = glm::vec4(90.0f);
 
 			aa.borderColor = glm::vec4(1.0f);
@@ -137,50 +140,51 @@ int main() {
   auto root = std::make_shared<View>();
 
   // 🔴 CLIP 1 - ClipView principal (grand cercle rouge)
-  auto clip1 = std::make_shared<View>();
-  clip1->setPosition({50.0f, 50.0f});
-  clip1->setRadius(glm::vec4{200.0f});
-  clip1->setSize({400.0f, 400.0f}); 
-  clip1->setClip(true);
+  auto el = std::make_shared<View>();
+  el->setPosition({50.0f, 50.0f});
+  el->setPreferredSize({400.0f, 400.0f}); 
+  el->setRadius({200.0f, 200.0f, 200.0f, 200.0f}); 
+  el->setClip(true);
 
   // 🟨 CLIP 2 - ClipView imbriqué (carré jaune avec coins arrondis)
   auto clip2 = std::make_shared<View>();
   clip2->setPosition({100.0f, 100.0f});
-  clip2->setSize({250.0f, 250.0f});
+  clip2->setSizeMode(View::SizeMode::Fixed);
+  clip2->setPreferredSize({250.0f, 250.0f});
   clip2->setRadius(glm::vec4{20.0f, 50.0f, 100.0f, 0.0f});
   clip2->setClip(true);
   
   // 🟢 CLIP 3 - ClipView le plus imbriqué (petit cercle vert)
   auto clip3 = std::make_shared<View>();
   clip3->setPosition({80.0f, 80.0f});
-  clip3->setSize({120.0f, 120.0f});
+  clip3->setPreferredSize({120.0f, 120.0f});
   clip3->setClip(true);
 
   // Contenu TEST 1 - Rectangle A (doit être COMPLETEMENT coupé par clip3)
   auto rectA = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}); // Rouge
   rectA->setPosition({-20.0f, -20.0f});
-  rectA->setSize({80.0f, 80.0f});
+  rectA->setPreferredSize({80.0f, 80.0f});
 
   // Contenu TEST 2 - Rectangle B (partiellement visible dans clip3)
   auto rectB = std::make_shared<A>(glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}); // Vert
   rectB->setPosition({20.0f, 20.0f});
-  rectB->setSize({100.0f, 100.0f});
+  rectB->setPreferredSize({100.0f, 100.0f});
 
   // Contenu TEST 3 - Rectangle C (visible dans clip2 mais pas clip3)
   auto rectC = std::make_shared<A>(glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}); // Bleu
   rectC->setPosition({100.0f, 50.0f});
-  rectC->setSize({120.0f, 80.0f});
+  rectC->setPreferredSize({120.0f, 80.0f});
 
   // Contenu TEST 4 - Rectangle D (visible dans clip1 mais pas clip2)
   auto rectD = std::make_shared<A>(glm::vec4{1.0f, 1.0f, 0.0f, 1.0f}); // Jaune
   rectD->setPosition({-50.0f, 150.0f});
-  rectD->setSize({150.0f, 100.0f}); 
+  rectD->setPreferredSize({150.0f, 100.0f}); 
   rectD->setKeyboardFocus(true);
 
   // Contenu TEST 5 - Rectangle E (visible partout - référence)
   auto rectE = std::make_shared<A>(glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}); // Magenta
   rectE->setPosition({0.0f, 0.0f});
-  rectE->setSize({80.0f, 80.0f});
+  rectE->setPreferredSize({80.0f, 80.0f});
 
   // 🔧 ASSEMBLAGE IMBRIQUÉ (ORDRE IMPORTANT)
   // clip3 contient A et B
@@ -192,11 +196,11 @@ int main() {
   clip2->addChild(rectC);
 	
 //  clip1 contient clip2 et D
-  clip1->addChild(clip2);
-  clip1->addChild(rectD);
+  el->addChild(clip2);
+  el->addChild(rectD);
   
   // root contient clip1 et E
-  root->addChild(clip1);
+  root->addChild(el);
   root->addChild(rectE);
 
   auto l1 = event::link(*rectE.get(), &View::MouseEnter, *rectD.get(), &A::onEnter);

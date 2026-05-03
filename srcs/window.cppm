@@ -35,7 +35,6 @@ void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
 namespace mka::graphic {
 class RootView final: private View {
 public: // expose base method
-	  using View::getSize;
 	  using View::getOverflows; 
 	  using View::isKeyboardFocused;
 	using View::isMouseFocused;
@@ -56,7 +55,8 @@ public:
 
 	void setRootSize(const glm::vec2& g) {
 		setPosition(glm::vec2(0.0f));
-		setSize(g);
+		setSizeMode(View::SizeMode::Fixed);
+		setPreferredSize(g);
 	}
 
   // Nouvelle méthode publique : trie TOUS les enfants visibles
